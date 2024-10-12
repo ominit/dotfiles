@@ -172,7 +172,8 @@ let external_completer = {|spans|
         git => $fish_completer
         # carapace doesn't have completions for asdf
         asdf => $fish_completer
-        _ => $carapace_completer
+        # _ => $carapace_completer
+        _ => $fish_completer
     } | do $in $spans
 }
 
