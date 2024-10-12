@@ -9,11 +9,9 @@ clang
 hicolor-icon-theme
 bash-language-server
 ttf-iosevka-nerd
+eww-git
 hyprland
-hyprpaper
-waybar
 tofi
-mpvpaper
 nvidia-dkms
 nvidia-utils
 lib32-nvidia-utils
