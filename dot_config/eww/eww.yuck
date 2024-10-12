@@ -1,7 +1,7 @@
 (defwindow powermenu
   :monitor 0
   :geometry (geometry
-              :width "100%"
+              :width "10%"
               :height "100%")
   :stacking "fg"
   :exclusive true
