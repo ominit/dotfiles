@@ -15,3 +15,6 @@ cargo install nu_plugin_inc
 cargo install nu_plugin_file
 cargo install nu_plugin_bash_env
 
+# common lisp
+ros install sbcl-bin
+ros install qlot
