@@ -3,3 +3,8 @@ flatpak
 ttf-nerd-fonts-symbols
 wezterm-git
 mpv-git
+carapace-bin
+lua-language-server
+clang
+hicolor-icon-theme
+bash-language-server

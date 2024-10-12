@@ -4,8 +4,8 @@ if ! pacman -Qq paru >/dev/null; then
   sudo pacman -Sy paru
 fi
 
-if ! cat packages | xargs paru -Qqi >/dev/null; then
-  cat packages | xargs paru -Syq --needed
+if ! cat packages | xargs paru -Qq >/dev/null; then
+  cat packages | xargs paru -Syq --needed --noconfirm
 fi
 
 cat flatpaks | xargs flatpak install
