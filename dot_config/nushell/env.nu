@@ -101,3 +101,7 @@ $env.NU_PLUGIN_DIRS = [
 # source ($nu.default-config-dir | path join 'custom.nu')
 
 $env.EDITOR = "hx"
+
+# at end
+mkdir ~/.cache/starship
+starship init nu | save -f ~/.cache/starship/init.nu

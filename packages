@@ -9,7 +9,6 @@ clang
 hicolor-icon-theme
 bash-language-server
 ttf-iosevka-nerd
-eww-git
 hyprland
 tofi
 nvidia-dkms
@@ -18,3 +17,8 @@ lib32-nvidia-utils
 egl-wayland
 libva-nvidia-driver
 roswell
+npm
+git-fuzzy-git
+hyprlock-git
+hypridle
+ttf-material-icons-git
