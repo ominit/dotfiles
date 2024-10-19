@@ -23,15 +23,23 @@ ros install qlot
 # starship
 cargo install starship --locked
 
+# bun
+if ! command -v bun 2>&1 >/dev/null; then
+  curl -fsSL https://bun.sh/install | bash
+fi
+
 # javascript/typescript lsp
-sudo npm install -g typescript-language-server
-sudo npm install -g typescript
+bun install -g typescript-language-server
+bun install -g typescript
 
 # json lsp
-sudo npm install -g vscode-json-languageserver
+bun install -g vscode-json-languageserver
 
 # git delta
 cargo install git-delta --locked
 
 # bat
 cargo install bat --locked
+
+# onefetch
+cargo install onefetch --locked

@@ -1,25 +1,14 @@
-import Gdk from 'gi://Gdk'
-import App from 'resource:///com/github/Aylur/ags/app.js'
+const entry = App.configDir + '/main.ts'
+const outdir = '/tmp/ags/js'
 
-import { Bar } from './modules/bar/main.js';
-
-const range = (length, start = 1) => Array.from({ length }, (_, i) => i + start);
-function forMonitors(widget) {
-    const n = Gdk.Display.get_default()?.get_n_monitors() || 1;
-    return range(n, 0).map(widget).flat(1);
+try {
+    await Utils.execAsync([
+        'bun', 'build', entry,
+        '--outdir', outdir,
+        '--external', 'resource://*',
+        '--external', 'gi://*',
+    ])
+    await import(`file://${outdir}/main.js`)
+} catch (error) {
+    console.log(error)
 }
-
-function forMonitorsAsync(widget) {
-    const n = Gdk.Display.get_default()?.get_n_monitors() || 1;
-    return range(n, 0).forEach((n) => widget(n).catch(print));
-}
-
-const Windows = () => [
-
-];
-
-App.config({
-    windows: Windows().flat(1),
-});
-
-forMonitorsAsync(Bar)
