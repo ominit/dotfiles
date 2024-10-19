@@ -25,3 +25,6 @@ insert = "bar"
 [editor.inline-diagnostics]
 cursor-line = "hint"
 other-lines = "error"
+
+[editor.file-picker]
+follow-symlinks = false
