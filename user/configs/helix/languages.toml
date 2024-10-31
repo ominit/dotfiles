@@ -1,0 +1,14 @@
+[[language]]
+name = "java"
+indent = { tab-width = 4, unit = "\t" }
+auto-format = true
+
+[[language]]
+name = "javascript"
+indent = { tab-width = 4, unit = "\t" }
+auto-format = true
+
+[[language]]
+name = "typescript"
+indent = { tab-width = 4, unit = "\t" }
+auto-format = true
