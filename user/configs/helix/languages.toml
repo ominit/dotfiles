@@ -12,3 +12,8 @@ auto-format = true
 name = "typescript"
 indent = { tab-width = 4, unit = "\t" }
 auto-format = true
+
+[[language]]
+name = "nix"
+formatter = { command = "alejandra" }
+auto-format = true

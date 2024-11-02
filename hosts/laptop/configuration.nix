@@ -2,9 +2,7 @@
 # your system.  Help is available in the configuration.nix(5) man page
 # and in the NixOS manual (accessible by running ‘nixos-help’).
 
-{ inputs, config, pkgs, lib, ... }:
-
-{
+{ inputs, config, pkgs, lib, ... }: {
   imports =
     [
       ./hardware-configuration.nix
@@ -92,22 +90,18 @@
     description = "ominit";
     extraGroups = [ "networkmanager" "wheel" ];
     packages = with pkgs; [
-      kdePackages.kate
+      # kdePackages.kate
       feishin
     ];
   };
-
-  # Install firefox.
-  programs.firefox.enable = true;
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-    git
-    nil
     lshw
     wget
+    brave
   ];
 
   fonts.packages = with pkgs; [
@@ -142,11 +136,11 @@
     open = true;
   };
 
-  # system.autoUpgrade = {
-  #   enable = true;
-  #   allowReboot = false;
-  #   dates = "daily";
-  # };
+  system.autoUpgrade = {
+    enable = true;
+    allowReboot = false;
+    dates = "daily";
+  };
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
@@ -155,5 +149,4 @@
   # Before changing this value read the documentation for this option
   # (e.g. man configuration.nix or on https://nixos.org/nixos/options.html).
   system.stateVersion = "24.05"; # Did you read the comment?
-
 }
