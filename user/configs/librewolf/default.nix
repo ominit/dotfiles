@@ -1,19 +1,27 @@
-{pkgs, ...}: {
-  # added as firefox in order to install extensions declaratively
-  programs.firefox = {
-    enable = true;
-    package = pkgs.librewolf;
-    policies = {
-      ExtensionSettings = {
-        "uBlock0@raymondhill.net" = {
-          install_url = "https://addons.mozilla.org/firefox/downloads/latest/ublock-origin/latest.xpi";
-          installation_mode = "force_installed";
-        };
-        "CanvasBlocker@kkapsner.de" = {
-          install_url = "https://addons.mozilla.org/firefox/downloads/latest/canvasblocker/latest.xpi";
-          installation_mode = "force_installed";
-        };
-      };
+{
+  pkgs,
+  lib,
+  ...
+}: let
+  bookmarks = import ./bookmarks.nix {inherit lib;};
+  extensions = import ./extensions.nix;
+
+  librewolf = pkgs.wrapFirefox pkgs.librewolf-unwrapped {
+    inherit (pkgs.librewolf-unwrapped) extraPrefsFiles extraPoliciesFiles;
+    wmClass = "Librewolf";
+    # inherit nativeMessagingHosts;
+
+    extraPrefs = ''
+      pref("middlemouse.paste", false);
+      pref("general.autoScroll", true);
+      pref("identity.fxaccounts.enabled", true);
+    '';
+
+    extraPolicies = {
+      Bookmarks = bookmarks;
+      ExtensionSettings = extensions;
     };
   };
+in {
+  home.packages = [librewolf];
 }

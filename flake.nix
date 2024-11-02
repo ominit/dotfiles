@@ -3,6 +3,7 @@
 
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+
     nur.url = "github:nix-community/NUR";
 
     home-manager = {
@@ -24,6 +25,7 @@
           inherit inputs;
         };
         modules = [
+          inputs.nur.nixosModules.nur
           ./hosts/laptop/configuration.nix
         ];
       };
@@ -32,7 +34,10 @@
     homeConfigurations = {
       "ominit@laptop" = inputs.home-manager.lib.homeManagerConfiguration {
         pkgs = inputs.nixpkgs.legacyPackages."x86_64-linux";
-        modules = [./hosts/laptop/home.nix];
+        modules = [
+          inputs.nur.hmModules.nur
+          ./hosts/laptop/home.nix
+        ];
       };
     };
   };

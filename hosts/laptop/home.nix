@@ -1,8 +1,8 @@
-{ outputs, config, pkgs, ... }: {
-
+{inputs, ...}: {
   imports = [
     ./../../user/headless-bundle.nix
     ./../../user/desktop-bundle.nix
+    inputs.nur.hmModules.nur
   ];
 
   home = {
@@ -10,5 +10,4 @@
     homeDirectory = "/home/ominit";
     stateVersion = "24.05";
   };
-
 }
