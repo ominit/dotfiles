@@ -14,9 +14,16 @@
     hyprlock
     hypridle
     rofi-wayland
-    mako
+    # mako
     hyprpolkitagent
     hyprpicker
     clipse
+    wl-clipboard
+    waypaper
+    brightnessctl
+    playerctl
+    pamixer
+    wlogout
+    # hyprpanel
   ];
 }

@@ -8,5 +8,5 @@
     recursive = true;
   };
 
-  home.packages = with pkgs; [yazi];
+  home.packages = [inputs.yazi.packages.${pkgs.system}.default];
 }

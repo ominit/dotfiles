@@ -21,6 +21,10 @@
     users.ominit = import ./home.nix;
   };
 
+  # latest kernel required for asus laptop + cachyos kernel is goated
+  boot.kernelPackages = pkgs.linuxPackages_cachyos;
+  # chaotic.scx.enable = true;
+
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
@@ -64,7 +68,7 @@
   };
 
   # Enable CUPS to print documents.
-  services.printing.enable = true;
+  # services.printing.enable = true;
 
   # Enable sound with pipewire.
   hardware.pulseaudio.enable = false;
@@ -83,7 +87,6 @@
   };
 
   services.netbird.enable = true;
-  #   environment.systemPackages = [ pkgs.netbird-ui ];
 
   # Enable touchpad support (enabled default in most desktopManager).
   # services.xserver.libinput.enable = true;
@@ -95,18 +98,56 @@
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
       # kdePackages.kate
+      hyprpanel
+      cava
       feishin
       vesktop
+      ffmpeg
+      mpv
+      lutris
+      ffmpegthumbnailer
+      gimp
+      jq
+      fd
+      fzf
+      zoxide
+      imagemagick
+      poppler
+      wayland
+      egl-wayland
+      xwayland
+      fastfetch
+      pavucontrol
+      networkmanager
+      networkmanagerapplet
+      bluez
+      bluez-tools
+      blueman
+      udiskie
+      trash-cli
+      pciutils
+      lm_sensors
+      grimblast
+      slurp
+      swappy
+      waybar
     ];
   };
+  programs.steam.enable = true;
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
+    # power-profiles-daemon
     lshw
     wget
     brave
+    netbird-ui
+    pkgs.rust-bin.stable.latest.default
+    pkg-config
+    openssl
+    gcc
   ];
 
   fonts.packages = with pkgs; [
@@ -115,10 +156,25 @@
 
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
+  environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
   # asus-linux
   services.supergfxd.enable = true;
   services.asusd.enable = true;
   services.asusd.enableUserService = true;
+
+  # power
+  programs.auto-cpufreq.enable = true;
+  programs.auto-cpufreq.settings = {
+    charger = {
+      governor = "performance";
+      turbo = "always";
+    };
+    battery = {
+      governer = "powersave";
+      turbo = "never";
+    };
+  };
 
   # nvidia
   hardware.graphics.enable = true;
