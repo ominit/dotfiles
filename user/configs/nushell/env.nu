@@ -102,6 +102,8 @@ $env.NU_PLUGIN_DIRS = [
 
 $env.EDITOR = "hx"
 
+$env.PAGER = "bat"
+
 # at end
 mkdir ~/.cache/starship
 starship init nu | save -f ~/.cache/starship/init.nu
