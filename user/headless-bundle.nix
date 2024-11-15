@@ -6,5 +6,6 @@
     ./configs/git/default.nix
     ./configs/rust/default.nix
     ./configs/yazi/default.nix
+    ./configs/bat/default.nix
   ];
 }

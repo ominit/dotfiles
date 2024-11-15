@@ -97,7 +97,11 @@
     description = "ominit";
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
+      delta
       # kdePackages.kate
+      bitwarden
+      oo7
+      tutanota-desktop
       hyprpanel
       cava
       feishin
@@ -131,6 +135,7 @@
       slurp
       swappy
       waybar
+      inputs.discidium.packages."${pkgs.system}".default
     ];
   };
   programs.steam.enable = true;
@@ -145,6 +150,8 @@
     brave
     netbird-ui
     pkgs.rust-bin.stable.latest.default
+    rust-analyzer
+    lldb
     pkg-config
     openssl
     gcc
@@ -157,6 +164,8 @@
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
+
+  services.gnome.gnome-keyring.enable = true;
 
   # asus-linux
   services.supergfxd.enable = true;
