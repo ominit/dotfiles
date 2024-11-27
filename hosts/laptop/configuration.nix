@@ -103,7 +103,7 @@
       oo7
       tutanota-desktop
       hyprpanel
-      cava
+      # cava
       feishin
       vesktop
       ffmpeg
@@ -117,6 +117,7 @@
       zoxide
       imagemagick
       poppler
+      autorandr
       wayland
       egl-wayland
       xwayland
@@ -135,7 +136,7 @@
       slurp
       swappy
       waybar
-      inputs.discidium.packages."${pkgs.system}".default
+      # inputs.discidium.packages."${pkgs.system}".default
     ];
   };
   programs.steam.enable = true;
@@ -189,6 +190,7 @@
   hardware.graphics.enable = true;
   services.xserver.videoDrivers = ["nvidia"];
   hardware.nvidia = {
+    package = config.boot.kernelPackages.nvidiaPackages.beta;
     prime = {
       intelBusId = "PCI:0:2:0";
       nvidiaBusId = "PCI:1:0:0";
