@@ -29,8 +29,8 @@
     yazi.url = "github:sxyazi/yazi";
 
     hyprpanel = {
-      url = "github:ominit/HyprPanel";
-      inputs.nixpkgs.follows = "nixpkgs";
+      url = "github:ominit/HyprPanel/fix";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
 
     chaotic = {
