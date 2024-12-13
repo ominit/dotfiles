@@ -2,7 +2,6 @@
   imports = [
     ./../../user/headless-bundle.nix
     ./../../user/desktop-bundle.nix
-    inputs.nur.hmModules.nur
   ];
 
   home = {

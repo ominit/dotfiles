@@ -4,8 +4,6 @@
   inputs = {
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
-    nur.url = "github:nix-community/NUR";
-
     home-manager = {
       url = "github:nix-community/home-manager";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -29,7 +27,7 @@
     yazi.url = "github:sxyazi/yazi";
 
     hyprpanel = {
-      url = "github:ominit/HyprPanel/fix";
+      url = "github:Jas-SinghFSU/HyprPanel";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -67,7 +65,6 @@
               inputs.rust-overlay.overlays.default
             ];
           }
-          inputs.nur.nixosModules.nur
           ./hosts/laptop/configuration.nix
           inputs.chaotic.nixosModules.default
           inputs.auto-cpufreq.nixosModules.default
@@ -85,7 +82,6 @@
           ];
         };
         modules = [
-          inputs.nur.hmModules.nur
           ./hosts/laptop/home.nix
         ];
       };

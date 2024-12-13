@@ -97,6 +97,9 @@
     description = "ominit";
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
+      xfce.thunar
+      zenity
+      osu-lazer-bin
       delta
       # kdePackages.kate
       bitwarden
@@ -158,10 +161,7 @@
     gcc
   ];
 
-  fonts.packages = with pkgs; [
-    nerdfonts
-  ];
-
+  fonts.packages = [] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
   nix.settings.experimental-features = ["nix-command" "flakes"];
 
   environment.sessionVariables.NIXOS_OZONE_WL = "1";
