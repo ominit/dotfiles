@@ -28,7 +28,7 @@
 
     hyprpanel = {
       url = "github:Jas-SinghFSU/HyprPanel";
-      # inputs.nixpkgs.follows = "nixpkgs";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     chaotic = {
@@ -53,6 +53,7 @@
 
     nixos-hardware = {
       url = "github:NixOS/nixos-hardware";
+      # inputs.nixpkgs.follows = "nixpkgs";
     };
   };
 
