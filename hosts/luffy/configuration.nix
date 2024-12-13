@@ -9,21 +9,19 @@
   imports = [
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.home-manager
-    inputs.chaotic.nixosModules.default
-    inputs.auto-cpufreq.nixosModules.default
+    # inputs.chaotic.nixosModules.default
+    # inputs.auto-cpufreq.nixosModules.default
+    inputs.nixos-hardware.nixosModules.raspberry-pi-4
     outputs.programModules.default
   ];
 
   myPrograms = {
-    hyprland.enable = true;
     yazi.enable = true;
     btop.enable = true;
     bat.enable = true;
     git.enable = true;
     helix.enable = true;
-    librewolf.enable = true;
     nushell.enable = true;
-    wezterm.enable = true;
   };
 
   home-manager = {
@@ -34,27 +32,25 @@
   };
 
   nixpkgs.overlays = [
-    inputs.hyprpanel.overlay
     inputs.rust-overlay.overlays.default
   ];
 
   # latest kernel required for asus laptop + cachyos kernel is goated
-  boot.kernelPackages = pkgs.linuxPackages_cachyos;
+  # boot.kernelPackages = pkgs.linuxPackages_cachyos;
   # chaotic.scx.enable = true;
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "laptop"; # Define your hostname.
+  networking.hostName = "luffy"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
 
   # Enable networking
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-  # time.timeZone = "America/New_York";
-  services.automatic-timezoned.enable = true;
+  time.timeZone = "America/Los_Angeles";
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -71,43 +67,7 @@
     LC_TIME = "en_US.UTF-8";
   };
 
-  # Enable the X11 windowing system.
-  # You can disable this if you're only using the Wayland session.
-  services.xserver.enable = true;
-
-  # Enable the KDE Plasma Desktop Environment.
-  services.displayManager.sddm.enable = true;
-  services.desktopManager.plasma6.enable = true;
-
-  # Configure keymap in X11
-  services.xserver.xkb = {
-    layout = "us";
-    variant = "colemak";
-  };
-
-  # Enable CUPS to print documents.
-  # services.printing.enable = true;
-
-  # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
-  security.rtkit.enable = true;
-  services.pipewire = {
-    enable = true;
-    alsa.enable = true;
-    alsa.support32Bit = true;
-    pulse.enable = true;
-    # If you want to use JACK applications, uncomment this
-    #jack.enable = true;
-
-    # use the example session manager (no others are packaged yet so this is enabled by default,
-    # no need to redefine it in your config for now)
-    #media-session.enable = true;
-  };
-
   services.netbird.enable = true;
-
-  # Enable touchpad support (enabled default in most desktopManager).
-  # services.xserver.libinput.enable = true;
 
   # Define a user account. Don't forget to set a password with ‘passwd’.
   users.users.ominit = {
@@ -115,24 +75,11 @@
     description = "ominit";
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
-      signal-desktop
-      xfce.thunar
       zenity
-      osu-lazer-bin
       delta
-      # kdePackages.kate
-      bitwarden
-      oo7
-      tutanota-desktop
-      hyprpanel
-      # cava
-      feishin
-      vesktop
       ffmpeg
       mpv
-      lutris
       ffmpegthumbnailer
-      gimp
       jq
       fd
       fzf
@@ -140,9 +87,6 @@
       imagemagick
       poppler
       autorandr
-      wayland
-      egl-wayland
-      xwayland
       fastfetch
       pavucontrol
       networkmanager
@@ -157,11 +101,8 @@
       grimblast
       slurp
       swappy
-      waybar
-      # inputs.discidium.packages."${pkgs.system}".default
     ];
   };
-  programs.steam.enable = true;
 
   # Allow unfree packages
   nixpkgs.config.allowUnfree = true;
@@ -170,8 +111,6 @@
     # power-profiles-daemon
     lshw
     wget
-    brave
-    netbird-ui
     pkgs.rust-bin.stable.latest.default
     rust-analyzer
     lldb
@@ -187,45 +126,18 @@
 
   services.gnome.gnome-keyring.enable = true;
 
-  # asus-linux
-  services.supergfxd.enable = true;
-  services.asusd.enable = true;
-  services.asusd.enableUserService = true;
-
   # power
-  programs.auto-cpufreq.enable = true;
-  programs.auto-cpufreq.settings = {
-    charger = {
-      governor = "performance";
-      turbo = "always";
-    };
-    battery = {
-      governer = "powersave";
-      turbo = "never";
-    };
-  };
-
-  # nvidia
-  hardware.graphics.enable = true;
-  services.xserver.videoDrivers = ["nvidia"];
-  hardware.nvidia = {
-    package = config.boot.kernelPackages.nvidiaPackages.beta;
-    prime = {
-      intelBusId = "PCI:0:2:0";
-      nvidiaBusId = "PCI:1:0:0";
-
-      offload = {
-        enable = true;
-        enableOffloadCmd = true;
-      };
-
-      # reverseSync.enable = lib.mkDefault true;
-    };
-    modesetting.enable = true;
-    powerManagement.enable = true;
-    powerManagement.finegrained = true;
-    open = true;
-  };
+  # programs.auto-cpufreq.enable = true;
+  # programs.auto-cpufreq.settings = {
+  #   charger = {
+  #     governor = "performance";
+  #     turbo = "always";
+  #   };
+  #   battery = {
+  #     governer = "powersave";
+  #     turbo = "never";
+  #   };
+  # };
 
   system.autoUpgrade = {
     enable = true;

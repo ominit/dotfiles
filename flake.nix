@@ -50,6 +50,10 @@
       url = "github:ominit/discidium";
       inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    nixos-hardware = {
+      url = "github:NixOS/nixos-hardware";
+    };
   };
 
   outputs = {...} @ inputs: let
@@ -57,14 +61,14 @@
   in {
     nixosConfigurations = {
       laptop = helperLib.mkSystem ./hosts/laptop/configuration.nix;
+      luffy = helperLib.mkSystem ./hosts/luffy/configuration.nix;
     };
 
     homeConfigurations = {
       "ominit@laptop" = helperLib.mkHome "x86_64-linux" ./hosts/laptop/home.nix;
+      "ominit@luffy" = helperLib.mkHome "aarch64" ./hosts/luffy/home.nix;
     };
 
-    homeModules.default = ./homeModules;
-    systemModules.default = ./systemModules;
     programModules.default = ./programModules;
   };
 }
