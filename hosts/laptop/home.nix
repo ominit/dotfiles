@@ -1,9 +1,8 @@
-{inputs, ...}: {
-  imports = [
-    ./../../user/headless-bundle.nix
-    ./../../user/desktop-bundle.nix
-  ];
-
+{
+  outputs,
+  inputs,
+  ...
+}: {
   home = {
     username = "ominit";
     homeDirectory = "/home/ominit";

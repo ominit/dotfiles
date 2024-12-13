@@ -52,39 +52,19 @@
     };
   };
 
-  outputs = {...} @ inputs: {
+  outputs = {...} @ inputs: let
+    helperLib = import ./helperLib/default.nix {inherit inputs;};
+  in {
     nixosConfigurations = {
-      laptop = inputs.nixpkgs.lib.nixosSystem {
-        specialArgs = {
-          inherit inputs;
-        };
-        modules = [
-          {
-            nixpkgs.overlays = [
-              inputs.hyprpanel.overlay
-              inputs.rust-overlay.overlays.default
-            ];
-          }
-          ./hosts/laptop/configuration.nix
-          inputs.chaotic.nixosModules.default
-          inputs.auto-cpufreq.nixosModules.default
-        ];
-      };
+      laptop = helperLib.mkSystem ./hosts/laptop/configuration.nix;
     };
 
     homeConfigurations = {
-      "ominit@laptop" = inputs.home-manager.lib.homeManagerConfiguration {
-        # pkgs = inputs.nixpkgs.legacyPackages."x86_64-linux";
-        pkgs = import inputs.nixpkgs {
-          system = "x86_64-linux";
-          overlays = [
-            inputs.hyprpanel.overlay
-          ];
-        };
-        modules = [
-          ./hosts/laptop/home.nix
-        ];
-      };
+      "ominit@laptop" = helperLib.mkHome "x86_64-linux" ./hosts/laptop/home.nix;
     };
+
+    homeModules.default = ./homeModules;
+    systemModules.default = ./systemModules;
+    programModules.default = ./programModules;
   };
 }

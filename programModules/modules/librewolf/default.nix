@@ -3,6 +3,7 @@
   lib,
   ...
 }: let
+  username = "ominit"; # TODO automatically figure out username
   bookmarks = import ./bookmarks.nix {inherit lib;};
   extensions = import ./extensions.nix;
 
@@ -23,5 +24,5 @@
     };
   };
 in {
-  home.packages = [librewolf];
+  users.users."${username}".packages = [librewolf];
 }

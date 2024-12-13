@@ -1,18 +1,30 @@
-# Edit this configuration file to define what should be installed on
-# your system.  Help is available in the configuration.nix(5) man page
-# and in the NixOS manual (accessible by running ‘nixos-help’).
 {
   inputs,
   config,
   pkgs,
   lib,
+  outputs,
   ...
 }: {
   imports = [
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.home-manager
-    ./../../system/hyprland.nix
+    inputs.chaotic.nixosModules.default
+    inputs.auto-cpufreq.nixosModules.default
+    outputs.programModules.default
   ];
+
+  myPrograms = {
+    hyprland.enable = true;
+    yazi.enable = true;
+    btop.enable = true;
+    bat.enable = true;
+    git.enable = true;
+    helix.enable = true;
+    librewolf.enable = true;
+    nushell.enable = true;
+    wezterm.enable = true;
+  };
 
   home-manager = {
     extraSpecialArgs = {
@@ -20,6 +32,11 @@
     };
     users.ominit = import ./home.nix;
   };
+
+  nixpkgs.overlays = [
+    inputs.hyprpanel.overlay
+    inputs.rust-overlay.overlays.default
+  ];
 
   # latest kernel required for asus laptop + cachyos kernel is goated
   boot.kernelPackages = pkgs.linuxPackages_cachyos;
@@ -97,6 +114,7 @@
     description = "ominit";
     extraGroups = ["networkmanager" "wheel"];
     packages = with pkgs; [
+      signal-desktop
       xfce.thunar
       zenity
       osu-lazer-bin
