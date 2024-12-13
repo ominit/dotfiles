@@ -53,8 +53,8 @@
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-  # time.timeZone = "America/New_York";
-  services.automatic-timezoned.enable = true;
+  time.timeZone = "America/New_York";
+  # services.automatic-timezoned.enable = true;
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -115,6 +115,7 @@
     isNormalUser = true;
     description = "ominit";
     extraGroups = ["networkmanager" "wheel"];
+    shell = pkgs.nushell;
     packages = with pkgs; [
       signal-desktop
       xfce.thunar

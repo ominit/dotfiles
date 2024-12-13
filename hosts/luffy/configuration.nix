@@ -74,6 +74,7 @@
     isNormalUser = true;
     description = "ominit";
     extraGroups = ["networkmanager" "wheel"];
+    shell = pkgs.nushell;
     packages = with pkgs; [
       zenity
       delta
