@@ -118,6 +118,8 @@
     extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.nushell;
     packages = with pkgs; [
+      sbcl
+      elixir
       signal-desktop
       xfce.thunar
       zenity

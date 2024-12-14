@@ -12,6 +12,8 @@ in {
 
   users.users."${username}".packages = with pkgs; [
     inputs.helix.packages."${pkgs.system}".helix
+    vscode-langservers-extracted
+    elixir-ls
     nil
     nixd
     alejandra
