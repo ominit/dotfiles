@@ -35,6 +35,8 @@
     inputs.rust-overlay.overlays.default
   ];
 
+  environment.etc."vconsole.conf".text = lib.mkForce "KEYMAP=colemak";
+
   # latest kernel required for asus laptop + cachyos kernel is goated
   # boot.kernelPackages = pkgs.linuxPackages_cachyos;
   # chaotic.scx.enable = true;

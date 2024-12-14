@@ -24,6 +24,7 @@
     librewolf.enable = true;
     nushell.enable = true;
     wezterm.enable = true;
+    ly.enable = true;
   };
 
   home-manager = {
@@ -37,6 +38,8 @@
     inputs.hyprpanel.overlay
     inputs.rust-overlay.overlays.default
   ];
+
+  environment.etc."vconsole.conf".text = lib.mkForce "KEYMAP=colemak";
 
   # latest kernel required for asus laptop + cachyos kernel is goated
   boot.kernelPackages = pkgs.linuxPackages_cachyos;
@@ -76,8 +79,6 @@
   # services.xserver.enable = true;
 
   # Enable the KDE Plasma Desktop Environment.
-  services.displayManager.sddm.enable = true;
-  services.displayManager.sddm.wayland.enable = true;
   # services.desktopManager.plasma6.enable = true;
 
   # Configure keymap in X11
