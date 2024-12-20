@@ -56,7 +56,7 @@
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-  time.timeZone = "America/New_York";
+  time.timeZone = "America/Los_Angeles";
   # services.automatic-timezoned.enable = true;
 
   # Select internationalisation properties.
