@@ -63,10 +63,12 @@
     nixosConfigurations = {
       laptop = helperLib.mkSystem ./hosts/laptop/configuration.nix;
       luffy = helperLib.mkSystem ./hosts/luffy/configuration.nix;
+      desktop = helperLib.mkSystem ./hosts/desktop/configuration.nix;
     };
 
     homeConfigurations = {
       "ominit@laptop" = helperLib.mkHome "x86_64-linux" ./hosts/laptop/home.nix;
+      "ominit@desktop" = helperLib.mkHome "x86_64-linux" ./hosts/desktop/home.nix;
       "ominit@luffy" = helperLib.mkHome "aarch64" ./hosts/luffy/home.nix;
     };
 
