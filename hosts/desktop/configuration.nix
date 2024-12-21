@@ -16,9 +16,9 @@
 
   myPrograms = {
     hyprland.enable = true;
-    # yazi.enable = true;
-    # btop.enable = true;
-    # bat.enable = true;
+    yazi.enable = true;
+    btop.enable = true;
+    bat.enable = true;
     git.enable = true;
     helix.enable = true;
     # librewolf.enable = true;
@@ -51,6 +51,8 @@
 
   networking.hostName = "desktop"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  services.openssh.enable = true;
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -198,7 +200,7 @@
     modesetting.enable = true;
     # powerManagement.enable = true;
     # powerManagement.finegrained = true;
-    # open = true;
+    open = false;
   };
 
   # This value determines the NixOS release from which the default
