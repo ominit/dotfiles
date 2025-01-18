@@ -33,18 +33,25 @@
       inherit inputs;
     };
     users.ominit = import ./home.nix;
+    backupFileExtension = "backup";
   };
+
+  # required for hyprpanel
+  services.gvfs.enable = true;
+  services.power-profiles-daemon.enable = true;
+  services.upower.enable = true;
 
   nixpkgs.overlays = [
     inputs.hyprpanel.overlay
     inputs.rust-overlay.overlays.default
+    inputs.nur.overlays.default
   ];
 
   environment.etc."vconsole.conf".text = lib.mkForce "KEYMAP=colemak";
 
   # latest kernel required for asus laptop + cachyos kernel is goated
-  # boot.kernelPackages = pkgs.linuxPackages_cachyos;
-  # chaotic.scx.enable = true;
+  boot.kernelPackages = pkgs.linuxPackages_cachyos;
+  services.scx.enable = true;
 
   # Bootloader.
   boot.loader.systemd-boot.enable = true;
@@ -59,6 +66,7 @@
   # Set your time zone.
   # time.timeZone = "America/New_York";
   services.automatic-timezoned.enable = true;
+  services.geoclue2.enable = true;
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
@@ -92,7 +100,7 @@
   # services.printing.enable = true;
 
   # Enable sound with pipewire.
-  hardware.pulseaudio.enable = false;
+  services.pulseaudio.enable = false;
   security.rtkit.enable = true;
   services.pipewire = {
     enable = true;
@@ -134,6 +142,7 @@
       # cava
       feishin
       vesktop
+      obsidian
       ffmpeg
       mpv
       lutris
@@ -185,6 +194,10 @@
     openssl
     gcc
   ];
+
+  nixpkgs.config.permittedInsecurePackages = [
+    "electron-31.7.7"
+  ]; # for feishin
 
   fonts.packages = [] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
   nix.settings.experimental-features = ["nix-command" "flakes"];
