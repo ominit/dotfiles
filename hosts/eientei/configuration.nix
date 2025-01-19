@@ -37,11 +37,6 @@
     backupFileExtension = "backup";
   };
 
-  # required for hyprpanel
-  services.gvfs.enable = true;
-  services.power-profiles-daemon.enable = true;
-  services.upower.enable = true;
-
   nixpkgs.overlays = [
     inputs.rust-overlay.overlays.default
     inputs.nur.overlays.default
@@ -132,11 +127,8 @@
       signal-desktop
       xfce.thunar
       zenity
-      osu-lazer-bin
       delta
-      # kdePackages.kate
       bitwarden
-      oo7
       tutanota-desktop
       # cava
       feishin
@@ -206,11 +198,16 @@
   services.gnome.gnome-keyring.enable = true;
 
   # power
+  services.gvfs.enable = true;
+  services.power-profiles-daemon.enable = true;
+  services.upower.enable = true;
+  services.thermald.enable = true;
+  services.system76-scheduler.enable = true;
   programs.auto-cpufreq.enable = true;
   programs.auto-cpufreq.settings = {
     charger = {
       governor = "performance";
-      turbo = "always";
+      turbo = "auto";
     };
     battery = {
       governer = "powersave";
