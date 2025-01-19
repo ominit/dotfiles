@@ -8,7 +8,7 @@
 }: {
   imports = [
     ./hardware-configuration.nix
-    inputs.home-manager.nixosModules.home-manager
+    inputs.home-manager.nixosModules.default
     inputs.chaotic.nixosModules.default
     inputs.auto-cpufreq.nixosModules.default
     outputs.programModules.default
@@ -64,9 +64,9 @@
   networking.networkmanager.enable = true;
 
   # Set your time zone.
-  # time.timeZone = "America/New_York";
-  services.automatic-timezoned.enable = true;
-  services.geoclue2.enable = true;
+  time.timeZone = lib.mkDefault "America/New_York";
+  # doesnt work ?
+  # services.tzupdate.enable = true;
 
   # Select internationalisation properties.
   i18n.defaultLocale = "en_US.UTF-8";
