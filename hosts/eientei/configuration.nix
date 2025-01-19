@@ -16,6 +16,7 @@
   ];
 
   myPrograms = {
+    hyprpanel.enable = true;
     hyprland.enable = true;
     yazi.enable = true;
     btop.enable = true;
@@ -42,7 +43,6 @@
   services.upower.enable = true;
 
   nixpkgs.overlays = [
-    inputs.hyprpanel.overlay
     inputs.rust-overlay.overlays.default
     inputs.nur.overlays.default
   ];
@@ -138,7 +138,6 @@
       bitwarden
       oo7
       tutanota-desktop
-      hyprpanel
       # cava
       feishin
       vesktop
