@@ -16,6 +16,7 @@
   ];
 
   myPrograms = {
+    syncthing.enable = true;
     hyprpanel.enable = true;
     hyprland.enable = true;
     yazi.enable = true;
@@ -130,8 +131,9 @@
       delta
       bitwarden
       tutanota-desktop
-      # cava
+      cava
       feishin
+      feh
       vesktop
       obsidian
       ffmpeg

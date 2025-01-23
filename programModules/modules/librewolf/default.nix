@@ -6,6 +6,8 @@
   home-manager.users."ominit".programs.librewolf = {
     enable = true;
     settings = {
+      "browser.gesture.swipe.left" = "cmd_scrollLeft";
+      "browser.gesture.swipe.right" = "cmd_scrollRight";
       "middlemouse.paste" = false;
       "general.autoScroll" = true;
       "identity.fxaccounts.enabled" = true;
