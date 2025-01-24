@@ -16,6 +16,7 @@
   ];
 
   myPrograms = {
+    rofi.enable = true;
     syncthing.enable = true;
     hyprpanel.enable = true;
     hyprland.enable = true;

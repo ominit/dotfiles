@@ -31,6 +31,5 @@ in {
     playerctl
     pamixer
     wlogout
-    # hyprpanel
   ];
 }
