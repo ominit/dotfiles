@@ -124,6 +124,7 @@
     extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.nushell;
     packages = with pkgs; [
+      slack
       sbcl
       elixir
       signal-desktop
