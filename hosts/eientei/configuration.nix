@@ -125,6 +125,7 @@
     extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.nushell;
     packages = with pkgs; [
+      elixir-ls
       libreoffice
       slack
       sbcl
