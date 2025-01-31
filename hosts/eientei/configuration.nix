@@ -16,6 +16,7 @@
   ];
 
   myPrograms = {
+    jujutsu.enable = true;
     rofi.enable = true;
     syncthing.enable = true;
     hyprpanel.enable = true;
@@ -124,6 +125,7 @@
     extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.nushell;
     packages = with pkgs; [
+      libreoffice
       slack
       sbcl
       elixir

@@ -108,4 +108,6 @@ $env.PAGER = "bat"
 mkdir ~/.cache/starship
 starship init nu | save -f ~/.cache/starship/init.nu
 
+source ./completions-jj.nu
+
 $env.TERM = "wezterm"

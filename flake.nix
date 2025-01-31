@@ -60,6 +60,11 @@
       url = "github:NixOS/nixos-hardware";
       # inputs.nixpkgs.follows = "nixpkgs";
     };
+
+    jujutsu = {
+      url = "github:jj-vcs/jj";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
   };
 
   outputs = {...} @ inputs: let
