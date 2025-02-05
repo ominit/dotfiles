@@ -16,6 +16,7 @@
   ];
 
   myPrograms = {
+    yazelix.enable = true;
     jujutsu.enable = true;
     rofi.enable = true;
     syncthing.enable = true;
@@ -57,6 +58,8 @@
 
   networking.hostName = "eientei"; # Define your hostname.
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  services.openssh.enable = true;
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -125,6 +128,7 @@
     extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.nushell;
     packages = with pkgs; [
+      zellij
       elixir-ls
       libreoffice
       slack
