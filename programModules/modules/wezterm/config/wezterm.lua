@@ -11,7 +11,8 @@ config.hide_tab_bar_if_only_one_tab = true
 
 config.check_for_updates = false
 
-config.default_prog = { 'nu', '-c', "zellij -l welcome --config-dir ~/.config/yazelix/zellij options --layout-dir ~/.config/yazelix/zellij/layouts" }
+-- config.default_prog = { 'nu', '-c', "zellij -l welcome --config-dir ~/.config/yazelix/zellij options --layout-dir ~/.config/yazelix/zellij/layouts" }
+-- config.default_prog = { 'nu' }
 
 config.window_decorations = "NONE"
 

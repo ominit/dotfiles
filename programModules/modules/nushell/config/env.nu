@@ -110,4 +110,7 @@ starship init nu | save -f ~/.cache/starship/init.nu
 
 source ./completions-jj.nu
 
+# yazelix - yazi + zellij + helix
+alias yazelix = zellij -l welcome --config-dir ~/.config/yazelix/zellij options --layout-dir ~/.config/yazelix/zellij/layouts
+
 $env.TERM = "wezterm"
