@@ -1,0 +1,34 @@
+foreground = "#cbe3e7"
+background = "#1e1c31"
+cursor_bg = "#a1efd3"
+cursor_border = "#585273"
+cursor_fg = "#1e1c31"
+selection_bg = "#3e3859"
+selection_fg = "#cbe3e7"
+
+ansi = ["#1e1c31","#91ddff","#abf8f7","#a1efd3","#d4bfff","#f48fb1","#cbe3e7","#ffe6b3"]
+brights = ["#585273","#78a8ff","#63f2f1","#7fe9c3","#7676ff","#f02e6e","#8a889d","#f2b482"]
+
+font-family = IosevkaNerdFont
+font-size = 14
+# config.font = wezterm.font('IosevkaNerdFont', { weight = 'Medium' })
+
+# config.hide_tab_bar_if_only_one_tab = true
+
+auto-update = off
+
+# -- config.default_prog = { 'nu', '-c', "zellij -l welcome --config-dir ~/.config/yazelix/zellij options --layout-dir ~/.config/yazelix/zellij/layouts" }
+# -- config.default_prog = { 'nu' }
+
+# config.window_decorations = "NONE"
+
+# -- config.window_background_opacity = 0.7
+
+# -- config.window_padding = {
+# --   left = 0,
+# --   right = 0,
+# --   top = 0,
+# --   bottom = 0,
+# -- }
+
+# return config
