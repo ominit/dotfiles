@@ -129,6 +129,7 @@
     extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.nushell;
     packages = with pkgs; [
+      inputs.zen-browser.packages."${pkgs.system}".default
       zellij
       elixir-ls
       libreoffice

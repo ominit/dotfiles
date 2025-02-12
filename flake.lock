@@ -990,7 +990,8 @@
         "nur": "nur",
         "rust-overlay": "rust-overlay_4",
         "wezterm": "wezterm",
-        "yazi": "yazi"
+        "yazi": "yazi",
+        "zen-browser": "zen-browser"
       }
     },
     "rust-analyzer-src": {
@@ -1349,6 +1350,26 @@
       "original": {
         "owner": "sxyazi",
         "repo": "yazi",
+        "type": "github"
+      }
+    },
+    "zen-browser": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1739294172,
+        "narHash": "sha256-SQiAzwlNQaymcMmHl7TL7s+2zojOimWUWhKhY95Q3H4=",
+        "owner": "0xc000022070",
+        "repo": "zen-browser-flake",
+        "rev": "8c391758dcca59a35c196d07b78af251c5341b08",
+        "type": "github"
+      },
+      "original": {
+        "owner": "0xc000022070",
+        "repo": "zen-browser-flake",
         "type": "github"
       }
     },
