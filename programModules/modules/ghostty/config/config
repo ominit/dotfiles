@@ -1,9 +1,23 @@
+auto-update = off
+confirm-close-surface = false
+clipboard-paste-protection = true
+
+# style
+window-padding-x = 10
+window-padding-y = 2
+window-padding-color = extend
+
+resize-overlay = never
+window-theme = ghostty
+
+font-family = IosevkaNerdFont
+font-size = 16
+font-style = Medium
+
+# colors
 foreground = #cbe3e7
 background = #1e1c31
 cursor-color = #a1efd3
-# cursor_bg = "#a1efd3"
-# cursor_border = "#585273"
-# cursor_fg = "#1e1c31"
 selection-background = #3e3859
 selection-foreground = #cbe3e7
 
@@ -23,13 +37,3 @@ palette = 12=#7676ff
 palette = 13=#f02e6e
 palette = 14=#8a889d
 palette = 15=#f2b482
-
-font-family = IosevkaNerdFont
-font-size = 16
-font-style = Medium
-
-auto-update = off
-
-window-padding-x = 10
-window-padding-y = 2
-window-padding-color = extend
