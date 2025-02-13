@@ -16,6 +16,7 @@
   ];
 
   myPrograms = {
+    zed.enable = true;
     ghostty.enable = true;
     yazelix.enable = true;
     jujutsu.enable = true;
