@@ -24,6 +24,7 @@
   };
 
   wsl.enable = true;
+  wsl.defaultUser = "ominit";
 
   home-manager = {
     extraSpecialArgs = {
