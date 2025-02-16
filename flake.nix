@@ -61,6 +61,8 @@
 
     nixos-hardware.url = "github:NixOS/nixos-hardware";
 
+    nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
+
     jujutsu = {
       url = "github:jj-vcs/jj";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -90,6 +92,7 @@
       luffy = helperLib.mkSystem ./hosts/luffy/configuration.nix;
       desktop = helperLib.mkSystem ./hosts/desktop/configuration.nix;
       eientei = helperLib.mkSystem ./hosts/eientei/configuration.nix;
+      wsl = helperLib.mkSystem ./hosts/wsl/configuration.nix;
     };
 
     homeConfigurations = {
@@ -97,6 +100,7 @@
       "ominit@desktop" = helperLib.mkHome "x86_64-linux" ./hosts/desktop/home.nix;
       "ominit@luffy" = helperLib.mkHome "aarch64" ./hosts/luffy/home.nix;
       "ominit@eientei" = helperLib.mkHome "x86_64-linux" ./hosts/eientei/home.nix;
+      "ominit@wsl" = helperLib.mkHome "x86_64-linux" ./hosts/wsl/home.nix;
     };
 
     programModules.default = ./programModules;
