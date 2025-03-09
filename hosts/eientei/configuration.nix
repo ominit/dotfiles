@@ -19,7 +19,7 @@
     zed.enable = true;
     ghostty.enable = true;
     yazelix.enable = true;
-    jujutsu.enable = true;
+    # jujutsu.enable = true;
     rofi.enable = true;
     syncthing.enable = true;
     hyprpanel.enable = true;
@@ -44,7 +44,6 @@
   };
 
   nixpkgs.overlays = [
-    inputs.rust-overlay.overlays.default
     inputs.nur.overlays.default
   ];
 
@@ -130,13 +129,13 @@
     extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.nushell;
     packages = with pkgs; [
+      rustdesk
       inputs.zen-browser.packages."${pkgs.system}".default
       zellij
       elixir-ls
       libreoffice
       slack
       sbcl
-      elixir
       signal-desktop
       xfce.thunar
       zenity
@@ -192,7 +191,6 @@
     wget
     brave
     netbird-ui
-    pkgs.rust-bin.stable.latest.default
     rust-analyzer
     lldb
     pkg-config

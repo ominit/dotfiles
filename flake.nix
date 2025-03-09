@@ -24,10 +24,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    hyprland = {
-      url = "github:hyprwm/Hyprland";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # hyprland = {
+    #   url = "github:hyprwm/Hyprland";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     yazi = {
       url = "github:sxyazi/yazi";
@@ -49,10 +49,10 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    rust-overlay = {
-      url = "github:oxalica/rust-overlay";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # rust-overlay = {
+    #   url = "github:oxalica/rust-overlay";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     discidium = {
       url = "github:ominit/discidium";
@@ -63,10 +63,10 @@
 
     nixos-wsl.url = "github:nix-community/NixOS-WSL/main";
 
-    jujutsu = {
-      url = "github:jj-vcs/jj";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # jujutsu = {
+    #   url = "github:jj-vcs/jj";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     ghostty = {
       url = "github:ghostty-org/ghostty";
