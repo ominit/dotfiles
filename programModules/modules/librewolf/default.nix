@@ -26,7 +26,7 @@
             description = "Brave Search: private, independent, open";
             queryCharset = "UTF-8";
             searchForm = "https://search.brave.com/search";
-            iconURL = "https://cdn.search.brave.com/serp/v1/static/brand/eebf5f2ce06b0b0ee6bbd72d7e18621d4618b9663471d42463c692d019068072-brave-lion-favicon.png";
+            icon = "https://cdn.search.brave.com/serp/v1/static/brand/eebf5f2ce06b0b0ee6bbd72d7e18621d4618b9663471d42463c692d019068072-brave-lion-favicon.png";
             urls = [
               {
                 template = "https://search.brave.com/search";
@@ -54,10 +54,6 @@
           };
         };
       };
-      # extensions = with pkgs.nur.repos.rycee.firefox-addons; [
-      #   ublock-origin
-      #   sponsorblock
-      # ]; // no need, login using firefox sync
     };
   };
 }
