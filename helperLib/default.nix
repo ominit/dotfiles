@@ -1,5 +1,6 @@
 {inputs}: let
   helperLib = (import ./default.nix) {inherit inputs;};
+  vars = import ./../vars.nix;
   outputs = inputs.self.outputs;
 in rec {
   pkgsFor = sys: inputs.nixpkgs.legacyPackages.${sys};
@@ -7,7 +8,7 @@ in rec {
   mkSystem = config:
     inputs.nixpkgs.lib.nixosSystem {
       specialArgs = {
-        inherit inputs outputs helperLib;
+        inherit inputs outputs helperLib vars;
       };
       modules = [
         config
@@ -19,7 +20,7 @@ in rec {
     inputs.home-manager.lib.homeManagerConfiguration {
       pkgs = pkgsFor sys;
       specialArgs = {
-        inherit inputs outputs helperLib;
+        inherit inputs outputs helperLib vars;
       };
       modules = [
         config

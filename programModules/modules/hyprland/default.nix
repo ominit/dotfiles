@@ -1,9 +1,5 @@
-{
-  pkgs,
-  inputs,
-  ...
-}: let
-  username = "ominit"; # TODO automatically figure out username
+{pkgs, ...}: let
+  username = "ominit";
 in {
   programs.hyprland = {
     enable = true;

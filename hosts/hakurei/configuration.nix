@@ -9,8 +9,8 @@
   imports = [
     ./hardware-configuration.nix
     inputs.home-manager.nixosModules.home-manager
-    # inputs.chaotic.nixosModules.default
-    # inputs.auto-cpufreq.nixosModules.default
+    inputs.chaotic.nixosModules.default
+    inputs.auto-cpufreq.nixosModules.default
     inputs.nixos-hardware.nixosModules.raspberry-pi-4
     outputs.programModules.default
   ];
@@ -29,24 +29,27 @@
       inherit inputs;
     };
     users.ominit = import ./home.nix;
+    backupFileExtension = "backup";
   };
 
   nixpkgs.overlays = [
-    inputs.rust-overlay.overlays.default
+    inputs.nur.overlays.default
   ];
 
   environment.etc."vconsole.conf".text = lib.mkForce "KEYMAP=colemak";
 
-  # latest kernel required for asus laptop + cachyos kernel is goated
+  # cachyos kernel is goated
   # boot.kernelPackages = pkgs.linuxPackages_cachyos;
-  # chaotic.scx.enable = true;
+  # services.scx.enable = true;
 
   # Bootloader.
-  boot.loader.systemd-boot.enable = true;
-  boot.loader.efi.canTouchEfiVariables = true;
+  # boot.loader.systemd-boot.enable = true;
+  # boot.loader.efi.canTouchEfiVariables = true;
 
-  networking.hostName = "luffy"; # Define your hostname.
+  networking.hostName = "hakurei";
   # networking.wireless.enable = true;  # Enables wireless support via wpa_supplicant.
+
+  services.openssh.enable = true;
 
   # Enable networking
   networking.networkmanager.enable = true;
@@ -111,11 +114,8 @@
   nixpkgs.config.allowUnfree = true;
 
   environment.systemPackages = with pkgs; [
-    # power-profiles-daemon
     lshw
     wget
-    pkgs.rust-bin.stable.latest.default
-    rust-analyzer
     lldb
     pkg-config
     openssl
@@ -129,24 +129,21 @@
 
   services.gnome.gnome-keyring.enable = true;
 
-  # power
-  # programs.auto-cpufreq.enable = true;
-  # programs.auto-cpufreq.settings = {
-  #   charger = {
-  #     governor = "performance";
-  #     turbo = "always";
-  #   };
-  #   battery = {
-  #     governer = "powersave";
-  #     turbo = "never";
-  #   };
-  # };
-
-  system.autoUpgrade = {
-    enable = true;
-    allowReboot = false;
-    dates = "daily";
+  nix.optimise = {
+    automatic = true;
   };
+
+  nix.gc = {
+    automatic = true;
+    options = "--delete-older-than 30d";
+  };
+
+  # when less than 10GB
+  # free until 30GB free
+  nix.extraOptions = ''
+    min-free = ${toString (10 * 1024 * 1024 * 1024)}
+    max-free = ${toString (30 * 1024 * 1024 * 1024)}
+  '';
 
   # This value determines the NixOS release from which the default
   # settings for stateful data, like file locations and database versions
