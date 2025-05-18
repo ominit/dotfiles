@@ -15,6 +15,9 @@
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
   ];
 
+  # temp
+  # networking.firewall.allowedTCPPorts = [4000];
+
   myPrograms = {
     zed.enable = true;
     ghostty.enable = true;
@@ -42,8 +45,6 @@
     users.ominit = import ./home.nix;
     backupFileExtension = "backup";
   };
-
-  # networking.firewall.allowedTCPPorts = [9000];
 
   nixpkgs.overlays = [
     inputs.nur.overlays.default
@@ -198,8 +199,8 @@
   ];
 
   nixpkgs.config.permittedInsecurePackages = [
-    "electron-31.7.7"
-  ]; # for feishin
+    "electron-33.4.11" # for zen
+  ];
 
   fonts.packages = [] ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
   nix.settings.experimental-features = ["nix-command" "flakes"];

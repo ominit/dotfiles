@@ -10,5 +10,6 @@ in {
     recursive = true;
   };
 
-  users.users."${username}".packages = [inputs.yazi.packages.${pkgs.system}.default];
+  # users.users."${username}".packages = [inputs.yazi.packages.${pkgs.system}.default];
+  users.users."${username}".packages = [pkgs.yazi];
 }

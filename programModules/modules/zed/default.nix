@@ -8,5 +8,7 @@
   #   recursive = true;
   # };
 
-  users.users."ominit".packages = [inputs.zed.packages."${pkgs.system}".default];
+  users.users."ominit".packages = [
+    inputs.zed.packages."${pkgs.system}".default
+  ];
 }

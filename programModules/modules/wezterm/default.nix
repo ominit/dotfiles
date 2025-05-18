@@ -10,5 +10,6 @@ in {
     recursive = true;
   };
 
-  users.users."${username}".packages = [inputs.wezterm.packages.${pkgs.system}.default];
+  # users.users."${username}".packages = [inputs.wezterm.packages.${pkgs.system}.default];
+  users.users."${username}".packages = [pkgs.wezterm];
 }
