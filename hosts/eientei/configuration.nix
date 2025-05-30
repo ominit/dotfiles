@@ -17,6 +17,7 @@
 
   # temp
   # networking.firewall.allowedTCPPorts = [4000];
+  boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
   myPrograms = {
     zed.enable = true;

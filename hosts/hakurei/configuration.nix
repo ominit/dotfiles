@@ -2,12 +2,16 @@
   inputs,
   config,
   pkgs,
+  nixpkgs,
   lib,
   outputs,
+  disko,
   ...
 }: {
   imports = [
-    ./hardware-configuration.nix
+    # ./hardware-configuration.nix
+    # ./disko.nix
+    # disko.nixosModules.disko
     inputs.home-manager.nixosModules.home-manager
     inputs.chaotic.nixosModules.default
     inputs.auto-cpufreq.nixosModules.default
@@ -15,12 +19,21 @@
     outputs.programModules.default
   ];
 
+  nixpkgs.hostPlatform = {system = "aarch64-linux";};
+  boot = {
+    kernelPackages = pkgs.linuxKernel.packages.linux_rpi4;
+    loader = {
+      grub.enable = false;
+      generic-extlinux-compatible.enable = true;
+    };
+  };
+
   myPrograms = {
     yazi.enable = true;
     btop.enable = true;
     bat.enable = true;
     git.enable = true;
-    helix.enable = true;
+    # helix.enable = true;
     nushell.enable = true;
   };
 
@@ -80,6 +93,7 @@
     description = "ominit";
     extraGroups = ["networkmanager" "wheel"];
     shell = pkgs.nushell;
+    openssh.authorizedKeys.keys = ["ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK1Vj5MoiiaBQzdEEXGP6zVQbszLDLHKKVB1E5SZWETg ominit@eientei"];
     packages = with pkgs; [
       zenity
       delta
