@@ -12,9 +12,9 @@
   ];
 
   myPrograms = {
-    zed.enable = true;
-    yazelix.enable = true;
-    jujutsu.enable = true;
+    # zed.enable = true;
+    # yazelix.enable = true;
+    # jujutsu.enable = true;
     yazi.enable = true;
     btop.enable = true;
     bat.enable = true;
@@ -23,6 +23,8 @@
     nushell.enable = true;
   };
 
+  boot.binfmt.emulatedSystems = ["aarch64-linux"];
+  nixpkgs.hostPlatform = lib.mkDefault "x86_64-linux";
   wsl.enable = true;
   wsl.defaultUser = "ominit";
 
@@ -35,7 +37,6 @@
   };
 
   nixpkgs.overlays = [
-    inputs.rust-overlay.overlays.default
     inputs.nur.overlays.default
   ];
 
@@ -90,7 +91,6 @@
   environment.systemPackages = with pkgs; [
     lshw
     wget
-    pkgs.rust-bin.stable.latest.default
     rust-analyzer
     lldb
     pkg-config
