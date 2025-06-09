@@ -49,11 +49,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    # rust-overlay = {
-    #   url = "github:oxalica/rust-overlay";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
-
     discidium = {
       url = "github:ominit/discidium";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -93,19 +88,10 @@
     helperLib = import ./helperLib/default.nix {inherit inputs;};
   in {
     nixosConfigurations = {
-      laptop = helperLib.mkSystem ./hosts/laptop/configuration.nix;
-      hakurei = helperLib.mkSystem ./hosts/hakurei/configuration.nix;
-      desktop = helperLib.mkSystem ./hosts/desktop/configuration.nix;
+      # laptop = helperLib.mkSystem ./hosts/laptop/configuration.nix;
+      # hakurei = helperLib.mkSystem ./hosts/hakurei/configuration.nix;
       eientei = helperLib.mkSystem ./hosts/eientei/configuration.nix;
       wsl = helperLib.mkSystem ./hosts/wsl/configuration.nix;
-    };
-
-    homeConfigurations = {
-      "ominit@laptop" = helperLib.mkHome "x86_64-linux" ./hosts/laptop/home.nix;
-      "ominit@desktop" = helperLib.mkHome "x86_64-linux" ./hosts/desktop/home.nix;
-      "ominit@luffy" = helperLib.mkHome "aarch64-linux" ./hosts/luffy/home.nix;
-      "ominit@eientei" = helperLib.mkHome "x86_64-linux" ./hosts/eientei/home.nix;
-      "ominit@wsl" = helperLib.mkHome "x86_64-linux" ./hosts/wsl/home.nix;
     };
 
     programModules.default = ./programModules;

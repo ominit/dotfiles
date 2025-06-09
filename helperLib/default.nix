@@ -12,7 +12,6 @@ in rec {
       };
       modules = [
         config
-        # outputs.systemModules.default
       ];
     };
 
@@ -24,7 +23,6 @@ in rec {
       };
       modules = [
         config
-        # outputs.homeModules.default
       ];
     };
 

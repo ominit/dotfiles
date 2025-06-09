@@ -13,7 +13,6 @@ My NixOS configuration
 
 ## Hosts
 - laptop - Asus Zenbook Pro 14 OLED laptop - dual boot on external ssd
-- desktop - HP Pavillion Gaming desktop - unused
 - wsl - for windows on "laptop"
 - eientei - T480 Thinkpad laptop - Daily driver for notes and programming
 - hakurei - Raspberry Pi 4B headless server
