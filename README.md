@@ -2,13 +2,13 @@
 My NixOS configuration
 
 ## Organization
-helperLib
+#### helperLib
 - small library for system and home creation, used in `flake.nix` to build the system and home configurations.
-hosts
+#### hosts
 - configuration per host
-programModules
+#### programModules
 - wrapper around programs with my configuration setup, in host config: `program.enable = true;`
-vars.nix
+#### vars.nix
 - global flake variables
 
 ## Hosts
