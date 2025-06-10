@@ -1,9 +1,0 @@
-[user]
-name = "ominit"
-email = "86736586+ominit@users.noreply.github.com"
-
-[ui]
-pager = "delta"
-
-[ui.diff]
-format = "git"
