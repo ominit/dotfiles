@@ -30,7 +30,10 @@
               nixpkgs = {
                 hostPlatform = args.system;
               };
+              nix.settings.experimental-features = ["nix-command" "flakes"];
             }
+            ./../modules
+            inputs.hjem.nixosModules.default
           ];
       });
 in {

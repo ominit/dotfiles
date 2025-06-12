@@ -13,5 +13,12 @@
       system = "x86_64-linux";
       modules = [./eientei];
     };
+
+    wsl = mkNixosSystem {
+      inherit withSystem;
+      hostname = "wsl";
+      system = "x86_64-linux";
+      modules = [./wsl];
+    };
   };
 }

@@ -11,7 +11,10 @@
     };
 
   inputs = {
+    #
     # nix flake tools
+    #
+
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
 
     nixos-hardware.url = "github:nixos/nixos-hardware";
@@ -31,7 +34,10 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
+    #
     # programs
+    #
+
     helix = {
       url = "github:helix-editor/helix";
       inputs.nixpkgs.follows = "nixpkgs";
