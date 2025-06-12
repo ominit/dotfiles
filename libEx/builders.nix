@@ -1,0 +1,38 @@
+{
+  inputs,
+  lib,
+  ...
+}: let
+  inherit (inputs) self;
+
+  mkNixosSystem = {
+    withSystem,
+    hostname,
+    system,
+    modules,
+  } @ args:
+    withSystem system ({
+      inputs',
+      self',
+      ...
+    }:
+      lib.nixosSystem {
+        specialArgs = {
+          inherit lib;
+          inherit inputs inputs' self self';
+        };
+
+        modules =
+          args.modules
+          ++ [
+            {
+              networking.hostName = args.hostname;
+              nixpkgs = {
+                hostPlatform = args.system;
+              };
+            }
+          ];
+      });
+in {
+  inherit mkNixosSystem;
+}
