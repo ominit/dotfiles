@@ -34,6 +34,7 @@
             }
             ./../modules
             inputs.hjem.nixosModules.default
+            inputs.chaotic.nixosModules.default
           ];
       });
 in {

@@ -34,6 +34,8 @@
       inputs.nixpkgs-lib.follows = "nixpkgs";
     };
 
+    chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
+
     #
     # programs
     #

@@ -5,6 +5,9 @@
 
   config = {
     # TODO need to setup correctly
+    # boot.kernelPackages = pkgs.linuxPackages_cachyos;
+    # services.scx.enable = true;
+
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 

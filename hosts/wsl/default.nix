@@ -10,7 +10,8 @@
   config = {
     modules.programs.helix = {
       enable = true;
-      package = inputs.helix.packages."${pkgs.system}".helix;
+      # package = inputs.helix.packages."${pkgs.system}".helix;
+      package = pkgs.helix_git; # from chaotic (cached)
     };
 
     wsl.enable = true;
