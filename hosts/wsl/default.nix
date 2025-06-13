@@ -8,10 +8,14 @@
   ];
 
   config = {
-    modules.programs.helix = {
-      enable = true;
-      # package = inputs.helix.packages."${pkgs.system}".helix;
-      package = pkgs.helix_git; # from chaotic (cached)
+    modules.programs = {
+      helix = {
+        enable = true;
+        # package = inputs.helix.packages."${pkgs.system}".helix; # helix git (not cached)
+        package = pkgs.helix_git; # from chaotic (cached)
+      };
+
+      bat.enable = true;
     };
 
     wsl.enable = true;

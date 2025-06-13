@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption types;
+  inherit (lib) mkIf mkEnableOption mkOption mkPackageOption;
 in {
   config = mkIf config.modules.programs.helix.enable {
     hjem.users."ominit" = {
@@ -28,9 +28,6 @@ in {
 
   options.modules.programs.helix = {
     enable = mkEnableOption "enable helix";
-    package = mkOption {
-      type = types.package;
-      default = pkgs.helix;
-    };
+    package = mkPackageOption pkgs "helix" {};
   };
 }

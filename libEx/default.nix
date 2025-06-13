@@ -5,7 +5,7 @@
 }: let
   extendedLib = {
     builders = import ./builders.nix {inherit inputs lib;};
-    misc = import ./misc.nix;
+    misc = import ./misc.nix {};
   };
 
   libEx = {
