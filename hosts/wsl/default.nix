@@ -16,6 +16,10 @@
       };
 
       bat.enable = true;
+      git = {
+        enable = true;
+        delta-pager.enable = true;
+      };
     };
 
     wsl.enable = true;

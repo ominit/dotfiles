@@ -5,8 +5,10 @@
   ...
 }: let
   inherit (lib) mkIf mkEnableOption mkOption mkPackageOption;
+
+  pkg = "helix";
 in {
-  config = mkIf config.modules.programs.helix.enable {
+  config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
       files.".config/helix/" = {
         source = ./config;
@@ -14,7 +16,7 @@ in {
       };
 
       packages = with pkgs; [
-        config.modules.programs.helix.package
+        config.modules.programs."${pkg}".package
 
         # lsp
         nixd
@@ -26,7 +28,7 @@ in {
     };
   };
 
-  options.modules.programs.helix = {
+  options.modules.programs."${pkg}" = {
     enable = mkEnableOption "enable helix";
     package = mkPackageOption pkgs "helix" {};
   };

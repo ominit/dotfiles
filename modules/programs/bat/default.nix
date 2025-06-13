@@ -5,8 +5,10 @@
   ...
 }: let
   inherit (lib) mkIf mkEnableOption mkOption mkPackageOption;
+
+  pkg = "bat";
 in {
-  config = mkIf config.modules.programs.bat.enable {
+  config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
       files.".config/bat/" = {
         source = ./config;
@@ -14,19 +16,19 @@ in {
       };
 
       packages = with pkgs; [
-        config.modules.programs.bat.package
+        config.modules.programs."${pkg}".package
       ];
     };
 
     # need to run `bat cache --build` to apply config
     system.userActivationScripts.bat-cache-build = {
       text = ''
-        ${config.modules.programs.bat.package}/bin/bat cache --build
+        ${config.modules.programs."${pkg}".package}/bin/bat cache --build
       '';
     };
   };
 
-  options.modules.programs.bat = {
+  options.modules.programs."${pkg}" = {
     enable = mkEnableOption "enable bat";
     package = mkPackageOption pkgs "bat" {};
   };
