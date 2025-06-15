@@ -19,7 +19,7 @@ in {
             name = "ominit"
           ''
           (
-            if config.modules.programs."${pkg}".delta-pager.enable
+            if config.modules.programs."${pkg}".delta-pager
             then ''
               [core]
               pager = "delta"
@@ -42,7 +42,7 @@ in {
           config.modules.programs."${pkg}".package
         ]
         ++ (
-          if config.modules.programs."${pkg}".delta-pager.enable
+          if config.modules.programs."${pkg}".delta-pager
           then [pkgs.delta]
           else []
         );
@@ -52,6 +52,6 @@ in {
   options.modules.programs."${pkg}" = {
     enable = mkEnableOption "enable git";
     package = mkPackageOption pkgs "git" {};
-    delta-pager.enable = mkEnableOption "enable delta pager for git";
+    delta-pager = mkEnableOption "enable delta pager for git";
   };
 }

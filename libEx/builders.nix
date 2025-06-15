@@ -31,6 +31,7 @@
                 hostPlatform = args.system;
               };
               nix.settings.experimental-features = ["nix-command" "flakes"];
+              nixpkgs.config.allowUnfree = true;
             }
             ./../modules
             inputs.hjem.nixosModules.default
