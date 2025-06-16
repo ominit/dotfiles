@@ -14,14 +14,13 @@
         # package = inputs.helix.packages."${pkgs.system}".helix; # helix git (not cached)
         package = pkgs.helix_git; # from chaotic (cached)
       };
-
       bat.enable = true;
       git = {
         enable = true;
         delta-pager = true;
       };
-
       nushell.enable = true;
+      btop.enable = true;
     };
 
     environment.variables = {
