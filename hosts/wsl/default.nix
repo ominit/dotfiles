@@ -21,6 +21,7 @@
       };
       nushell.enable = true;
       btop.enable = true;
+      yazi.enable = true;
     };
 
     environment.variables = {
