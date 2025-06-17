@@ -1,0 +1,211 @@
+# Template document for helix color schemes
+# See also: https://docs.helix-editor.com/themes.html
+#
+# NOTE: Keys default to the most specific parent value.
+#       e.g ui.cursor.primary > ui.cursor > ui
+
+# GENERAL ==============================
+
+warning = { fg = "yellow", bg = "space0" } # Editor warnings.
+error = { fg = "red", bg = "space0" }      # Editor errors, like mis-typing a command.
+info = { fg = "blue", bg = "space0" }      # Contextual info in diagnostic messages (LSP).
+hint = { fg = "purple", bg = "space0" }    # Code diagnostics hints (LSP).
+diagnostic = {}                            # Code diagnostics in editing area (LSP).
+
+# UI ==============================
+# For styling helix itself.
+
+'ui.background' = { bg = "space1" }            # Default background color.
+'ui.window' = { fg = "space0", bg = "space0" } # Window border between splits.
+# 'ui.gutter' = { fg = "unknown" }               # Left gutter for diagnostics and breakpoints.
+
+'ui.text' = { fg = "astral1" }                      # Default text color.
+'ui.text.focus' = { fg = "astral1", bg = "space3" } # Selection highlight in buffer-picker or file-picker.
+'ui.text.info' = { fg = "astral1", bg = "space1" }  # Info popup contents (space mode menu).
+
+'ui.cursor' = { fg = "space4", bg = "blue" }         # Fallback cursor colour, non-primary cursors when there are multiple (shift-c).
+'ui.cursor.primary' = { fg = "space4", bg = "blue" } # The primary cursor when there are multiple (shift-c).
+'ui.cursor.insert' = {}                              # The cursor in insert mode (i).
+'ui.cursor.select' = {}                              # The cursor in select mode (v).
+'ui.cursor.match' = {}                               # The matching parentheses of that under the cursor.
+
+'ui.selection' = { bg = "space3" }         # All currently selected text.
+'ui.selection.primary' = { bg = "space3" } # The primary selection when there are multiple.
+
+'ui.linenr' = { fg = "space4" } # Line numbers.
+'ui.linenr.selected' = { fg = "blue", bg = "space0", modifiers = [
+	"bold",
+] } # Current line number.
+'ui.cursorline' = { bg = "space0" }
+
+# 'ui.virtual' = { fg = "unknown" }            # Namespace for additions to the editing area.
+# 'ui.virtual.ruler' = { fg = "unknown" }      # Vertical rulers (colored columns in editing area).
+# 'ui.virtual.whitespace' = { fg = "unknown" } # Whitespace markers in editing area.
+
+'ui.statusline' = { fg = "astral1", bg = "space0" } # Status line.
+'ui.statusline.inactive' = { fg = "space4", bg = "space1", modifiers = [
+	"bold",
+] } # Status line in unfocused windows.
+"ui.statusline.normal" = { fg = "space0", bg = "cyan", modifiers = [
+	"bold",
+] } # Statusline mode during normal mode (only if editor.color-modes is enabled)
+"ui.statusline.insert" = { fg = "space0", bg = "red", modifiers = [
+	"bold",
+] } # Statusline mode during insert mode (only if editor.color-modes is enabled)
+"ui.statusline.select" = { fg = "space0", bg = "yellow", modifiers = [
+	"bold",
+] } # Statusline mode during select mode (only if editor.color-modes is enabled)
+
+'ui.help' = { fg = "astral1", bg = "space1" } # `:command` descriptions above the command line.
+
+'ui.highlight' = { bg = "space2" } # selected contents of symbol pickers (spc-s, spc-S) and current line in buffer picker (spc-b).
+
+'ui.menu' = { fg = "astral1", bg = "space2" }         # Autocomplete menu.
+'ui.menu.selected' = { fg = "purple", bg = "space1" } # Selected autocomplete item.
+
+'ui.popup' = { bg = "space2" }      # Documentation popups (space-k).
+'ui.popup.info' = { bg = "space1" } # Info popups box (space mode menu).
+
+# SYNTAX HIGHLIGHTING ==============================
+# All the keys here are Treesitter scopes.
+
+'property' = {}             # Regex group names.
+'special' = { fg = "cyan" } # Special symbols e.g `?` in Rust, `...` in Hare.
+'attribute' = {}            # Class attributes, html tag attributes.
+
+'type' = { fg = "purple" }         # Variable type, like integer or string, including program defined classes, structs etc..
+'type.builtin' = { fg = "purple" } # Primitive types of the language (string, int, float).
+'type.enum.variant' = {}           # A variant of an enum.
+
+'constructor' = {} # Constructor method for a class or struct.
+
+'constant' = { fg = "purple" }                     # Constant value
+'constant.builtin' = {}                            # Special constants like `true`, `false`, `none`, etc.
+'constant.builtin.boolean' = { fg = "darkyellow" } # True or False.
+'constant.character' = {}                          # Constant of character type.
+'constant.character.escape' = {}                   # escape codes like \n.
+'constant.numeric' = { fg = "darkyellow" }         # constant integer or float value.
+'constant.numeric.integer' = { fg = "darkyellow" } # constant integer value.
+'constant.numeric.float' = { fg = "darkyellow" }   # constant float value.
+
+'string' = { fg = "yellow" } # String literal.
+'string.regexp' = {}         # Regular expression literal.
+'string.special' = {}        # Strings containing a path, URL, etc.
+'string.special.path' = {}   # String containing a file path.
+'string.special.url' = {}    # String containing a web URL.
+'string.special.symbol' = {} # Erlang/Elixir atoms, Ruby symbols, Clojure keywords.
+
+'comment' = { fg = "astral0" }     # This is a comment.
+'comment.line' = {}                # Line comments, like this.
+'comment.block' = {}               # Block comments, like /* this */ in some languages.
+'comment.block.documentation' = {} # Doc comments, e.g '///' in rust.
+
+'variable' = { fg = "astral1" } # Variable names.
+'variable.builtin' = {}         # Language reserved variables: `this`, `self`, `super`, etc.
+'variable.parameter' = {}       # Function parameters.
+'variable.other.member' = {}    # Fields of composite data types (e.g. structs, unions).
+
+'label' = { fg = "darkblue" } # Loop labels, among other things.
+
+'punctuation' = {}                      # Any punctuation symbol.
+'punctuation.delimiter' = {}            # Commas, colons or other delimiter depending on the language.
+'punctuation.bracket' = { fg = "cyan" } # Parentheses, angle brackets, etc.
+
+'keyword' = { fg = "green" }                     # Language reserved keywords.
+'keyword.control' = { fg = "green" }             # Control keywords.
+'keyword.control.conditional' = { fg = "green" } # `if`, `else`, `elif`.
+'keyword.control.repeat' = { fg = "green" }      # `for`, `while`, `loop`.
+'keyword.control.import' = { fg = "green" }      # `import`, `export` `use`.
+'keyword.control.return' = { fg = "green" }      # `return` in most languages.
+'keyword.control.exception' = { fg = "green" }   # `try`, `catch`, `raise`/`throw` and related.
+'keyword.operator' = { fg = "green" }            # `or`, `and`, `in`.
+'keyword.directive' = { fg = "green" }           # Preprocessor directives (#if in C...).
+'keyword.function' = { fg = "green" }            # The keyword to define a function: 'def', 'fun', 'fn'.
+
+'operator' = { fg = "darkcyan" } # Logical, mathematical, and other operators.
+
+'function' = { fg = "red" }
+'function.builtin' = { fg = "red" }
+'function.method' = { fg = "red" }  # Class / Struct methods.
+'function.macro' = { fg = "red" }
+'function.special' = { fg = "red" } # Preprocessor function in C.
+
+# 'tag' = { fg = "unknown" } # As in <body> for html, css tags.
+'tag.error' = {} # Erroneous closing html tags.
+
+'namespace' = { fg = "purple" } # Namespace or module identifier.
+
+# Markup ==============================
+# Colors for markup languages, like Markdown or XML.
+
+'markup.heading.1' = { fg = "darkblue", modifiers = [
+	"bold",
+] } # Markdown heading 1 color.
+'markup.heading.2' = { fg = "darkblue", modifiers = [
+	"bold",
+] } # Markdown heading 2 color.
+'markup.heading.3' = { fg = "darkblue" } # Markdown heading 3 color.
+'markup.heading.4' = { fg = "darkblue" } # Markdown heading 4 color.
+'markup.heading.5' = { fg = "darkblue" } # Markdown heading 5 color.
+'markup.heading.6' = { fg = "darkblue" } # Markdown heading 6 color.
+'markup.heading.marker' = {} # Hashtag color on Markdown headings.
+
+'markup.list' = {}
+'markup.list.numbered' = {}   # Numbered list.
+'markup.list.unnumbered' = {} # Bullet point list.
+
+'markup.bold' = { fg = "astral1", modifiers = ["bold"] } # Bold text.
+'markup.italic' = {}                                     # Italicised text.
+
+'markup.link' = {}
+'markup.link.url' = {}   # Urls pointed to by links.
+'markup.link.label' = {} # Non-URL link references.
+'markup.link.text' = {}  # URL and image descriptions in links.
+
+'markup.quote' = {} # `> Quotes` in Markdown.
+
+# Markup - Interface ==============================
+# "These scopes are used for theming the editor interface."
+
+'markup.normal' = {}
+'markup.normal.completion' = {} # For completion doc popup ui.
+'markup.normal.raw' = {}        # For hover popup ui.
+
+'markup.heading.completion' = {} # Headings for completion doc popup ui.
+'markup.heading.raw' = {}        # Headings for hover popup ui.
+
+'markup.raw' = {}                   # Code block in Markdown.
+'markup.raw.block' = {}             # Multiline (```) codeblock in Markdown.
+'markup.raw.inline' = {}            # `Inline code block` in Markdown.
+'markup.raw.inline.completion' = {} # ?
+'markup.raw.inline.hover' = {}      # ?
+
+# Diff ==============================
+# Version control changes.
+
+'diff.plus' = { fg = "#2D5059" }  # Additions.
+'diff.minus' = { fg = "#5E3859" } # Deletions.
+'diff.delta' = { fg = "#38325A" } # Modifications.
+'diff.delta.moved' = {}           # Renamed or moved files.
+
+[palette]
+space0 = "#100e23"
+space1 = "#1e1c31"
+space2 = "#2d2b40"
+space3 = "#3e3859"
+space4 = "#585273"
+astral0 = "#8A889D"
+astral1 = "#cbe3e7"
+blue = "#91ddff"
+darkblue = "#78a8ff"
+cyan = "#aaffe4"
+darkcyan = "#63f2f1"
+yellow = "#ffe9aa"
+darkyellow = "#ffb378"
+red = "#f48fb1"
+darkred = "#ff5458"
+green = "#a1efd3"
+darkgreen = "#62d196"
+purple = "#d4bfff"
+nebula10 = "#78A8ff"
+nebula11 = "#7676ff"
