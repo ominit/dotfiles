@@ -43,7 +43,7 @@ diagnostic = {}                            # Code diagnostics in editing area (L
 # 'ui.virtual.whitespace' = { fg = "unknown" } # Whitespace markers in editing area.
 
 'ui.statusline' = { fg = "astral1", bg = "space0" } # Status line.
-'ui.statusline.inactive' = { fg = "space4", bg = "space1", modifierns = [
+'ui.statusline.inactive' = { fg = "space4", bg = "space1", modifiers = [
 	"bold",
 ] } # Status line in unfocused windows.
 "ui.statusline.normal" = { fg = "space0", bg = "cyan", modifiers = [

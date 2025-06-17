@@ -21,7 +21,7 @@ in {
     };
 
     # need to run `bat cache --build` to apply config
-    system.userActivationScripts.bat-cache-build = {
+    system.userActivationScripts.batCacheBuild = {
       text = ''
         ${config.modules.programs."${pkg}".package}/bin/bat cache --build
       '';

@@ -17,7 +17,7 @@
       bat.enable = true;
       git = {
         enable = true;
-        delta-pager = true;
+        deltaPager = true;
       };
       nushell.enable = true;
       btop.enable = true;

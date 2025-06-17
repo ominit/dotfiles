@@ -13,5 +13,5 @@
     inherit (extendedLib.misc) filesIn;
   };
 in {
-  flake.lib = libEx;
+  flake.lib = lib // libEx;
 }

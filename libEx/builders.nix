@@ -23,8 +23,7 @@
         };
 
         modules =
-          args.modules
-          ++ [
+          [
             {
               networking.hostName = args.hostname;
               nixpkgs = {
@@ -44,7 +43,8 @@
             ./../modules
             inputs.hjem.nixosModules.default
             inputs.chaotic.nixosModules.default
-          ];
+          ]
+          ++ args.modules;
       });
 in {
   inherit mkNixosSystem;
