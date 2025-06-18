@@ -4,7 +4,9 @@
   ...
 }: {
   imports = [
-    inputs.nixos-wsl.nixosModules.default
+    ./disko.nix
+    ./hardware.nix
+	inputs.disko.nixosModules.default
   ];
 
   config = {
@@ -31,13 +33,15 @@
       isNormalUser = true;
       extraGroups = ["networkmanager" "wheel"];
       shell = pkgs.nushell;
+	  openssh.authorizedKeys.keys = [
+		"SHA256:UfCktWqDzCtukQTZ6IPIO+yV7kte91DadCZeftU8xRE ominit@wsl"
+	  ];
     };
 
-    wsl.enable = true;
-    wsl.defaultUser = "ominit";
+	services.openssh.enable = true;
 
-    boot.binfmt.emulatedSystems = ["aarch64-linux"];
-    wsl.interop.register = true;
+    boot.loader.systemd-boot.enable = true;
+    boot.loader.efi.canTouchEfiVariables = true;
 
     nix.optimise = {
       automatic = true;

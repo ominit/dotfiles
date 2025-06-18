@@ -1,7 +1,7 @@
 <h1 align=center>dotfiles</h1>
 
 <div align=center>
-	
+
 [![garnix CI](https://img.shields.io/endpoint?url=https%3A%2F%2Fgarnix.io%2Fapi%2Fbadges%2Fominit%2Fdotfiles%3Fbranch%3Dmain&style=for-the-badge&labelColor=101418&color=a1efd3)](https://garnix.io/repo/ominit/dotfiles)
 ![GitHub last commit](https://img.shields.io/github/last-commit/ominit/dotfiles?style=for-the-badge&labelColor=101418&color=ffe9aa)
 ![GitHub Repo stars](https://img.shields.io/github/stars/ominit/dotfiles?style=for-the-badge&labelColor=101418&color=d4bfff)
@@ -12,8 +12,9 @@
 ## Structure
 - [`libEx`](libEx) extra lib commands
 - [`hosts`](hosts) configuration per host
-	- [`wsl`](hosts/wsl) for use in windows
 	- [`eientei`](hosts/eientei) T480 Thinkpad laptop - Daily driver for notes and programming
+	- [`makai`](hosts/makai) HP Pavilion Gaming Desktop - Homelab server - 魔界: where dæmons live
+	- [`wsl`](hosts/wsl) Windows Subsystem for Linux
 - [`modules`](modules) custom modules consumed by hosts
 	- [`programs`](modules/programs) my program configurations
 
@@ -28,7 +29,6 @@ These are based on locations from the Touhou Project.
 - gensokyo
 - geidontei
 - hakugyokurou
-- makai
 - mayohiga
 - moriya
 - muenzuka
