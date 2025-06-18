@@ -1,7 +1,7 @@
 {
   disko.devices = {
     disk = {
-      my-disk = {
+      nvme0n1 = {
         device = "/dev/nvme0n1";
         type = "disk";
         content = {
@@ -15,13 +15,6 @@
                 format = "vfat";
                 mountpoint = "/boot";
                 mountOptions = ["umask=0077"];
-              };
-            };
-            swap = {
-              size = "32G";
-              content = {
-                type = "swap";
-                resumeDevice = true;
               };
             };
             root = {
