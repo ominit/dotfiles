@@ -6,19 +6,29 @@
   flake.nixosConfigurations = let
     inherit (inputs.self) lib;
     inherit (lib) mkNixosSystem;
+
+    defaultModules = [
+      inputs.sops-nix.nixosModules.sops
+      inputs.hjem.nixosModules.default
+      inputs.chaotic.nixosModules.default
+      {
+        sops.defaultSopsFile = ./../secrets/secrets.yaml;
+        sops.defaultSopsFormat = "yaml";
+      }
+    ];
   in {
     makai = mkNixosSystem {
       inherit withSystem;
       hostname = "makai";
       system = "x86_64-linux";
-      modules = [./makai];
+      modules = defaultModules ++ [./makai];
     };
 
     wsl = mkNixosSystem {
       inherit withSystem;
       hostname = "wsl";
       system = "x86_64-linux";
-      modules = [./wsl];
+      modules = defaultModules ++ [./wsl];
     };
   };
 }

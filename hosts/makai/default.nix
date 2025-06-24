@@ -1,12 +1,14 @@
 {
   pkgs,
   inputs,
+  config,
   ...
 }: {
   imports = [
     ./disko.nix
     ./hardware.nix
-	inputs.disko.nixosModules.default
+    inputs.disko.nixosModules.default
+    inputs.sops-nix.nixosModules.sops
   ];
 
   config = {
@@ -29,16 +31,24 @@
       EDITOR = "hx";
     };
 
+    # don't allow mutation of users outside of the config
+    users.mutableUsers = false;
+
+    sops.secrets."makai/hashedPassword".neededForUsers = true;
+
     users.users."ominit" = {
       isNormalUser = true;
       extraGroups = ["networkmanager" "wheel"];
       shell = pkgs.nushell;
-	  openssh.authorizedKeys.keys = [
-		"SHA256:UfCktWqDzCtukQTZ6IPIO+yV7kte91DadCZeftU8xRE ominit@wsl"
-	  ];
+      openssh.authorizedKeys.keys = [
+        "SHA256:UfCktWqDzCtukQTZ6IPIO+yV7kte91DadCZeftU8xRE ominit@wsl"
+      ];
+      hashedPasswordFile = config.sops.secrets."makai/hashedPassword".path;
     };
 
-	services.openssh.enable = true;
+    services.openssh.enable = true;
+    networking.wireless.enable = true;
+    services.netbird.enable = true;
 
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;

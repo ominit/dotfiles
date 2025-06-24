@@ -41,8 +41,6 @@
               nixpkgs.config.allowUnfree = true;
             }
             ./../modules
-            inputs.hjem.nixosModules.default
-            inputs.chaotic.nixosModules.default
           ]
           ++ args.modules;
       });

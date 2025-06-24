@@ -1,0 +1,7 @@
+keys:
+  - &master age1xku792wm72ls4tnu0n3u9qagj52z8pvcw8ukzql75keeyag3vgwsf47mwc
+creation_rules:
+  - path_regex: secrets/secrets.yaml$
+    key_groups:
+      - age:
+          - *master

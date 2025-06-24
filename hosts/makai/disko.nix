@@ -17,17 +17,49 @@
                 mountOptions = ["umask=0077"];
               };
             };
-            root = {
+            swap = {
+              size = "40G";
+              content = {
+                type = "swap";
+                resumeDevice = true;
+              };
+            };
+            nix = {
               size = "100%";
               content = {
                 type = "filesystem";
-                format = "ext4";
-                mountpoint = "/";
+                format = "btrfs";
+                extraArgs = ["-f"];
+                mountpoint = "/nix";
+                mountOptions = ["compress=zstd"];
               };
             };
           };
         };
       };
+
+      sda = {
+        device = "/dev/sda";
+        type = "disk";
+        content = {
+          type = "gpt";
+          partitions = {
+            data = {
+              size = "100%";
+              content = {
+                type = "filesystem";
+                format = "xfs";
+                mountpoint = "/data";
+              };
+            };
+          };
+        };
+      };
+    };
+
+    nodev."/" = {
+      fsType = "tmpfs";
+      mountOptions = ["defaults" "size=4G" "mode=755"];
     };
   };
 }
