@@ -12,7 +12,6 @@
       inputs.hjem.nixosModules.default
       inputs.chaotic.nixosModules.default
       {
-        sops.defaultSopsFile = ./../secrets/secrets.yaml;
         sops.defaultSopsFormat = "yaml";
       }
     ];

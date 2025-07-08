@@ -33,23 +33,34 @@
     # don't allow mutation of users outside of the config
     users.mutableUsers = false;
 
-    sops.age.keyFile = "/data/sops/keys";
-    sops.secrets."makai/hashedPassword".neededForUsers = true;
+    sops.age.keyFile = "/data/system/sops/keys";
+    sops.defaultSopsFile = ./../../secrets/makai.yaml;
+    sops.secrets."hashedPassword".neededForUsers = true;
 
     users.users."ominit" = {
       isNormalUser = true;
       extraGroups = ["networkmanager" "wheel"];
       shell = pkgs.nushell;
       openssh.authorizedKeys.keys = [
+        "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ0KtEKf415TSy1cD+ED/33V7YTtY/I7FZjNR/FNpzXf ominit@wsl"
       ];
-      hashedPasswordFile = config.sops.secrets."makai/hashedPassword".path;
+      hashedPasswordFile = config.sops.secrets."hashedPassword".path;
     };
 
     systemd.tmpfiles.rules = [
-      "d /data/dotfiles 2700 ominit ominit -"
+      "d /data/dotfiles 2700 ${config.users.users.ominit.name} ${config.users.users.ominit.group} -"
+      "d /data/system/ssh 0750 root root -"
     ];
 
-    services.openssh.enable = true;
+    services.openssh = {
+      enable = true;
+      hostKeys = [
+        {
+          type = "ed25519";
+          path = "/data/system/ssh/ssh_host_ed25519_key";
+        }
+      ];
+    };
     # TODO need to setup
     # networking.wireless.enable = true;
     services.netbird.enable = true;

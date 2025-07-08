@@ -1,7 +1,9 @@
 keys:
   - &master age1xku792wm72ls4tnu0n3u9qagj52z8pvcw8ukzql75keeyag3vgwsf47mwc
+  - &makai age1uxgt2hy2t7dne3g2xtex4m239jff77wqkrn4sw3uryvuml4pmp6s2xuspr
 creation_rules:
-  - path_regex: secrets/secrets.yaml$
+  - path_regex: secrets/makai.yaml$
     key_groups:
       - age:
           - *master
+          - *makai
