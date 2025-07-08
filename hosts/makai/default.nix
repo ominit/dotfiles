@@ -8,7 +8,6 @@
     ./disko.nix
     ./hardware.nix
     inputs.disko.nixosModules.default
-    inputs.sops-nix.nixosModules.sops
   ];
 
   config = {
@@ -34,6 +33,7 @@
     # don't allow mutation of users outside of the config
     users.mutableUsers = false;
 
+    sops.age.keyFile = "/data/sops/keys";
     sops.secrets."makai/hashedPassword".neededForUsers = true;
 
     users.users."ominit" = {
@@ -41,13 +41,17 @@
       extraGroups = ["networkmanager" "wheel"];
       shell = pkgs.nushell;
       openssh.authorizedKeys.keys = [
-        "SHA256:UfCktWqDzCtukQTZ6IPIO+yV7kte91DadCZeftU8xRE ominit@wsl"
       ];
       hashedPasswordFile = config.sops.secrets."makai/hashedPassword".path;
     };
 
+    systemd.tmpfiles.rules = [
+      "d /data/dotfiles 2700 ominit ominit -"
+    ];
+
     services.openssh.enable = true;
-    networking.wireless.enable = true;
+    # TODO need to setup
+    # networking.wireless.enable = true;
     services.netbird.enable = true;
 
     boot.loader.systemd-boot.enable = true;
