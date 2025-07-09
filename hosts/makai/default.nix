@@ -28,12 +28,12 @@
 
     environment.variables = {
       EDITOR = "hx";
+      NH_FLAKE = "/data/dotfiles";
     };
 
     # don't allow mutation of users outside of the config
     users.mutableUsers = false;
 
-    sops.age.keyFile = "/data/system/sops/keys";
     sops.defaultSopsFile = ./../../secrets/makai.yaml;
     sops.secrets."hashedPassword".neededForUsers = true;
 
@@ -45,6 +45,9 @@
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ0KtEKf415TSy1cD+ED/33V7YTtY/I7FZjNR/FNpzXf ominit@wsl"
       ];
       hashedPasswordFile = config.sops.secrets."hashedPassword".path;
+      packages = with pkgs; [
+        nh
+      ];
     };
 
     systemd.tmpfiles.rules = [
@@ -64,6 +67,33 @@
     # TODO need to setup
     # networking.wireless.enable = true;
     services.netbird.enable = true;
+
+    services.grafana = {
+      enable = true;
+      settings = {
+        server = {
+          http_addr = "0.0.0.0";
+          http_port = 3000;
+          root_url = "http://192.168.50.169:3000";
+          domain = "192.168.50.169";
+        };
+      };
+    };
+
+    services.caddy = {
+      enable = true;
+
+      virtualHosts = {
+        "192.168.50.169" = {
+          extraConfig = ''
+            reverse_proxy http://${config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}
+            tls internal
+          '';
+        };
+      };
+    };
+
+    networking.firewall.allowedTCPPorts = [80 433 3000];
 
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
