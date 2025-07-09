@@ -7,6 +7,7 @@
   imports = [
     ./disko.nix
     ./hardware.nix
+    ./services
     inputs.disko.nixosModules.default
   ];
 
@@ -66,15 +67,14 @@
     };
     # TODO need to setup
     # networking.wireless.enable = true;
-    services.netbird.enable = true;
 
     services.grafana = {
       enable = true;
       settings = {
         server = {
-          http_addr = "0.0.0.0";
+          http_addr = "127.0.0.1";
           http_port = 3000;
-          root_url = "http://192.168.50.169:3000";
+          root_url = "https://192.168.50.169";
           domain = "192.168.50.169";
         };
       };
@@ -93,7 +93,7 @@
       };
     };
 
-    networking.firewall.allowedTCPPorts = [80 433 3000];
+    networking.firewall.allowedTCPPorts = [80 443 3000];
 
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
