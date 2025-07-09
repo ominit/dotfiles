@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption mkPackageOption;
+  inherit (lib) types mkIf mkEnableOption mkOption mkPackageOption;
 
   pkg = "nushell";
 in {
@@ -28,11 +28,21 @@ in {
         fish
         carapace
       ];
-    };
+    } // builtins.listToAttrs (map (p: {
+        name = "files.\".config/autoload/${builtins.baseNameOf p}\"";
+        value = {
+          source = p;
+          clobber = true;
+        };
+      }) config.modules.programs."${pkg}".extraSources);
   };
 
   options.modules.programs."${pkg}" = {
     enable = mkEnableOption "enable nushell";
     package = mkPackageOption pkgs "nushell" {};
+    extraSources = mkOption {
+      type = types.listOf types.path;
+      default = [];
+    };
   };
 }
