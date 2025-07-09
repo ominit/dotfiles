@@ -74,8 +74,8 @@
         server = {
           http_addr = "127.0.0.1";
           http_port = 3000;
-          root_url = "https://192.168.50.169";
-          domain = "192.168.50.169";
+          root_url = "https://makai.ominit.io";
+          domain = "makai.ominit.io";
         };
       };
     };
@@ -84,7 +84,7 @@
       enable = true;
 
       virtualHosts = {
-        "192.168.50.169" = {
+        "makai.ominit.io" = {
           extraConfig = ''
             reverse_proxy http://${config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}
             tls internal
