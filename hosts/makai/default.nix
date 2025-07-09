@@ -22,14 +22,12 @@
         enable = true;
         deltaPager = true;
       };
-      nushell.enable = true;
+      nushell = {
+        enable = true;
+        extraSources = [./env-vars.nu];
+      };
       btop.enable = true;
       yazi.enable = true;
-    };
-
-    environment.variables = {
-      EDITOR = "hx";
-      NH_FLAKE = "/data/dotfiles";
     };
 
     # don't allow mutation of users outside of the config
