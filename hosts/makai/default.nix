@@ -66,33 +66,6 @@
     # TODO need to setup
     # networking.wireless.enable = true;
 
-    services.grafana = {
-      enable = true;
-      settings = {
-        server = {
-          http_addr = "127.0.0.1";
-          http_port = 3000;
-          root_url = "https://makai.ominit.io";
-          domain = "makai.ominit.io";
-        };
-      };
-    };
-
-    services.caddy = {
-      enable = true;
-
-      virtualHosts = {
-        "makai.ominit.io" = {
-          extraConfig = ''
-            reverse_proxy http://${config.services.grafana.settings.server.http_addr}:${toString config.services.grafana.settings.server.http_port}
-            tls internal
-          '';
-        };
-      };
-    };
-
-    networking.firewall.allowedTCPPorts = [80 443 3000];
-
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 
