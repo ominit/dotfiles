@@ -13,6 +13,11 @@
             handle_path /gonic* {
               reverse_proxy http://${builtins.head config.services.gonic.settings.listen-addr}
             }
+
+            handle_path /feishin* {
+              reverse_proxy http://127.0.0.1:10002
+            }
+
             tls internal
           '';
         };

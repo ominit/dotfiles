@@ -66,6 +66,12 @@
     # TODO need to setup
     # networking.wireless.enable = true;
 
+    virtualization.podman.enable = true;
+    virtualisation.podman.autoPrune = {
+      enable = true;
+      dates = "monthly";
+    };
+
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
 

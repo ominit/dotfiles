@@ -1,8 +1,9 @@
 {
   imports = [
-    ./netbird.nix
     ./caddy.nix
-    ./grafana.nix
+    ./feishin.nix
     ./gonic.nix
+    ./grafana.nix
+    ./netbird.nix
   ];
 }
