@@ -7,5 +7,7 @@
       device = "/data/services/netbird";
       options = ["bind"];
     };
+
+    networking.firewall.allowedUDPPorts = [53];
   };
 }
