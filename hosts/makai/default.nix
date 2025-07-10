@@ -66,7 +66,7 @@
     # TODO need to setup
     # networking.wireless.enable = true;
 
-    virtualization.podman.enable = true;
+    virtualisation.podman.enable = true;
     virtualisation.podman.autoPrune = {
       enable = true;
       dates = "monthly";

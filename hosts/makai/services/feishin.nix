@@ -1,6 +1,6 @@
 {config, ...}: {
   config = {
-    virtualization.oci-containers.containers.feishin = {
+    virtualisation.oci-containers.containers.feishin = {
       image = "ghcr.io/jeffvli/feishin:latest";
       ports = [
         "127.0.0.1:10002:10002"
@@ -14,7 +14,6 @@
         TZ = "America/Los_Angeles";
       };
       autoStart = true;
-      restart = "unless-stopped";
     };
   };
 }
