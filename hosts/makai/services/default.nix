@@ -5,5 +5,6 @@
     ./gonic.nix
     ./grafana.nix
     ./netbird.nix
+    ./syncthing.nix
   ];
 }
