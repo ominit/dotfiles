@@ -3,7 +3,6 @@
     services.gonic = {
       enable = true;
       settings = {
-        # db-path = "/data/services/gonic/gonic.db";
         music-path = "/data/storage/gonic/music";
         playlists-path = "/data/storage/gonic/playlists";
         podcast-path = "/data/storage/gonic/podcasts";
@@ -15,6 +14,11 @@
         multi-value-artist = "delim /";
         multi-value-album-artist = "delim /";
       };
+    };
+
+    fileSystems."/var/lib/private/gonic" = {
+      device = "/data/services/gonic";
+      options = ["bind"];
     };
 
     systemd.services.gonic = {
