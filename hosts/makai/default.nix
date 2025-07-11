@@ -6,9 +6,10 @@
 }: {
   imports = [
     ./disko.nix
-    ./hardware.nix
     ./services
     inputs.disko.nixosModules.default
+    inputs.nixos-facter-modules.nixosModules.facter
+    {config.facter.reportPath = ./facter.json;}
   ];
 
   config = {

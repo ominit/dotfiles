@@ -10,9 +10,9 @@
         folders = {
           "music" = {
             path = "/data/storage/gonic/music/sync";
-			id = "2navz-o5dtt";
+            id = "2navz-o5dtt";
             devices = ["win11"];
-			type = "receiveonly";
+            type = "receiveonly";
           };
         };
       };
