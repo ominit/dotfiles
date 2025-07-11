@@ -1,0 +1,32 @@
+appConfig:
+  theme: thebe
+  language: en
+  statusCheck: false
+  preventWriteToDisk: true
+  showSplashScreen: true
+  disableUpdateChecks: true
+  hideComponents:
+    hideFooter: true
+
+pageInfo:
+  title: makai
+  description: land of the dæmons
+
+sections:
+  - name: ""
+    widgets:
+      - type: github-profile-stats
+        options:
+          username: ominit
+          hideLanguagesCard: true
+          repos:
+            - ominit/dotfiles
+  - name: ""
+    items:
+      - title: feishin
+        url: https://makai.ominit.io/feishin/
+      - title: gonic
+        url: https://makai.ominit.io/gonic/
+      - title: grafana
+        icon: si-grafana
+        url: https://makai.ominit.io/grafana/
