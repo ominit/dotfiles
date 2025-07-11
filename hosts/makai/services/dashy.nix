@@ -12,7 +12,7 @@ in {
       };
       autoStart = true;
       volumes = [
-        "${dashyConfig}:/app/public/conf.yml"
+        "${dashyConfig}:/app/user-data/conf.yml"
       ];
     };
   };
