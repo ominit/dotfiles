@@ -63,6 +63,8 @@
     # don't follow nixpkgs for binary cache
     hyprland.url = "git+https://github.com/hyprwm/hyprland?submodules=1";
 
+    niri.url = "github:sodiboo/niri-flake";
+
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
