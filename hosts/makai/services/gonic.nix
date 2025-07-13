@@ -16,6 +16,10 @@
       };
     };
 
+    systemd.tmpfiles.rules = [
+      "d /data/storage/gonic 0755 gonic gonic -"
+    ];
+
     fileSystems."/var/lib/private/gonic" = {
       device = "/data/services/gonic";
       options = ["bind"];
