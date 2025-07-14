@@ -52,7 +52,7 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ0KtEKf415TSy1cD+ED/33V7YTtY/I7FZjNR/FNpzXf ominit@wsl"
     ];
     packages = with pkgs; [
-      inputs.zen-browser.packages."${pkgs.system}".default
+      inputs.zen-browser.packages."${pkgs.system}".beta
       zellij
       elixir-ls
       libreoffice
@@ -64,7 +64,6 @@
       bitwarden
       tutanota-desktop
       cava
-      feishin
       feh
       vesktop
       obsidian
@@ -97,6 +96,7 @@
       slurp
       swappy
       waybar
+      nh
 
       swww
       hyprlock

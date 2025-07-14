@@ -31,6 +31,8 @@
       niri.enable = true;
     };
 
+    services.resolved.enable = true;
+
     nix.optimise = {
       automatic = true;
     };

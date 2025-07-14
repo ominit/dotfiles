@@ -5,7 +5,7 @@
   inputs,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption mkPackageOption;
+  inherit (lib) mkIf mkEnableOption mkPackageOption;
 
   pkg = "niri";
 in {
