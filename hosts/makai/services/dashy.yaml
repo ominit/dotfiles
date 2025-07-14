@@ -30,3 +30,5 @@ sections:
       - title: grafana
         icon: si-grafana
         url: https://makai.ominit.io/grafana/
+      - title: omni tools
+        url: https://makai.ominit.io/omni-tools/

@@ -6,6 +6,7 @@
     ./gonic.nix
     ./grafana.nix
     ./netbird.nix
+    ./omni-tools.nix
     ./syncthing.nix
   ];
 }
