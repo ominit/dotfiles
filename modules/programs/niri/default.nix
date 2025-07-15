@@ -27,6 +27,8 @@ in {
     niri-flake.cache.enable = true;
 
     nixpkgs.overlays = [inputs.niri.overlays.niri];
+
+    modules.programs.hyprlock.enable = true;
   };
 
   options.modules.programs."${pkg}" = {
