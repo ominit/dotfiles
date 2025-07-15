@@ -122,7 +122,7 @@ binds {
 
     Mod+T hotkey-overlay-title="ghostty" { spawn "ghostty"; }
     Mod+Space hotkey-overlay-title="rofi" { spawn "rofi" "-show" "run"; }
-    // Super+Alt+L hotkey-overlay-title="Lock the Screen: swaylock" { spawn "swaylock"; }
+    Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
 
     // Example volume keys mappings for PipeWire & WirePlumber.
     // The allow-when-locked=true property makes them work even when the session is locked.
