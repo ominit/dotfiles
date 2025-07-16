@@ -18,6 +18,10 @@
               reverse_proxy http://127.0.0.1:10002
             }
 
+            handle /omni-tools* {
+              reverse_proxy http://127.0.0.1:10004
+            }
+
             reverse_proxy http://127.0.0.1:10003
 
             tls internal
