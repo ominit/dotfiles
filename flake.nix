@@ -7,6 +7,7 @@
       imports = [
         ./libEx # extra lib
         ./hosts # entrypoint for hosts config
+        ./parts # flake-related configurations
       ];
     };
 
@@ -32,6 +33,11 @@
     flake-parts = {
       url = "github:hercules-ci/flake-parts";
       inputs.nixpkgs-lib.follows = "nixpkgs";
+    };
+
+    treefmt-nix = {
+      url = "github:numtide/treefmt-nix";
+      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     chaotic.url = "github:chaotic-cx/nyx/nyxpkgs-unstable";
