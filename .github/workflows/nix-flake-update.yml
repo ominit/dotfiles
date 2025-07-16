@@ -5,6 +5,9 @@ on:
     - cron: 0 0 * * 1
   workflow_dispatch: # Allows manual triggering
 
+permissions:
+  contents: write
+
 jobs:
   update-nix-flake:
     runs-on: ubuntu-latest
