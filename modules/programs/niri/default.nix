@@ -28,7 +28,10 @@ in {
 
     nixpkgs.overlays = [inputs.niri.overlays.niri];
 
-    modules.programs.hyprlock.enable = true;
+    modules.programs = {
+      hyprlock.enable = true;
+      hypridle.enable = true;
+    };
   };
 
   options.modules.programs."${pkg}" = {

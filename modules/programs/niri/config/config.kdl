@@ -86,6 +86,7 @@ layout {
 }
 
 spawn-at-startup "swww-daemon"
+spawn-at-startup "hypridle"
 // spawn-at-startup "waypaper --restore "
 
 prefer-no-csd
@@ -122,7 +123,7 @@ binds {
 
     Mod+T hotkey-overlay-title="ghostty" { spawn "ghostty"; }
     Mod+Space hotkey-overlay-title="rofi" { spawn "rofi" "-show" "run"; }
-    Super+Alt+L hotkey-overlay-title="Lock the Screen: hyprlock" { spawn "hyprlock"; }
+    Super+L hotkey-overlay-title="wlogout" { spawn "wlogout"; }
 
     // Example volume keys mappings for PipeWire & WirePlumber.
     // The allow-when-locked=true property makes them work even when the session is locked.

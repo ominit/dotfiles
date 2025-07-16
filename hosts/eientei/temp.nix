@@ -79,6 +79,7 @@
       poppler
       autorandr
       wayland
+      gitui
       egl-wayland
       xwayland
       fastfetch
@@ -99,8 +100,6 @@
       nh
 
       swww
-      hyprlock
-      hypridle
       rofi-wayland
       hyprpolkitagent
       hyprpicker
