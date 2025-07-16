@@ -18,50 +18,13 @@ jobs:
 
       - uses: cachix/install-nix-action@v31
 
-      - name: Prepare flake-update branch
-        run: |
-          BRANCH_NAME="flake-update"
-          git fetch origin $BRANCH_NAME || true # Fetch the branch if it exists, ignore error if not
-
-          if git show-ref --verify --quiet refs/heads/$BRANCH_NAME; then
-            echo "Branch $BRANCH_NAME exists. Resetting to main."
-            git checkout $BRANCH_NAME
-            git reset --hard origin/main
-            git push --force origin HEAD:$BRANCH_NAME
-          else
-            echo "Branch $BRANCH_NAME does not exist. Creating from main."
-            git checkout -b $BRANCH_NAME
-            git push origin $BRANCH_NAME
-          fi
-          git checkout $BRANCH_NAME # Ensure we are on the correct branch for subsequent steps
-
       - run: nix flake update
 
-      - name: Check for changes
-        id: git_status
-        run: |
-          if git diff --quiet; then
-            echo "no_changes=true" >> $GITHUB_OUTPUT
-          else
-            echo "no_changes=false" >> $GITHUB_OUTPUT
-          fi
-
-      - name: Commit and Push Changes
-        if: steps.git_status.outputs.no_changes == 'false'
-        run: |
-          git config user.name "github-actions[bot]"
-          git config user.email "github-actions[bot]@users.noreply.github.com"
-          git add .
-          git commit -m "chore(deps): update flake.lock"
-          git push --set-upstream origin flake-update
-
-      - name: Create or Update Pull Request
-        if: steps.git_status.outputs.no_changes == 'false'
-        uses: peter-evans/create-pull-request@v6
+      - uses: peter-evans/create-pull-request@v7
         with:
-          token: ${{ secrets.GITHUB_TOKEN }}
           title: Nix Flake Update
+          commit-message: "chore(deps): update flake.lock"
           branch: flake-update
+          delete-branch: true
           base: main
           draft: false
-          auto-merge: false
