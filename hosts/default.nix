@@ -16,6 +16,13 @@
       }
     ];
   in {
+    eientei = mkNixosSystem {
+      inherit withSystem;
+      hostname = "eientei";
+      system = "x86_64-linux";
+      modules = defaultModules ++ [./eientei];
+    };
+
     makai = mkNixosSystem {
       inherit withSystem;
       hostname = "makai";
