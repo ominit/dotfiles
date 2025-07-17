@@ -100,7 +100,6 @@
       nh
 
       swww
-      rofi-wayland
       hyprpolkitagent
       hyprpicker
       clipse

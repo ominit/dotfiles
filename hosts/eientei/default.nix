@@ -28,6 +28,7 @@
       yazi.enable = true;
       ghostty.enable = true;
       niri.enable = true;
+      rofi.enable = true;
     };
 
     services.resolved.enable = true;
