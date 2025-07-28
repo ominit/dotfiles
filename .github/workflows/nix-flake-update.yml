@@ -1,4 +1,4 @@
-name: Nix Flake Update
+name: Update flake lock
 
 on:
   schedule:
@@ -23,8 +23,9 @@ jobs:
 
       - uses: peter-evans/create-pull-request@v7
         with:
-          title: Nix Flake Update
-          commit-message: "chore(deps): update flake.lock"
+          title: Update flake lock
+          body: "@ominit"
+          commit-message: "update flake lock"
           branch: flake-update
           delete-branch: true
           base: main
