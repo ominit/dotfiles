@@ -6,8 +6,7 @@
         music-path = "/data/storage/gonic/music";
         playlists-path = "/data/storage/gonic/playlists";
         podcast-path = "/data/storage/gonic/podcasts";
-        listen-addr = "127.0.0.1:10001";
-        proxy-prefix = "gonic";
+        listen-addr = "0.0.0.0:10001";
         scan-interval = 1445;
         scan-at-start-enabled = true;
         multi-value-genre = "delim /";

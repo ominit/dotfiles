@@ -5,7 +5,7 @@ in {
     virtualisation.oci-containers.containers.dashy = {
       image = "lissy93/dashy";
       ports = [
-        "127.0.0.1:10003:8080"
+        "10003:8080"
       ];
       environment = {
         NODE_ENV = "production";
