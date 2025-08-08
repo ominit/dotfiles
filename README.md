@@ -10,13 +10,16 @@
 </div>
 
 ## Structure
-- [`libEx`](libEx) extra lib commands
 - [`hosts`](hosts) configuration per host
 	- [`eientei`](hosts/eientei) T480 Thinkpad laptop - Daily driver for notes and programming
 	- [`makai`](hosts/makai) HP Pavilion Gaming Desktop - Homelab server - 魔界: where dæmons live
 	- [`wsl`](hosts/wsl) Windows Subsystem for Linux
+- [`libEx`](libEx) extra lib commands
 - [`modules`](modules) custom modules consumed by hosts
 	- [`programs`](modules/programs) my program configurations
+- [`parts`](parts) [flake-parts](https://github.com/hercules-ci/flake-parts)
+	- [`treefmt`](parts/treefmt.nix) treefmt - fmt check and `nix fmt`
+- [`secrets`](secrets) sops-nix secrets
 
 ## Installation Instructions (for myself)
 boot using nix installer
