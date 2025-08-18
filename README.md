@@ -21,6 +21,13 @@
 	- [`treefmt`](parts/treefmt.nix) treefmt - fmt check and `nix fmt`
 - [`secrets`](secrets) sops-nix secrets
 
+## Programs
+- **WM / DE**: niri. swww. no bar. rofi. wlogout. hyprlock. [quickshell](https://quickshell.org/) coming soon.
+- **Terminal**: ghostty.
+- **Shell**: nushell.
+- **Editor**: helix. zed.
+- **Browser**: zen.
+
 ## Installation Instructions (for myself)
 boot using nix installer
 ```
