@@ -18,6 +18,10 @@
       };
     };
 
+    systemd.tmpfiles.rules = [
+      "Z /data/storage/gonic/music/sync 0755 syncthing syncthing -"
+    ];
+
     systemd.services.syncthing.environment.STNODEFAULTFOLDER = "true"; # Don't create default ~/Sync folder
   };
 }

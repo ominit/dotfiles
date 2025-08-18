@@ -37,6 +37,8 @@
     sops.defaultSopsFile = ./../../secrets/makai.yaml;
     sops.secrets."hashedPassword".neededForUsers = true;
 
+    nix.settings.trusted-users = ["root" "ominit"];
+
     users.users."ominit" = {
       isNormalUser = true;
       extraGroups = ["networkmanager" "wheel"];
@@ -55,6 +57,8 @@
       "d /data/system/ssh 0750 root root -"
     ];
 
+    fileSystems."/data".neededForBoot = true;
+
     services.openssh = {
       enable = true;
       hostKeys = [
@@ -66,6 +70,18 @@
     };
     # TODO need to setup
     # networking.wireless.enable = true;
+
+    nixpkgs.config.cudaSupport = true;
+    hardware.nvidia = {
+      modesetting.enable = true;
+      open = false;
+      nvidiaSettings = true;
+    };
+    hardware.nvidia-container-toolkit.enable = true;
+    services.xserver.videoDrivers = ["nvidia"];
+    hardware.graphics.enable = true;
+
+    services.tzupdate.enable = true;
 
     virtualisation.podman.enable = true;
     virtualisation.podman.autoPrune = {

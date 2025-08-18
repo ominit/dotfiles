@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption mkPackageOption;
+  inherit (lib) mkIf mkEnableOption mkPackageOption;
 
   pkg = "yazi";
 in {

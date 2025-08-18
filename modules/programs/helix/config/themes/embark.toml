@@ -34,7 +34,7 @@ diagnostic = {}                            # Code diagnostics in editing area (L
 
 'ui.linenr' = { fg = "space4" } # Line numbers.
 'ui.linenr.selected' = { fg = "blue", bg = "space0", modifiers = [
-	"bold",
+  "bold",
 ] } # Current line number.
 'ui.cursorline' = { bg = "space0" }
 
@@ -44,16 +44,16 @@ diagnostic = {}                            # Code diagnostics in editing area (L
 
 'ui.statusline' = { fg = "astral1", bg = "space0" } # Status line.
 'ui.statusline.inactive' = { fg = "space4", bg = "space1", modifiers = [
-	"bold",
+  "bold",
 ] } # Status line in unfocused windows.
 "ui.statusline.normal" = { fg = "space0", bg = "cyan", modifiers = [
-	"bold",
+  "bold",
 ] } # Statusline mode during normal mode (only if editor.color-modes is enabled)
 "ui.statusline.insert" = { fg = "space0", bg = "red", modifiers = [
-	"bold",
+  "bold",
 ] } # Statusline mode during insert mode (only if editor.color-modes is enabled)
 "ui.statusline.select" = { fg = "space0", bg = "yellow", modifiers = [
-	"bold",
+  "bold",
 ] } # Statusline mode during select mode (only if editor.color-modes is enabled)
 
 'ui.help' = { fg = "astral1", bg = "space1" } # `:command` descriptions above the command line.
@@ -139,10 +139,10 @@ diagnostic = {}                            # Code diagnostics in editing area (L
 # Colors for markup languages, like Markdown or XML.
 
 'markup.heading.1' = { fg = "darkblue", modifiers = [
-	"bold",
+  "bold",
 ] } # Markdown heading 1 color.
 'markup.heading.2' = { fg = "darkblue", modifiers = [
-	"bold",
+  "bold",
 ] } # Markdown heading 2 color.
 'markup.heading.3' = { fg = "darkblue" } # Markdown heading 3 color.
 'markup.heading.4' = { fg = "darkblue" } # Markdown heading 4 color.

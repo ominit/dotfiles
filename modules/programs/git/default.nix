@@ -4,7 +4,7 @@
   config,
   ...
 }: let
-  inherit (lib) mkIf mkEnableOption mkOption mkPackageOption mkMerge;
+  inherit (lib) mkIf mkEnableOption mkPackageOption;
   inherit (lib.strings) concatStrings;
 
   pkg = "git";

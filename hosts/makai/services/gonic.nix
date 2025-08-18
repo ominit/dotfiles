@@ -17,6 +17,10 @@
 
     systemd.tmpfiles.rules = [
       "d /data/storage/gonic 0755 gonic gonic -"
+      "d /data/storage/gonic/music 0755 gonic gonic -"
+      "d /data/storage/gonic/playlists 0755 gonic gonic -"
+      "Z /data/storage/gonic/playlists 0755 gonic gonic -"
+      "d /data/storage/gonic/podcasts 0755 gonic gonic -"
     ];
 
     fileSystems."/var/lib/private/gonic" = {

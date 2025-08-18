@@ -20,15 +20,14 @@
         specialArgs = {
           inherit lib;
           inherit inputs inputs' self self';
+          inherit system;
         };
 
         modules =
           [
             {
               networking.hostName = args.hostname;
-              nixpkgs = {
-                hostPlatform = args.system;
-              };
+              nixpkgs.hostPlatform = args.system;
               nix.settings.experimental-features = ["nix-command" "flakes"];
               nix.settings.substituters = [
                 "https://cache.garnix.io"

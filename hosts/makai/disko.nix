@@ -59,7 +59,7 @@
 
     nodev."/" = {
       fsType = "tmpfs";
-      mountOptions = ["defaults" "size=4G" "mode=755"];
+      mountOptions = ["defaults" "size=16G" "mode=755"];
     };
   };
 }

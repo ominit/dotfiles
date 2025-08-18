@@ -5,7 +5,9 @@
   ...
 }: {
   config = {
-    sops.secrets."newtEnv" = {};
+    sops.secrets."newtEnv" = {
+      restartUnits = ["newt.service"];
+    };
 
     systemd.services.newt = {
       description = "Newt, user space tunnel client for Pangolin";
@@ -17,7 +19,7 @@
       };
       # the flag values will all be overwritten if also defined in the env file
       script = "
-        exec ${lib.getExe pkgs.fosrl-newt} --secret $NEWT_SECRET --endpoint $PANGOLIN_ENDPOINT --id $NEWT_ID --log-level INFO
+        exec ${lib.getExe pkgs.fosrl-newt} --log-level INFO
       ";
       serviceConfig = {
         DynamicUser = true;

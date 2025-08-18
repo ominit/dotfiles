@@ -2,6 +2,7 @@
   config = {
     virtualisation.oci-containers.containers.feishin = {
       image = "ghcr.io/jeffvli/feishin:latest";
+      pull = "newer";
       ports = [
         "10002:9180"
       ];
