@@ -31,6 +31,8 @@
       yazi.enable = true;
     };
 
+    networking.firewall.enable = true;
+
     # don't allow mutation of users outside of the config
     users.mutableUsers = false;
 
