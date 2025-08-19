@@ -1,6 +1,7 @@
 {
   pkgs,
   inputs,
+  system,
   ...
 }: {
   imports = [
@@ -29,6 +30,11 @@
       ghostty.enable = true;
       niri.enable = true;
       rofi.enable = true;
+      quickshell = {
+        enable = true;
+        package =
+          inputs.quickshell.packages.${system}.default;
+      };
     };
 
     services.resolved.enable = true;

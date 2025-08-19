@@ -63,6 +63,11 @@
     # don't follow nixpkgs for binary cache
     hyprland.url = "git+https://github.com/hyprwm/hyprland?submodules=1";
 
+    quickshell = {
+      url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
