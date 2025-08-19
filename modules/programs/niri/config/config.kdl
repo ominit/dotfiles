@@ -87,6 +87,7 @@ layout {
 
 spawn-at-startup "swww-daemon"
 spawn-at-startup "hypridle"
+spawn-at-startup "quickshell"
 // spawn-at-startup "waypaper --restore "
 
 prefer-no-csd
