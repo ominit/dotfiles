@@ -31,6 +31,9 @@
       isNormalUser = true;
       extraGroups = ["networkmanager" "wheel"];
       shell = pkgs.nushell;
+      packages = with pkgs; [
+        nh
+      ];
     };
 
     wsl.enable = true;
