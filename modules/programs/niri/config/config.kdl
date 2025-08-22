@@ -25,6 +25,11 @@ input {
     workspace-auto-back-and-forth
 }
 
+output "Samsung Electric Company Odyssey G40B HCJX706094" {
+    // mode "1920x1080@240.000"
+    // variable-refresh-rate
+}
+
 layout {
     gaps 10
 
