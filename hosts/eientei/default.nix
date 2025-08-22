@@ -5,8 +5,10 @@
   ...
 }: {
   imports = [
-    ./hardware.nix
+    # ./hardware.nix
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
+    inputs.nixos-facter-modules.nixosModules.facter
+    {config.facter.reportPath = ./facter.json;}
     ./temp.nix
   ];
 
@@ -36,6 +38,21 @@
           inputs.quickshell.packages.${system}.default;
       };
     };
+
+    fileSystems."/" = {
+      device = "/dev/disk/by-uuid/7f0b7f5c-760c-438f-abfa-dc24171f61f2";
+      fsType = "ext4";
+    };
+
+    fileSystems."/boot" = {
+      device = "/dev/disk/by-uuid/D371-B32E";
+      fsType = "vfat";
+      options = ["fmask=0077" "dmask=0077"];
+    };
+
+    swapDevices = [
+      {device = "/dev/disk/by-uuid/3f692953-8afd-464a-9cff-03d0b7bb7866";}
+    ];
 
     services.resolved.enable = true;
 
