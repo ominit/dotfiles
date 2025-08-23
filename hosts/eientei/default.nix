@@ -5,7 +5,6 @@
   ...
 }: {
   imports = [
-    # ./hardware.nix
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
     inputs.nixos-facter-modules.nixosModules.facter
     {config.facter.reportPath = ./facter.json;}
@@ -30,7 +29,10 @@
       btop.enable = true;
       yazi.enable = true;
       ghostty.enable = true;
-      niri.enable = true;
+      niri = {
+        enable = true;
+        package = inputs.niri.packages.${system}.default;
+      };
       rofi.enable = true;
       quickshell = {
         enable = true;

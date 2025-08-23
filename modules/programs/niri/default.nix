@@ -33,6 +33,6 @@ in {
 
   options.modules.programs."${pkg}" = {
     enable = mkEnableOption "enable niri";
-    package = mkPackageOption pkgs "niri_git" {};
+    package = mkPackageOption pkgs "niri" {};
   };
 }

@@ -63,6 +63,11 @@
     # don't follow nixpkgs for binary cache
     hyprland.url = "git+https://github.com/hyprwm/hyprland?submodules=1";
 
+    niri = {
+      url = "github:yalter/niri";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     quickshell = {
       url = "git+https://git.outfoxxed.me/outfoxxed/quickshell";
       inputs.nixpkgs.follows = "nixpkgs";
