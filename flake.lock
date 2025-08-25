@@ -640,6 +640,22 @@
         "type": "github"
       }
     },
+    "nixpkgs-ominit": {
+      "locked": {
+        "lastModified": 1756136939,
+        "narHash": "sha256-UhIYbOJo1XIhjiRSOWY8DLL2uo3IFIfm4dwK4EYBex0=",
+        "owner": "ominit",
+        "repo": "nixpkgs",
+        "rev": "d76b93ec4c86187f3f785f22b8c9f74e9c610df9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ominit",
+        "ref": "master",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
     "nixpkgs_2": {
       "locked": {
         "lastModified": 1752596105,
@@ -744,6 +760,7 @@
         "nixos-hardware": "nixos-hardware",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_4",
+        "nixpkgs-ominit": "nixpkgs-ominit",
         "quickshell": "quickshell",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix",
