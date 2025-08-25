@@ -17,6 +17,7 @@
     #
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
+    nixpkgs-ominit.url = "github:ominit/nixpkgs/master";
 
     nixos-hardware.url = "github:nixos/nixos-hardware";
 
