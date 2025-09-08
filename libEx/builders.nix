@@ -7,9 +7,7 @@
 
   mkNixosSystem = {
     withSystem,
-    hostname,
     system,
-    modules,
   } @ args:
     withSystem system ({
       inputs',
