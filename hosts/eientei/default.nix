@@ -39,6 +39,8 @@
         package =
           inputs.quickshell.packages.${system}.default;
       };
+      jujutsu.enable = true;
+      jujutsu.package = inputs.jujutsu.packages.${system}.default;
     };
 
     fileSystems."/" = {
@@ -55,6 +57,8 @@
     swapDevices = [
       {device = "/dev/disk/by-uuid/3f692953-8afd-464a-9cff-03d0b7bb7866";}
     ];
+
+    nix.settings.trusted-users = ["root" "ominit"];
 
     services.resolved.enable = true;
 

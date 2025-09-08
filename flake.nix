@@ -64,6 +64,9 @@
     # don't follow nixpkgs for binary cache
     hyprland.url = "git+https://github.com/hyprwm/hyprland?submodules=1";
 
+    jujutsu.url = "github:jj-vcs/jj";
+    jujutsu.inputs.nixpkgs.follows = "nixpkgs";
+
     niri = {
       url = "github:yalter/niri";
       inputs.nixpkgs.follows = "nixpkgs";
