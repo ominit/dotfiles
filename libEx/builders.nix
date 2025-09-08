@@ -7,8 +7,10 @@
 
   mkNixosSystem = {
     withSystem,
+    hostname,
     system,
-  } @ args:
+    modules,
+  }:
     withSystem system ({
       inputs',
       self',
@@ -24,8 +26,8 @@
         modules =
           [
             {
-              networking.hostName = args.hostname;
-              nixpkgs.hostPlatform = args.system;
+              networking.hostName = hostname;
+              nixpkgs.hostPlatform = system;
               nix.settings.experimental-features = ["nix-command" "flakes"];
               nix.settings.substituters = [
                 "https://cache.garnix.io"
@@ -39,7 +41,7 @@
             }
             ./../modules
           ]
-          ++ args.modules;
+          ++ modules;
       });
 in {
   inherit mkNixosSystem;
