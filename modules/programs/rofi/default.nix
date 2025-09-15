@@ -23,6 +23,6 @@ in {
 
   options.modules.programs."${pkg}" = {
     enable = mkEnableOption "enable rofi";
-    package = mkPackageOption pkgs "rofi-wayland" {};
+    package = mkPackageOption pkgs "rofi" {};
   };
 }
