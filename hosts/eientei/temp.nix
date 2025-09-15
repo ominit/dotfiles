@@ -8,7 +8,8 @@
 
   boot.kernelPackages = pkgs.linuxPackages_cachyos;
   services.scx.enable = true;
-  services.scx.package = pkgs.scx_git.full;
+  # doesn't build currently
+  # services.scx.package = pkgs.scx_git.full;
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
