@@ -86,17 +86,17 @@
       automatic = true;
     };
 
-    nix.gc = {
-      automatic = true;
-      options = "--delete-older-than 30d";
-    };
+    # nix.gc = {
+    #   automatic = true;
+    #   options = "--delete-older-than 30d";
+    # };
 
-    # when less than 10GB
-    # free until 30GB free
-    nix.extraOptions = ''
-      min-free = ${toString (10 * 1024 * 1024 * 1024)}
-      max-free = ${toString (30 * 1024 * 1024 * 1024)}
-    '';
+    # # when less than 10GB
+    # # free until 30GB free
+    # nix.extraOptions = ''
+    #   min-free = ${toString (10 * 1024 * 1024 * 1024)}
+    #   max-free = ${toString (30 * 1024 * 1024 * 1024)}
+    # '';
 
     system.stateVersion = "24.05";
   };
