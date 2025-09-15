@@ -133,7 +133,7 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     Mod+T hotkey-overlay-title="ghostty" { spawn "ghostty"; }
-    Ctrl+Space hotkey-overlay-title="rofi" { spawn "rofi" "-show" "run"; }
+    Mod+Space hotkey-overlay-title="rofi" { spawn "rofi" "-show" "run"; }
     Mod+L hotkey-overlay-title="wlogout" { spawn "wlogout"; }
 
     XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
