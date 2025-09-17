@@ -28,6 +28,7 @@ in {
     modules.programs = {
       hyprlock.enable = true;
       hypridle.enable = true;
+      niriswitcher.enable = true;
     };
   };
 

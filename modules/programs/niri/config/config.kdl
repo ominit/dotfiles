@@ -93,6 +93,7 @@ layout {
 spawn-at-startup "swww-daemon"
 spawn-at-startup "hypridle"
 spawn-at-startup "quickshell"
+spawn-at-startup "niriswitcher"
 // spawn-at-startup "waypaper --restore "
 
 prefer-no-csd
@@ -136,6 +137,11 @@ binds {
     Mod+Space hotkey-overlay-title="rofi" { spawn "rofi" "-show" "run"; }
     Mod+L hotkey-overlay-title="wlogout" { spawn "wlogout"; }
 
+    Mod+Tab repeat=false { spawn "niriswitcherctl" "show" "--window"; }
+    Mod+Shift+Tab repeat=false { spawn "niriswitcherctl" "show" "--window"; }
+    Mod+Grave repeat=false { spawn "niriswitcherctl" "show" "--workspace"; }
+    Mod+Shift+Grave repeat=false { spawn "niriswitcherctl" "show" "--workspace"; }
+    
     XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
     XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
     XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
@@ -277,7 +283,7 @@ binds {
     // Mod+Ctrl+1 { move-window-to-workspace 1; }
 
     // Switches focus between the current and the previous workspace.
-    Mod+Tab { focus-workspace-previous; }
+    // Mod+Tab { focus-workspace-previous; }
 
     // The following binds move the focused window in and out of a column.
     // If the window is alone, they will consume it into the nearby column to the side.
