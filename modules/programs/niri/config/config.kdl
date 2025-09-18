@@ -116,7 +116,7 @@ window-rule {
     opacity 0.95
 }
 
-// focused window
+// non-focused window
 window-rule {
     match is-active=false
 
