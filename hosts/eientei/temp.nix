@@ -59,7 +59,6 @@
       inputs.zen-browser.packages."${pkgs.system}".beta
       # zed-editor
       zed-editor_git
-      zellij
       elixir-ls
       libreoffice
       slack

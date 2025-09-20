@@ -41,6 +41,7 @@
       };
       jujutsu.enable = true;
       jujutsu.package = inputs.jujutsu.packages.${system}.default;
+      zellij.enable = true;
     };
 
     fileSystems."/" = {
