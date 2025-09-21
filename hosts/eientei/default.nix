@@ -15,7 +15,8 @@
     modules.programs = {
       helix = {
         enable = true;
-        package = pkgs.helix_git; # from chaotic (cached)
+        # package = pkgs.helix_git; # from chaotic (cached)
+        package = inputs.helix.packages.${system}.default;
       };
       bat.enable = true;
       git = {
