@@ -55,6 +55,13 @@
       ];
     };
 
+    sops.secrets."sshKey" = {
+      path = "/home/ominit/.ssh/id_ed25519";
+      owner = "ominit";
+      group = "users";
+      mode = "0400";
+    };
+
     systemd.tmpfiles.rules = [
       "d /data/dotfiles 2700 ${config.users.users.ominit.name} ${config.users.users.ominit.group} -"
       "d /data/system/ssh 0750 root root -"
