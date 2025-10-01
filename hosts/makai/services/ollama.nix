@@ -11,5 +11,10 @@
         cudaArches = ["61"];
       };
     };
+
+    systemd.tmpfiles.rules = [
+      "d /data/services/ollama 0755 ollama ollama -"
+      "Z /data/services/ollama 0755 ollama ollama -"
+    ];
   };
 }
