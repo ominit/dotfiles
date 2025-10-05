@@ -55,6 +55,7 @@
     ];
     packages = with pkgs; [
       fastfetch
+      inputs.helium.packages."${pkgs.system}".helium
       inputs.zen-browser.packages."${pkgs.system}".beta
       # zed-editor
       zed-editor_git

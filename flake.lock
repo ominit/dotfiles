@@ -180,6 +180,32 @@
         "type": "github"
       }
     },
+    "helium": {
+      "inputs": {
+        "flake-parts": [
+          "flake-parts"
+        ],
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1759687685,
+        "narHash": "sha256-QvCkB9yg+gJIfHapNM0WbIy5pq929G5BDZvhaNYkEU4=",
+        "owner": "ominit",
+        "repo": "helium-browser-flake",
+        "rev": "fc8c940473f22e27cb4b2dab6b4e314e0ef1e67c",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ominit",
+        "repo": "helium-browser-flake",
+        "type": "github"
+      }
+    },
     "helix": {
       "inputs": {
         "nixpkgs": [
@@ -792,6 +818,7 @@
         "chaotic": "chaotic",
         "disko": "disko",
         "flake-parts": "flake-parts",
+        "helium": "helium",
         "helix": "helix",
         "hjem": "hjem",
         "hyprland": "hyprland",
