@@ -277,11 +277,11 @@
         "rust-overlay": "rust-overlay_2"
       },
       "locked": {
-        "lastModified": 1759850138,
-        "narHash": "sha256-fYHIxjTvVIAEDWzenUROuzDPxy1rBCXZNPgh4b1dfgo=",
+        "lastModified": 1760313888,
+        "narHash": "sha256-cCC3AQfI4fnvVv77taSd+FGo2bHNGqOqjnXSo+7bir8=",
         "owner": "helix-editor",
         "repo": "helix",
-        "rev": "5b0563419eeeaf0595c848865c46be4abad246a7",
+        "rev": "a5a9ecb592c43b35fa0fdfef064c5e2f6ba1fe69",
         "type": "github"
       },
       "original": {
@@ -428,11 +428,11 @@
         "xdph": "xdph"
       },
       "locked": {
-        "lastModified": 1760143218,
-        "narHash": "sha256-nHgQ3UTtQXzaOBwGqOFJ/zc69IGaT+U1ddFv4CpSjtU=",
+        "lastModified": 1760227591,
+        "narHash": "sha256-hdr0zG8CS5MzjhoKCyA3OWdtiEf30jfWROeFSUNu3RY=",
         "ref": "refs/heads/main",
-        "rev": "d599513d4a72d66ac62ffdedc41d6653fa81b39e",
-        "revCount": 6493,
+        "rev": "ed936430216e7aa5f6f53d22eff713f8e9ed69ac",
+        "revCount": 6494,
         "submodules": true,
         "type": "git",
         "url": "https://github.com/hyprwm/hyprland"
@@ -646,11 +646,11 @@
         "rust-overlay": "rust-overlay_4"
       },
       "locked": {
-        "lastModified": 1760202093,
-        "narHash": "sha256-Nom1b4XfuToMWGJazRj25GPUpkoOUe9JIFVKl+3k6vo=",
+        "lastModified": 1760313050,
+        "narHash": "sha256-lJeK+s/P3t1Ee8wrmaLmROUgfOjQ4ydHu4QfZwhV284=",
         "owner": "jj-vcs",
         "repo": "jj",
-        "rev": "f9afca6bc8d657ddddc5cc3d0e9a5c182d6a77d1",
+        "rev": "71661495b827d85c45d3d36535b78b7def140b87",
         "type": "github"
       },
       "original": {
@@ -902,11 +902,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1760169785,
-        "narHash": "sha256-Hqz81LLMBE++3tUgK4nh2wvQKwMsu3PdRNgkgdFzZVo=",
+        "lastModified": 1760315601,
+        "narHash": "sha256-cvguRikKX0yXZ7jaK4Gt3qB1I33T5TzYZQf0Ampx8ko=",
         "ref": "refs/heads/master",
-        "rev": "f12f0e7c7d883f737ac45b88c5993090b3c87cce",
-        "revCount": 692,
+        "rev": "00858812f25b748d08b075a0d284093685fa3ffd",
+        "revCount": 696,
         "type": "git",
         "url": "https://git.outfoxxed.me/outfoxxed/quickshell"
       },
@@ -1095,11 +1095,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1759635238,
-        "narHash": "sha256-UvzKi02LMFP74csFfwLPAZ0mrE7k6EiYaKecplyX9Qk=",
+        "lastModified": 1760240450,
+        "narHash": "sha256-sa9bS9jSyc4vH0jSWrUsPGdqtMvDwmkLg971ntWOo2U=",
         "owner": "Mic92",
         "repo": "sops-nix",
-        "rev": "6e5a38e08a2c31ae687504196a230ae00ea95133",
+        "rev": "41fd1f7570c89f645ee0ada0be4e2d3c4b169549",
         "type": "github"
       },
       "original": {
@@ -1224,11 +1224,11 @@
         "rust-overlay": "rust-overlay_6"
       },
       "locked": {
-        "lastModified": 1760189540,
-        "narHash": "sha256-vS7aejfWbt31qB3OPdr4Jrnm0AjqBZ/Q2yGmazAYLU0=",
+        "lastModified": 1760311900,
+        "narHash": "sha256-J9b4j7Ut7PtYy2YjkkWxtxBBQchagsIy23FU84l1yUI=",
         "owner": "zed-industries",
         "repo": "zed",
-        "rev": "6dc3e643b457b578ae4180f84c9fe887baa4d6ff",
+        "rev": "92e765b5d2c6729e3da73132900852c016c91d84",
         "type": "github"
       },
       "original": {
@@ -1245,11 +1245,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1760213924,
-        "narHash": "sha256-fin1uGUVt06T2cXz0FuWK6J+Ih7kOOVoGm0fOhtqJew=",
+        "lastModified": 1760293464,
+        "narHash": "sha256-ZzEtJKudu4ElfYM2+hX9EIk43wX30wE2v5pjClibFq4=",
         "owner": "0xc000022070",
         "repo": "zen-browser-flake",
-        "rev": "6efcb0b7538270ee5f18c8c0957339ccd2839b03",
+        "rev": "a6ed465e39c76713f2d17918101193012e387e15",
         "type": "github"
       },
       "original": {
