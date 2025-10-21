@@ -23,11 +23,16 @@
       nushell.enable = true;
       btop.enable = true;
       yazi.enable = true;
+      jujutsu.enable = true;
+      jujutsu.package = inputs.jujutsu.packages.${system}.default;
+      zellij.enable = true;
     };
 
     environment.variables = {
       EDITOR = "hx";
     };
+
+    nix.settings.trusted-users = ["root" "ominit"];
 
     users.users."ominit" = {
       isNormalUser = true;
