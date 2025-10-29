@@ -15,9 +15,8 @@ in {
       #   clobber = true;
       # };
 
-      packages = with pkgs; [
+      packages = [
         config.modules.programs."${pkg}".package
-        kdePackages.full
       ];
     };
   };
