@@ -8,7 +8,7 @@
 
   boot.kernelPackages = pkgs.linuxPackages_cachyos;
   services.scx.enable = true;
-  services.scx.package = pkgs.scx_git.full;
+  services.scx.scheduler = "scx_bpfland";
 
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
