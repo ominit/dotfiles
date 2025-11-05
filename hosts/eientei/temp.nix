@@ -65,7 +65,7 @@
       signal-desktop
       xfce.thunar
       zenity
-      bitwarden
+      bitwarden-desktop
       tutanota-desktop
       cava
       feh
