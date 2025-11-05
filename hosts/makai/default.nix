@@ -46,7 +46,7 @@
     users.users."ominit" = {
       isNormalUser = true;
       extraGroups = ["networkmanager" "wheel"];
-      shell = pkgs.nushell;
+      shell = config.modules.programs.nushell.package;
       openssh.authorizedKeys.keys = [
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ0KtEKf415TSy1cD+ED/33V7YTtY/I7FZjNR/FNpzXf ominit@wsl"
         "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIK1Vj5MoiiaBQzdEEXGP6zVQbszLDLHKKVB1E5SZWETg ominit@eientei"

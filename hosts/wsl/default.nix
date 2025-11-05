@@ -2,6 +2,7 @@
   pkgs,
   inputs,
   system,
+  config,
   ...
 }: {
   imports = [
@@ -37,7 +38,7 @@
     users.users."ominit" = {
       isNormalUser = true;
       extraGroups = ["networkmanager" "wheel"];
-      shell = pkgs.nushell;
+      shell = config.modules.programs.nushell.package;
       packages = with pkgs; [
         nh
       ];

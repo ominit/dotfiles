@@ -2,6 +2,7 @@
   lib,
   inputs,
   pkgs,
+  config,
   ...
 }: {
   environment.etc."vconsole.conf".text = lib.mkForce "KEYMAP=colemak";
@@ -49,7 +50,7 @@
     isNormalUser = true;
     description = "ominit";
     extraGroups = ["networkmanager" "wheel"];
-    shell = pkgs.nushell;
+    shell = config.modules.programs.nushell.package;
     openssh.authorizedKeys.keys = [
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ0KtEKf415TSy1cD+ED/33V7YTtY/I7FZjNR/FNpzXf ominit@wsl"
     ];
