@@ -25,7 +25,7 @@
       btop.enable = true;
       yazi.enable = true;
       jujutsu.enable = true;
-      jujutsu.package = inputs.jujutsu.packages.${system}.default;
+      # jujutsu.package = inputs.jujutsu.packages.${system}.default;
       zellij.enable = true;
     };
 
