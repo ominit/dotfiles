@@ -6,6 +6,7 @@
   imports = [
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
     inputs.nixos-facter-modules.nixosModules.facter
+    inputs.clavium-explico.nixosModules.evdevLoggerModule
     {config.facter.reportPath = ./facter.json;}
     ./temp.nix
   ];
@@ -42,6 +43,15 @@
       jujutsu.enable = true;
       # jujutsu.package = inputs.jujutsu.packages.${system}.default;
       zellij.enable = true;
+    };
+
+    services.ce-evdev-logger = {
+      enable = true;
+      extraAnalysisUsers = ["ominit"];
+      dbPath = "/var/lib/ce-evdev-logger/keys.db";
+      kbLayout = "us";
+      kbOptions = "caps:backspace";
+      kbVariant = "colemak";
     };
 
     fileSystems."/" = {
