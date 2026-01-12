@@ -6,8 +6,7 @@
       host = "127.0.0.1";
       user = "ollama";
       home = "/data/services/ollama";
-      acceleration = "cuda";
-      package = pkgs.ollama.override {
+      package = pkgs.ollama-cuda.override {
         cudaArches = ["61"];
       };
     };
