@@ -1,6 +1,7 @@
 {
   inputs,
   system,
+  pkgs,
   ...
 }: {
   imports = [
@@ -72,6 +73,27 @@
     nix.settings.trusted-users = ["root" "ominit"];
 
     services.resolved.enable = true;
+
+    systemd.user.units."app-org.fcitx.Fcitx5@autostart.service".enable = false;
+    i18n.inputMethod = {
+      type = "fcitx5";
+      enable = true;
+      fcitx5 = {
+        waylandFrontend = true;
+        addons = with pkgs; [
+          qt6Packages.fcitx5-chinese-addons
+          fcitx5-rime
+          fcitx5-lua
+          fcitx5-mozc
+          fcitx5-gtk
+          fcitx5-rose-pine
+          fcitx5-tokyonight
+          kdePackages.fcitx5-qt
+        ];
+      };
+    };
+
+    i18n.supportedLocales = ["zh_CN.UTF-8/UTF-8" "en_US.UTF-8/UTF-8"];
 
     services.syncthing = {
       enable = true;

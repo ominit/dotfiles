@@ -25,6 +25,14 @@ input {
     workspace-auto-back-and-forth
 }
 
+environment {
+  GTK_IM_MODULE   "fcitx"
+  QT_IM_MODULE    "fcitx"
+  XMODIFIERS      "@im=fcitx"
+  SDL_IM_MODULE   "fcitx"
+  GLFW_IM_MODULE  "fcitx"
+}
+
 output "Samsung Electric Company Odyssey G40B HCJX706094" {
     // mode "1920x1080@240.000"
     // variable-refresh-rate
@@ -94,6 +102,7 @@ spawn-at-startup "swww-daemon"
 spawn-at-startup "hypridle"
 spawn-at-startup "quickshell"
 spawn-at-startup "niriswitcher"
+spawn-at-startup "fcitx5"
 // spawn-at-startup "waypaper --restore "
 
 prefer-no-csd
