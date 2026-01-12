@@ -3,6 +3,7 @@
   inputs,
   pkgs,
   config,
+  system,
   ...
 }: {
   environment.etc."vconsole.conf".text = lib.mkForce "KEYMAP=colemak";
@@ -56,9 +57,9 @@
     ];
     packages = with pkgs; [
       fastfetch
-      inputs.helium.packages."${pkgs.system}".helium
-      inputs.zen-browser.packages."${pkgs.system}".beta
-      inputs.zed.packages."${pkgs.system}".default
+      inputs.helium.packages.${system}.helium
+      inputs.zen-browser.packages.${system}.beta
+      inputs.zed.packages.${system}.default
       elixir-ls
       libreoffice
       slack
