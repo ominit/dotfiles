@@ -65,7 +65,7 @@
       slack
       sbcl
       signal-desktop
-      xfce.thunar
+      thunar
       zenity
       bitwarden-desktop
       tutanota-desktop
