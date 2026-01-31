@@ -46,6 +46,33 @@
       zellij.enable = true;
     };
 
+    programs.nix-ld = {
+      enable = true;
+      libraries = with pkgs; [
+        glib
+        nspr
+        nss
+        dbus
+        atk
+        cups
+        cairo
+        gtk3
+        pango
+        xorg.libX11
+        xorg.libXcomposite
+        xorg.libXdamage
+        xorg.libXext
+        xorg.libXfixes
+        xorg.libXrandr
+        libgbm
+        expat
+        xorg.libxcb
+        libxkbcommon
+        alsa-lib
+        libglvnd
+      ];
+    };
+
     services.ce-evdev-logger = {
       enable = true;
       extraAnalysisUsers = ["ominit"];
