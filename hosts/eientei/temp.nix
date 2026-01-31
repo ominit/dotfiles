@@ -8,7 +8,7 @@
 }: {
   environment.etc."vconsole.conf".text = lib.mkForce "KEYMAP=colemak";
 
-  boot.kernelPackages = pkgs.linuxPackages_cachyos;
+  boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
   services.scx.enable = true;
   services.scx.scheduler = "scx_bpfland";
 

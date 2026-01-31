@@ -10,9 +10,9 @@
     defaultModules = [
       inputs.sops-nix.nixosModules.sops
       inputs.hjem.nixosModules.default
-      inputs.chaotic.nixosModules.default
       {
         sops.defaultSopsFormat = "yaml";
+        nixpkgs.overlays = [inputs.nix-cachyos-kernel.overlays.pinned];
       }
     ];
   in {
