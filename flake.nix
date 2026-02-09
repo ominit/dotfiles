@@ -59,11 +59,6 @@
     # programs
     #
 
-    clavium-explico = {
-      url = "github:ominit/clavium-explico";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     helium = {
       url = "github:ominit/helium-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
