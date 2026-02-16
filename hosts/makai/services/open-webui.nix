@@ -1,6 +1,7 @@
 {
   inputs,
   system,
+  config,
   ...
 }: {
   config = {
@@ -16,6 +17,7 @@
       environment = {
         OLLAMA_BASE_URL = "http://localhost:20001";
         ENABLE_SIGNUP_PASSWORD_CONFIRMATION = "true";
+        NLTK_DATA = "${config.services.open-webui.stateDir}";
         ENV = "dev";
       };
       port = 10007;
