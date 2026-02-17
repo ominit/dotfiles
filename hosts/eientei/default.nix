@@ -35,11 +35,13 @@
         package = inputs.niri.packages.${system}.default;
       };
       rofi.enable = true;
-      quickshell = {
-        enable = true;
-        package =
-          inputs.quickshell.packages.${system}.default;
-      };
+      # quickshell = {
+      #   enable = true;
+      #   package =
+      #     inputs.quickshell.packages.${system}.default;
+      # };
+      noctalia.enable = true;
+      noctalia.package = inputs.noctalia.packages.${system}.default;
       jujutsu.enable = true;
       # jujutsu.package = inputs.jujutsu.packages.${system}.default;
       zellij.enable = true;

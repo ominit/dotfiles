@@ -22,11 +22,11 @@
 - [`secrets`](secrets) sops-nix secrets
 
 ## Programs
-- **WM / DE**: niri. swww. no bar. rofi. wlogout. hyprlock. [quickshell](https://quickshell.org/) coming soon.
+- **WM / DE**: niri. rofi. noctalia.
 - **Terminal**: ghostty.
 - **Shell**: nushell.
-- **Editor**: helix. zed.
-- **Browser**: zen.
+- **Editor**: helix.
+- **Browser**: helium.
 
 ## Installation Instructions (for myself)
 boot using nix installer

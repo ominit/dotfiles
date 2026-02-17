@@ -31,6 +31,7 @@ environment {
   XMODIFIERS      "@im=fcitx"
   SDL_IM_MODULE   "fcitx"
   GLFW_IM_MODULE  "fcitx"
+  QT_QPA_PLATFORMTHEME "qt6ct"
 }
 
 output "Samsung Electric Company Odyssey G40B HCJX706094" {
@@ -98,10 +99,11 @@ layout {
     }
 }
 
-spawn-at-startup "swww-daemon"
-spawn-at-startup "hypridle"
-spawn-at-startup "quickshell"
-spawn-at-startup "niriswitcher"
+// spawn-at-startup "swww-daemon"
+// spawn-at-startup "hypridle"
+// spawn-at-startup "quickshell"
+spawn-at-startup "noctalia-shell"
+// spawn-at-startup "niriswitcher"
 spawn-at-startup "fcitx5"
 // spawn-at-startup "waypaper --restore "
 
@@ -144,7 +146,7 @@ binds {
 
     Mod+T hotkey-overlay-title="ghostty" { spawn "ghostty"; }
     Mod+Space hotkey-overlay-title="rofi" { spawn "rofi" "-show" "run"; }
-    Mod+L hotkey-overlay-title="wlogout" { spawn "wlogout"; }
+    Mod+L hotkey-overlay-title="lock" { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
 
     Mod+Tab repeat=false { spawn "niriswitcherctl" "show" "--window"; }
     Mod+Shift+Tab repeat=false { spawn "niriswitcherctl" "show" "--window"; }
