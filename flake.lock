@@ -255,11 +255,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1770361679,
-        "narHash": "sha256-bNdpcu2Vv2cvOdNsayGhDIJjwRRDyH0IvWF0RGZLs9M=",
+        "lastModified": 1771450064,
+        "narHash": "sha256-y8B1T4tXLNlmYJw9ijv5t4zDKPGHJoluhLerv/huJZY=",
         "owner": "ominit",
         "repo": "helium-browser-flake",
-        "rev": "2eba1f173a22c98b7afbbcaf7f040201169ec6fa",
+        "rev": "65b5bbf36e362bbf971519970af0c989ea4182f6",
         "type": "github"
       },
       "original": {

@@ -42,6 +42,7 @@
       # };
       noctalia.enable = true;
       noctalia.package = inputs.noctalia.packages.${system}.default;
+      hypridle.enable = true;
       jujutsu.enable = true;
       # jujutsu.package = inputs.jujutsu.packages.${system}.default;
       zellij.enable = true;
