@@ -1,7 +1,7 @@
 {...}: {
   config = {
     services.grafana = {
-      enable = true;
+      # enable = true;
       dataDir = "/data/services/grafana";
       settings = {
         server = {
