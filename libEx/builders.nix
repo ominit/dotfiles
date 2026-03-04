@@ -28,7 +28,7 @@
             {
               networking.hostName = hostname;
               nixpkgs.hostPlatform = system;
-              nix.settings.experimental-features = ["nix-command" "flakes"];
+              nix.settings.experimental-features = ["nix-command" "flakes" "ca-derivations" "dynamic-derivations" "recursive-nix"];
               nix.settings.substituters = [
                 "https://cache.garnix.io"
                 "https://hyprland.cachix.org"
