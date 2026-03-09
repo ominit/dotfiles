@@ -4,6 +4,7 @@
     ./feishin.nix
     ./gonic.nix
     ./grafana.nix
+    ./hydra.nix
     ./mcpo.nix
     ./netbird.nix
     ./newt.nix
