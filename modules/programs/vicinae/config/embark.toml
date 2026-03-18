@@ -1,0 +1,81 @@
+# This file demonstrates all available theme configuration options for Vicinae.
+# You don't need to define all of these: only override what you want to customize.
+# Undefined colors will be automatically derived from core colors or inherited from base themes.
+#
+# Check out the full documentation at https://docs.vicinae.com/theming/getting-started
+
+[meta]
+name = "Embark"
+description = "embark"
+variant = "dark"          # "dark" | "light": impacts what icon to show in some circumstances
+inherits = "vicinae-dark"
+
+[colors.core]
+accent = "#d4bfff"
+accent_foreground = "#100e23"
+background = "#100e23"
+foreground = "#cbe3e7"
+secondary_background = "#1e1c31"
+border = "#3e3859"
+
+[colors.main_window]
+border = "#3e3859"
+footer = { background = "colors.core.secondary_background" }
+
+[colors.settings_window]
+border = "#3e3859"
+
+[colors.accents]
+blue = "#91ddff"
+green = "#a1efd3"
+magenta = "#d4bfff"
+orange = "#ffb378"
+red = "#f48fb1"
+yellow = "#ffe9aa"
+cyan = "#aaffe4"
+purple = "#7676ff"
+
+# For now, shortcuts cannot have their own dedicated background
+[colors.shortcut]
+border = "colors.core.border"
+
+[colors.text]
+default = "colors.core.foreground"
+muted = "#8a889d"
+danger = "#f48fb1"
+success = "#a1efd3"
+placeholder = "#8a889d"
+selection = { background = "#3e3859", foreground = "#cbe3e7" }
+
+[colors.text.links]
+default = "#91ddff"
+visited = "#d4bfff"
+
+[colors.input]
+border = "#585273"
+border_focus = "#d4bfff"
+border_error = "#f48fb1"
+
+[colors.button.primary]
+hover = { background = "#7676ff" }
+focus = { outline = "colors.core.accent" }
+
+background = "#d4bfff"
+foreground = "#100e23"
+[colors.list.item.selection]
+background = "#3e3859"
+foreground = "#cbe3e7"
+secondary_background = "#2d2b40"
+secondary_foreground = "#8a889d"
+
+[colors.grid.item]
+background = "#1e1c31"
+hover = { outline = "#91ddff" }
+selection = { outline = "#d4bfff" }
+
+[colors.scrollbars]
+background = "#2d2b40"
+
+[colors.loading]
+bar = "#d4bfff"     # shown right below the search bar when something is loading
+spinner = "#aaffe4" # used by dynamic toasts

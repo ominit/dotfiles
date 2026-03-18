@@ -34,7 +34,7 @@
         enable = true;
         package = inputs.niri.packages.${system}.default;
       };
-      rofi.enable = true;
+      vicinae.enable = true;
       # quickshell = {
       #   enable = true;
       #   package =

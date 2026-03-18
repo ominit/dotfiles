@@ -103,6 +103,7 @@ layout {
 spawn-at-startup "hypridle"
 // spawn-at-startup "quickshell"
 spawn-at-startup "noctalia-shell"
+spawn-at-startup "vicinae" "server"
 // spawn-at-startup "niriswitcher"
 spawn-at-startup "fcitx5"
 // spawn-at-startup "waypaper --restore "
@@ -145,7 +146,7 @@ binds {
     Mod+Shift+Slash { show-hotkey-overlay; }
 
     Mod+T hotkey-overlay-title="ghostty" { spawn "ghostty"; }
-    Mod+Space hotkey-overlay-title="rofi" { spawn "rofi" "-show" "run"; }
+    Mod+Space hotkey-overlay-title="vicinae" repeat=false { spawn "vicinae" "toggle"; }
     Mod+L hotkey-overlay-title="lock" { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
 
     Mod+Tab repeat=false { spawn "niriswitcherctl" "show" "--window"; }

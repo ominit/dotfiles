@@ -22,7 +22,7 @@
 - [`secrets`](secrets) sops-nix secrets
 
 ## Programs
-- **WM / DE**: niri. rofi. noctalia.
+- **WM / DE**: niri. vicinae. noctalia.
 - **Terminal**: ghostty.
 - **Shell**: nushell.
 - **Editor**: helix.
