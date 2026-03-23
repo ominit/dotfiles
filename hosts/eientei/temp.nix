@@ -56,6 +56,7 @@
       "ssh-ed25519 AAAAC3NzaC1lZDI1NTE5AAAAIJ0KtEKf415TSy1cD+ED/33V7YTtY/I7FZjNR/FNpzXf ominit@wsl"
     ];
     packages = with pkgs; [
+      nix-output-monitor
       anki
       opencode
       fastfetch
