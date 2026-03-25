@@ -44,12 +44,6 @@ in {
       enable = true;
       package = config.modules.programs."${pkg}".package;
     };
-
-    modules.programs = {
-      # hyprlock.enable = true;
-      # hypridle.enable = true;
-      # niriswitcher.enable = true;
-    };
   };
 
   options.modules.programs."${pkg}" = {
