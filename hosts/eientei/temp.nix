@@ -135,19 +135,7 @@
 
   services.gvfs.enable = true;
   services.upower.enable = true;
-  services.thermald.enable = true;
   services.system76-scheduler.enable = true;
-  services.auto-cpufreq.enable = true;
-  services.auto-cpufreq.settings = {
-    charger = {
-      governor = "performance";
-      turbo = "auto";
-    };
-    battery = {
-      governer = "powersave";
-      turbo = "never";
-    };
-  };
 
   services.displayManager.ly.enable = true;
 }

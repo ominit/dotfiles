@@ -1024,6 +1024,7 @@
         "quickshell": "quickshell",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix_2",
+        "watt": "watt",
         "zed": "zed",
         "zen-browser": "zen-browser"
       }
@@ -1272,6 +1273,26 @@
       "original": {
         "owner": "numtide",
         "repo": "treefmt-nix",
+        "type": "github"
+      }
+    },
+    "watt": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1773431278,
+        "narHash": "sha256-a/XTJdlfRvQD+X4vWL4A6k2el3+WpVY6EZQVbmaGKqM=",
+        "owner": "NotAShelf",
+        "repo": "watt",
+        "rev": "3e6786e855104c33e6b74176549d80f43416f682",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NotAShelf",
+        "repo": "watt",
         "type": "github"
       }
     },

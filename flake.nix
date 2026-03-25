@@ -92,6 +92,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    watt = {
+      url = "github:NotAShelf/watt";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     zed = {
       url = "github:zed-industries/zed";
       inputs.nixpkgs.follows = "nixpkgs";

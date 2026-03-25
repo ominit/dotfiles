@@ -7,6 +7,7 @@
   imports = [
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
     inputs.nixos-facter-modules.nixosModules.facter
+    inputs.watt.nixosModules.watt
     {config.facter.reportPath = ./facter.json;}
     ./temp.nix
   ];
@@ -127,6 +128,10 @@
     };
 
     systemd.services.syncthing.environment.STNODEFAULTFOLDER = "true"; # Don't create default ~/Sync folder
+
+    services.watt = {
+      enable = true;
+    };
 
     nix.optimise = {
       automatic = true;
