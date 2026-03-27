@@ -8,7 +8,11 @@
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
     inputs.nixos-facter-modules.nixosModules.facter
     {config.facter.reportPath = ./facter.json;}
-    ./temp.nix
+    ./boot.nix
+    ./locale.nix
+    ./networking.nix
+    ./desktop.nix
+    ./user.nix
   ];
 
   config = {
