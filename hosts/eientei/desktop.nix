@@ -25,6 +25,5 @@
   services.gnome.gnome-keyring.enable = true;
   services.gvfs.enable = true;
   services.upower.enable = true;
-  services.system76-scheduler.enable = true;
   services.displayManager.ly.enable = true;
 }
