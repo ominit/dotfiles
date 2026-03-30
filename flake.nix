@@ -72,7 +72,7 @@
     };
 
     # don't follow nixpkgs for binary cache
-    hyprland.url = "git+https://github.com/hyprwm/hyprland?submodules=1";
+    # hyprland.url = "git+https://github.com/hyprwm/hyprland?submodules=1";
 
     jujutsu.url = "github:jj-vcs/jj";
     jujutsu.inputs.nixpkgs.follows = "nixpkgs";
@@ -87,20 +87,20 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    quickshell = {
-      url = "git+https://git.outfoxxed.me/quickshell/quickshell";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # quickshell = {
+    #   url = "git+https://git.outfoxxed.me/quickshell/quickshell";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     watt = {
       url = "github:NotAShelf/watt";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    zed = {
-      url = "github:zed-industries/zed";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
+    # zed = {
+    #   url = "github:zed-industries/zed";
+    #   inputs.nixpkgs.follows = "nixpkgs";
+    # };
 
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";

@@ -11,7 +11,7 @@ with pkgs; [
   fastfetch
   inputs.helium.packages.${system}.helium
   inputs.zen-browser.packages.${system}.beta
-  inputs.zed.packages.${system}.default
+  zed-editor
   elixir-ls
   libreoffice
   slack
