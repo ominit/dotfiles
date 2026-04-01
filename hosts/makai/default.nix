@@ -9,8 +9,7 @@
     ./disko.nix
     ./services
     inputs.disko.nixosModules.default
-    inputs.nixos-facter-modules.nixosModules.facter
-    {config.facter.reportPath = ./facter.json;}
+    {hardware.facter.reportPath = ./facter.json;}
   ];
 
   config = {

@@ -6,8 +6,7 @@
 }: {
   imports = [
     inputs.nixos-hardware.nixosModules.lenovo-thinkpad-t480
-    inputs.nixos-facter-modules.nixosModules.facter
-    {config.facter.reportPath = ./facter.json;}
+    {hardware.facter.reportPath = ./facter.json;}
     ./boot.nix
     ./locale.nix
     ./networking.nix
