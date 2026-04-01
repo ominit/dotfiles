@@ -2,6 +2,10 @@
   "version": 1,
   "system": "x86_64-linux",
   "virtualisation": "none",
+  "uefi": {
+    "supported": true,
+    "platform_size": 64
+  },
   "hardware": {
     "bios": {
       "apm_info": {
@@ -1419,6 +1423,7 @@
           "usb-storage"
         ],
         "driver_modules": [
+          "sd_mod",
           "usb_storage"
         ],
         "module_alias": "usb:v0BDAp0316d0204dc00dsc00dp00ic08isc06ip50in00"
@@ -1531,7 +1536,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 6.16.9-cachyos xhci-hcd",
+          "name": "Linux 6.19.9-cachyos xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1541,11 +1546,11 @@
         },
         "revision": {
           "hex": "0000",
-          "name": "6.16",
+          "name": "6.19",
           "value": 0
         },
         "serial": "0000:3c:00.0",
-        "model": "Linux 6.16.9-cachyos xhci-hcd xHCI Host Controller",
+        "model": "Linux 6.19.9-cachyos xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:1d.0/0000:04:00.0/0000:05:02.0/0000:3c:00.0/usb3/3-0:1.0",
         "sysfs_bus_id": "3-0:1.0",
         "resources": [
@@ -1593,7 +1598,7 @@
         "driver_modules": [
           "usbcore"
         ],
-        "module_alias": "usb:v1D6Bp0002d0616dc09dsc00dp01ic09isc00ip00in00"
+        "module_alias": "usb:v1D6Bp0002d0619dc09dsc00dp01ic09isc00ip00in00"
       },
       {
         "index": 40,
@@ -1618,7 +1623,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 6.16.9-cachyos xhci-hcd",
+          "name": "Linux 6.19.9-cachyos xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1628,11 +1633,11 @@
         },
         "revision": {
           "hex": "0000",
-          "name": "6.16",
+          "name": "6.19",
           "value": 0
         },
         "serial": "0000:3c:00.0",
-        "model": "Linux 6.16.9-cachyos xhci-hcd xHCI Host Controller",
+        "model": "Linux 6.19.9-cachyos xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:1d.0/0000:04:00.0/0000:05:02.0/0000:3c:00.0/usb4/4-0:1.0",
         "sysfs_bus_id": "4-0:1.0",
         "detail": {
@@ -1670,7 +1675,7 @@
         "driver_modules": [
           "usbcore"
         ],
-        "module_alias": "usb:v1D6Bp0003d0616dc09dsc00dp03ic09isc00ip00in00"
+        "module_alias": "usb:v1D6Bp0003d0619dc09dsc00dp03ic09isc00ip00in00"
       },
       {
         "index": 41,
@@ -1695,7 +1700,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 6.16.9-cachyos xhci-hcd",
+          "name": "Linux 6.19.9-cachyos xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1705,11 +1710,11 @@
         },
         "revision": {
           "hex": "0000",
-          "name": "6.16",
+          "name": "6.19",
           "value": 0
         },
         "serial": "0000:00:14.0",
-        "model": "Linux 6.16.9-cachyos xhci-hcd xHCI Host Controller",
+        "model": "Linux 6.19.9-cachyos xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb1/1-0:1.0",
         "sysfs_bus_id": "1-0:1.0",
         "resources": [
@@ -1757,7 +1762,7 @@
         "driver_modules": [
           "usbcore"
         ],
-        "module_alias": "usb:v1D6Bp0002d0616dc09dsc00dp01ic09isc00ip00in00"
+        "module_alias": "usb:v1D6Bp0002d0619dc09dsc00dp01ic09isc00ip00in00"
       },
       {
         "index": 45,
@@ -1782,7 +1787,7 @@
         },
         "vendor": {
           "hex": "1d6b",
-          "name": "Linux 6.16.9-cachyos xhci-hcd",
+          "name": "Linux 6.19.9-cachyos xhci-hcd",
           "value": 7531
         },
         "device": {
@@ -1792,11 +1797,11 @@
         },
         "revision": {
           "hex": "0000",
-          "name": "6.16",
+          "name": "6.19",
           "value": 0
         },
         "serial": "0000:00:14.0",
-        "model": "Linux 6.16.9-cachyos xhci-hcd xHCI Host Controller",
+        "model": "Linux 6.19.9-cachyos xhci-hcd xHCI Host Controller",
         "sysfs_id": "/devices/pci0000:00/0000:00:14.0/usb2/2-0:1.0",
         "sysfs_bus_id": "2-0:1.0",
         "detail": {
@@ -1834,7 +1839,7 @@
         "driver_modules": [
           "usbcore"
         ],
-        "module_alias": "usb:v1D6Bp0003d0616dc09dsc00dp03ic09isc00ip00in00"
+        "module_alias": "usb:v1D6Bp0003d0619dc09dsc00dp03ic09isc00ip00in00"
       }
     ],
     "memory": [
@@ -2224,29 +2229,7 @@
     ],
     "network_interface": [
       {
-        "index": 47,
-        "attached_to": 0,
-        "class_list": [
-          "network_interface"
-        ],
-        "base_class": {
-          "hex": "0107",
-          "name": "Network Interface",
-          "value": 263
-        },
-        "sub_class": {
-          "hex": "0000",
-          "name": "Loopback",
-          "value": 0
-        },
-        "model": "Loopback network interface",
-        "sysfs_id": "/class/net/lo",
-        "unix_device_names": [
-          "lo"
-        ]
-      },
-      {
-        "index": 48,
+        "index": 46,
         "attached_to": 27,
         "class_list": [
           "network_interface"
@@ -2287,7 +2270,7 @@
         ]
       },
       {
-        "index": 49,
+        "index": 48,
         "attached_to": 8,
         "class_list": [
           "network_interface"
@@ -2325,6 +2308,28 @@
         ],
         "driver_modules": [
           "iwlwifi"
+        ]
+      },
+      {
+        "index": 49,
+        "attached_to": 0,
+        "class_list": [
+          "network_interface"
+        ],
+        "base_class": {
+          "hex": "0107",
+          "name": "Network Interface",
+          "value": 263
+        },
+        "sub_class": {
+          "hex": "0000",
+          "name": "Loopback",
+          "value": 0
+        },
+        "model": "Loopback network interface",
+        "sysfs_id": "/class/net/lo",
+        "unix_device_names": [
+          "lo"
         ]
       }
     ],
