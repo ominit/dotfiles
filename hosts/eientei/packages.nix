@@ -12,15 +12,12 @@ with pkgs; [
   inputs.helium.packages.${system}.helium
   inputs.zen-browser.packages.${system}.beta
   zed-editor
-  elixir-ls
   libreoffice
   slack
-  sbcl
   signal-desktop
-  thunar
+  nautilus
   zenity
   bitwarden-desktop
-  tutanota-desktop
   cava
   feh
   vesktop
@@ -30,6 +27,7 @@ with pkgs; [
   ffmpegthumbnailer
   gimp3
   jq
+  ripgrep
   fd
   fzf
   zoxide
@@ -56,14 +54,11 @@ with pkgs; [
   swappy
   waybar
   nh
-  swww
   hyprpolkitagent
   hyprpicker
   clipse
   wl-clipboard
-  waypaper
   brightnessctl
   playerctl
   pamixer
-  wlogout
 ]
