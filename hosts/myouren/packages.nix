@@ -1,0 +1,61 @@
+{
+  pkgs,
+  inputs,
+  system,
+  ...
+}:
+with pkgs; [
+  # nix-output-monitor
+  # anki
+  fastfetch
+  inputs.helium.packages.${system}.helium
+  # inputs.zen-browser.packages.${system}.beta
+  # zed-editor
+  # libreoffice
+  # slack
+  # signal-desktop
+  nautilus
+  # zenity
+  # bitwarden-desktop
+  # cava
+  # feh
+  # vesktop
+  # obsidian
+  # ffmpeg
+  # mpv
+  # ffmpegthumbnailer
+  # gimp3
+  # jq
+  # ripgrep
+  # fd
+  # fzf
+  # zoxide
+  # imagemagick
+  # poppler
+  # autorandr
+  wayland
+  # gitui
+  egl-wayland
+  xwayland
+  pavucontrol
+  networkmanager
+  networkmanagerapplet
+  bluez
+  bluez-tools
+  blueman
+  udiskie
+  trash-cli
+  pciutils
+  lm_sensors
+  grimblast
+  slurp
+  swappy
+  nh
+  hyprpolkitagent
+  hyprpicker
+  clipse
+  wl-clipboard
+  brightnessctl
+  playerctl
+  pamixer
+]

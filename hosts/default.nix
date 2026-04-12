@@ -30,6 +30,13 @@
       modules = defaultModules ++ [./makai];
     };
 
+    myouren = mkNixosSystem {
+      inherit withSystem;
+      hostname = "myouren";
+      system = "x86_64-linux";
+      modules = defaultModules ++ [./myouren];
+    };
+
     wsl = mkNixosSystem {
       inherit withSystem;
       hostname = "wsl";

@@ -13,6 +13,7 @@
 - [`hosts`](hosts) configuration per host
 	- [`eientei`](hosts/eientei) T480 Thinkpad laptop - Daily driver for notes and programming
 	- [`makai`](hosts/makai) HP Pavilion Gaming Desktop - Homelab server - 魔界: where dæmons live
+	- [`myouren`](hosts/myouren) Asus Zenbook Pro 14
 	- [`wsl`](hosts/wsl) Windows Subsystem for Linux
 - [`libEx`](libEx) extra lib commands
 - [`modules`](modules) custom modules consumed by hosts
@@ -62,7 +63,6 @@ These are based on locations from the Touhou Project.
 - moriya
 - muenzuka
 - mugenkan
-- myouren
 - senkai
 - jigoku
 
