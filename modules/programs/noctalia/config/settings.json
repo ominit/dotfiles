@@ -59,6 +59,7 @@
           "diskPath": "/",
           "iconColor": "none",
           "id": "SystemMonitor",
+          "showCpuCores": false,
           "showCpuFreq": false,
           "showCpuTemp": true,
           "showCpuUsage": true,
@@ -77,14 +78,11 @@
         },
         {
           "compactMode": false,
-          "compactShowAlbumArt": true,
-          "compactShowVisualizer": false,
           "hideMode": "hidden",
           "hideWhenIdle": false,
           "id": "MediaMini",
           "maxWidth": 145,
           "panelShowAlbumArt": true,
-          "panelShowVisualizer": true,
           "scrollingMode": "hover",
           "showAlbumArt": true,
           "showArtistFirst": true,
@@ -103,6 +101,7 @@
           "enableScrollWheel": false,
           "focusedColor": "primary",
           "followFocusedScreen": false,
+          "fontWeight": "bold",
           "groupedBorderOpacity": 1,
           "hideUnoccupied": false,
           "iconScale": 0.8,
@@ -111,6 +110,7 @@
           "occupiedColor": "secondary",
           "pillSize": 0.6,
           "showApplications": false,
+          "showApplicationsHover": false,
           "showBadge": true,
           "showLabelsOnlyWhenOccupied": true,
           "unfocusedIconsOpacity": 1
@@ -220,7 +220,8 @@
         "Del"
       ]
     },
-    "reverseScroll": false
+    "reverseScroll": false,
+    "smoothScrollEnabled": true
   },
   "ui": {
     "fontDefault": "Sans Serif",
@@ -237,9 +238,9 @@
     "settingsPanelSideBarCardStyle": false
   },
   "location": {
-    "name": "Rochester, NY",
     "weatherEnabled": true,
     "weatherShowEffects": true,
+    "weatherTaliaMascotAlways": false,
     "useFahrenheit": true,
     "use12hourFormat": true,
     "showWeekNumberInCalendar": true,
@@ -248,7 +249,8 @@
     "analogClockInCalendar": false,
     "firstDayOfWeek": -1,
     "hideWeatherTimezone": false,
-    "hideWeatherCityName": false
+    "hideWeatherCityName": true,
+    "autoLocate": true
   },
   "calendar": {
     "cards": [
@@ -281,6 +283,7 @@
     "showHiddenFiles": true,
     "viewMode": "browse",
     "setWallpaperOnAllMonitors": true,
+    "linkLightAndDarkWallpapers": true,
     "fillMode": "crop",
     "fillColor": "#000000",
     "useSolidColor": false,
@@ -449,7 +452,6 @@
     "indicatorOpacity": 0.6
   },
   "network": {
-    "airplaneModeEnabled": false,
     "bluetoothRssiPollingEnabled": true,
     "bluetoothRssiPollIntervalMs": 10000,
     "networkPanelView": "wifi",
@@ -588,7 +590,8 @@
     "manualSunrise": "06:30",
     "manualSunset": "18:30",
     "generationMethod": "tonal-spot",
-    "monitorForColors": ""
+    "monitorForColors": "",
+    "syncGsettings": true
   },
   "templates": {
     "activeTemplates": [
