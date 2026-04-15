@@ -7,7 +7,6 @@
 with pkgs; [
   nix-output-monitor
   anki
-  opencode
   fastfetch
   inputs.helium.packages.${system}.helium
   inputs.zen-browser.packages.${system}.beta
