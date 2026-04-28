@@ -25,6 +25,7 @@
 
     fileSystems."/var/lib/private/open-webui" = {
       device = "/data/services/open-webui";
+      fsType = "none";
       options = ["bind"];
     };
   };

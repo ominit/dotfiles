@@ -5,6 +5,7 @@
     };
     fileSystems."/var/lib/netbird" = {
       device = "/data/services/netbird";
+      fsType = "none";
       options = ["bind"];
     };
 

@@ -24,11 +24,13 @@
   #   ];
   #   fileSystems."/var/lib/postgresql" = {
   #     device = "/data/services/hydra/db";
+  #     fsType = "none";
   #     options = ["bind"];
   #   };
 
   #   fileSystems."/var/lib/hydra" = {
   #     device = "/data/services/hydra/data";
+  #     fsType = "none";
   #     options = ["bind"];
   #   };
   # };

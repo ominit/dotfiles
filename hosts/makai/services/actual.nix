@@ -9,6 +9,7 @@
 
     fileSystems."/var/lib/private/actual" = {
       device = "/data/services/actual";
+      fsType = "none";
       options = ["bind"];
     };
   };

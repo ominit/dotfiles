@@ -25,6 +25,7 @@
 
     fileSystems."/var/lib/private/gonic" = {
       device = "/data/services/gonic";
+      fsType = "none";
       options = ["bind"];
     };
 
