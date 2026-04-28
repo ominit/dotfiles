@@ -63,7 +63,7 @@ if.all = [
   { not = "?discharging" },
   { is-more-than = 0.3, value = "%power-supply-charge" },
   { any = [
-    { is-more-than = 0.15, value = "%cpu-usage" },
+    { is-more-than = 0.15, value = { cpu-usage-since = "1sec" } },
     { is-less-than = 60.0, value = "$cpu-idle-seconds" },
   ] },
 ]
@@ -80,7 +80,7 @@ name = "battery-idle-saver"
 if.all = [
   "?discharging",
   { is-more-than = 0.1, value = "%power-supply-charge" },
-  { is-less-than = 0.15, value = "%cpu-usage" },
+  { is-less-than = 0.15, value = { cpu-usage-since = "10sec" } },
   { is-more-than = 60.0, value = "$cpu-idle-seconds" },
 ]
 priority = 40
@@ -112,7 +112,7 @@ name = "ac-idle-relief"
 if.all = [
   { not = "?discharging" },
   { is-more-than = 0.3, value = "%power-supply-charge" },
-  { is-less-than = 0.15, value = "%cpu-usage" },
+  { is-less-than = 0.15, value = { cpu-usage-since = "10sec" } },
   { is-more-than = 60.0, value = "$cpu-idle-seconds" },
 ]
 priority = 20
