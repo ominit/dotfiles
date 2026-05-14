@@ -20,6 +20,8 @@
         package = inputs.helix.packages.${system}.default;
       };
       bat.enable = true;
+      jujutsu.enable = true;
+      zellij.enable = true;
       git = {
         enable = true;
         deltaPager = true;
