@@ -13,5 +13,6 @@
     ./omni-tools.nix
     ./open-webui.nix
     ./syncthing.nix
+    ./termix.nix
   ];
 }
