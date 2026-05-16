@@ -10,7 +10,7 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/bat/" = {
+      files.".config/bat" = {
         source = ./config;
         clobber = true;
       };

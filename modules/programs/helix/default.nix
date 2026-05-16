@@ -10,7 +10,7 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/helix/" = {
+      files.".config/helix" = {
         source = ./config;
         clobber = true;
       };
