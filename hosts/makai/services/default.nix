@@ -1,6 +1,7 @@
 {
   imports = [
     ./actual.nix
+    ./circus.nix
     ./feishin.nix
     ./gonic.nix
     ./grafana.nix
@@ -9,6 +10,7 @@
     ./netbird.nix
     ./newt.nix
     ./ntfy.nix
+    ./odysseus.nix
     ./ollama.nix
     ./omni-tools.nix
     ./open-webui.nix

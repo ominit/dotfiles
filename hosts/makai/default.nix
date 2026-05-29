@@ -68,7 +68,15 @@
     systemd.tmpfiles.rules = [
       "d /data/dotfiles 2700 ${config.users.users.ominit.name} ${config.users.users.ominit.group} -"
       "d /data/system/ssh 0750 root root -"
+      "d /data/cache/nix-git 0755 ominit users -"
+      "d /home/ominit/.cache 0755 ominit users -"
     ];
+
+    fileSystems."/home/ominit/.cache/nix" = {
+      device = "/data/cache/nix-git";
+      fsType = "none";
+      options = ["bind"];
+    };
 
     fileSystems."/data".neededForBoot = true;
 
@@ -93,6 +101,7 @@
     hardware.nvidia-container-toolkit.enable = true;
     services.xserver.videoDrivers = ["nvidia"];
     hardware.graphics.enable = true;
+    hardware.nvidia.package = config.boot.kernelPackages.nvidiaPackages.legacy_580;
 
     services.tzupdate.enable = true;
 
@@ -107,11 +116,6 @@
 
     nix.optimise = {
       automatic = true;
-    };
-
-    nix.gc = {
-      automatic = true;
-      options = "--delete-older-than 30d";
     };
 
     # when less than 10GB

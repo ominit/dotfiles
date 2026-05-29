@@ -29,6 +29,12 @@
       options = ["bind"];
     };
 
+    fileSystems."/var/lib/gonic" = {
+      device = "/data/services/gonic-a";
+      fsType = "none";
+      options = ["bind"];
+    };
+
     systemd.services.gonic = {
       serviceConfig = {
         User = "gonic";

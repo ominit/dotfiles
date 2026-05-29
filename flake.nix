@@ -57,6 +57,11 @@
     # programs
     #
 
+    circus = {
+      url = "github:manic-systems/circus";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     helium = {
       url = "github:ominit/helium-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
@@ -82,6 +87,13 @@
 
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
+    odysseus = {
+      # url = "github:ToyVo/odysseus/feat-add-modules";
+      url = "github:pewdiepie-archdaemon/odysseus/pull/2568/head";
+      # url = "github:pewdiepie-archdaemon/odysseus";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 

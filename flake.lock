@@ -32,6 +32,42 @@
         "type": "github"
       }
     },
+    "circus": {
+      "inputs": {
+        "crane": "crane",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780871372,
+        "narHash": "sha256-K7crwBlpTKpzQBI5Qzytzm4aCOzq05CGGBLMXzRmIfM=",
+        "owner": "manic-systems",
+        "repo": "circus",
+        "rev": "e02295988676f100a55ccf98965ae772b5ddf197",
+        "type": "github"
+      },
+      "original": {
+        "owner": "manic-systems",
+        "repo": "circus",
+        "type": "github"
+      }
+    },
+    "crane": {
+      "locked": {
+        "lastModified": 1779130139,
+        "narHash": "sha256-BLrtr42azquO7MdGFU5a7KiMl3YpFlTeIXqy1fT5GlQ=",
+        "owner": "ipetkov",
+        "repo": "crane",
+        "rev": "edb38893982a3338972bb4a2ec7ce7c29ba10fd9",
+        "type": "github"
+      },
+      "original": {
+        "owner": "ipetkov",
+        "repo": "crane",
+        "type": "github"
+      }
+    },
     "disko": {
       "inputs": {
         "nixpkgs": "nixpkgs"
@@ -123,6 +159,24 @@
     "flake-utils": {
       "inputs": {
         "systems": "systems"
+      },
+      "locked": {
+        "lastModified": 1731533236,
+        "narHash": "sha256-l0KFg5HjrsfsO/JpG+r7fRrqm12kzFHyUHqHCVpMMbI=",
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "rev": "11707dc2f618dd54ca8739b309ec4fc024de578b",
+        "type": "github"
+      },
+      "original": {
+        "owner": "numtide",
+        "repo": "flake-utils",
+        "type": "github"
+      }
+    },
+    "flake-utils_2": {
+      "inputs": {
+        "systems": "systems_3"
       },
       "locked": {
         "lastModified": 1731533236,
@@ -314,6 +368,27 @@
         "type": "github"
       }
     },
+    "nix-darwin_2": {
+      "inputs": {
+        "nixpkgs": [
+          "odysseus",
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1779036909,
+        "narHash": "sha256-zXcwYQGCT6pzinK+1dBB2ekTVtfxGZAapb3Evdcu4fY=",
+        "owner": "LnL7",
+        "repo": "nix-darwin",
+        "rev": "56c666e108467d87d13508936aade6d567f2a501",
+        "type": "github"
+      },
+      "original": {
+        "owner": "LnL7",
+        "repo": "nix-darwin",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "inputs": {
         "nixpkgs": "nixpkgs_3"
@@ -489,8 +564,32 @@
         "type": "github"
       }
     },
+    "odysseus": {
+      "inputs": {
+        "flake-utils": "flake-utils_2",
+        "nix-darwin": "nix-darwin_2",
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1780878355,
+        "narHash": "sha256-meCN/E1i/1DLrs4Z8zOaP1OQpRfENYf7UaVg4C39I4E=",
+        "owner": "pewdiepie-archdaemon",
+        "repo": "odysseus",
+        "rev": "9002d317c29627a9e620ed51a4b05d075d3b9959",
+        "type": "github"
+      },
+      "original": {
+        "owner": "pewdiepie-archdaemon",
+        "ref": "pull/2568/head",
+        "repo": "odysseus",
+        "type": "github"
+      }
+    },
     "root": {
       "inputs": {
+        "circus": "circus",
         "disko": "disko",
         "flake-parts": "flake-parts",
         "helium": "helium",
@@ -504,6 +603,7 @@
         "nixpkgs": "nixpkgs_4",
         "nixpkgs-ominit": "nixpkgs-ominit",
         "noctalia": "noctalia",
+        "odysseus": "odysseus",
         "sops-nix": "sops-nix",
         "treefmt-nix": "treefmt-nix_2",
         "watt": "watt",
@@ -620,6 +720,21 @@
       "original": {
         "owner": "nix-systems",
         "repo": "default-linux",
+        "type": "github"
+      }
+    },
+    "systems_3": {
+      "locked": {
+        "lastModified": 1681028828,
+        "narHash": "sha256-Vy1rq5AaRuLzOxct8nz4T6wlgyUR7zLU309k9mBC768=",
+        "owner": "nix-systems",
+        "repo": "default",
+        "rev": "da67096a3b9bf56a91d16901293e51ba5b49a27e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "nix-systems",
+        "repo": "default",
         "type": "github"
       }
     },
