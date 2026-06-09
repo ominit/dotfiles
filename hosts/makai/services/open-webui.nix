@@ -2,6 +2,7 @@
   inputs,
   system,
   config,
+  lib,
   ...
 }: {
   config = {
@@ -23,10 +24,26 @@
       port = 10007;
     };
 
-    fileSystems."/var/lib/private/open-webui" = {
-      device = "/data/services/open-webui";
-      fsType = "none";
-      options = ["bind"];
+    systemd.services.open-webui.serviceConfig = {
+      DynamicUser = lib.mkForce false;
+      User = "open-webui";
+      Group = "open-webui";
     };
+
+    modules.persistence.bindMounts.open-webui = {
+      source = "/data/services/open-webui";
+      target = "/var/lib/open-webui";
+      user = "open-webui";
+      group = "open-webui";
+      mode = "0700";
+      resetPermissions = true;
+    };
+
+    users.users.open-webui = {
+      isSystemUser = true;
+      group = "open-webui";
+    };
+
+    users.groups.open-webui = {};
   };
 }

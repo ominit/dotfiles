@@ -3,6 +3,7 @@
   inherit (lib) filesIn;
 
   programs = filesIn ./programs;
+  persistence = filesIn ./persistence;
 in {
-  imports = [] ++ programs;
+  imports = [] ++ programs ++ persistence;
 }

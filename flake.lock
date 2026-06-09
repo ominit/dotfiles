@@ -40,11 +40,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780871372,
-        "narHash": "sha256-K7crwBlpTKpzQBI5Qzytzm4aCOzq05CGGBLMXzRmIfM=",
+        "lastModified": 1781036278,
+        "narHash": "sha256-jwGXaMsByw+CyK/oPUPTvAp8w318LPmNVC7pzXVbix8=",
         "owner": "manic-systems",
         "repo": "circus",
-        "rev": "e02295988676f100a55ccf98965ae772b5ddf197",
+        "rev": "80ff12df56c2789a79ddc1a852a9e2b2d042281c",
         "type": "github"
       },
       "original": {
@@ -573,11 +573,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1780878355,
-        "narHash": "sha256-meCN/E1i/1DLrs4Z8zOaP1OQpRfENYf7UaVg4C39I4E=",
+        "lastModified": 1780923736,
+        "narHash": "sha256-ZOScIGdRP7wjOwSop3cCAf4gakYrNhG5VtTu3N07Q/I=",
         "owner": "pewdiepie-archdaemon",
         "repo": "odysseus",
-        "rev": "9002d317c29627a9e620ed51a4b05d075d3b9959",
+        "rev": "9b189ed50a68b2bd67335dac2767d161a5a82f7a",
         "type": "github"
       },
       "original": {

@@ -5,18 +5,18 @@
   system,
   ...
 }: {
-  imports = [
-    ./disko.nix
-    ./services
-    inputs.disko.nixosModules.default
-    {hardware.facter.reportPath = ./facter.json;}
-  ];
+  imports =
+    [
+      ./disko.nix
+      inputs.disko.nixosModules.default
+      {hardware.facter.reportPath = ./facter.json;}
+    ]
+    ++ (inputs.self.lib.filesIn ./services);
 
   config = {
     modules.programs = {
       helix = {
         enable = true;
-        # package = pkgs.helix_git; # from chaotic (cached)
         package = inputs.helix.packages.${system}.default;
       };
       bat.enable = true;
@@ -55,6 +55,8 @@
       hashedPasswordFile = config.sops.secrets."hashedPassword".path;
       packages = with pkgs; [
         nh
+        ripgrep
+        jq
       ];
     };
 
@@ -68,14 +70,21 @@
     systemd.tmpfiles.rules = [
       "d /data/dotfiles 2700 ${config.users.users.ominit.name} ${config.users.users.ominit.group} -"
       "d /data/system/ssh 0750 root root -"
-      "d /data/cache/nix-git 0755 ominit users -"
       "d /home/ominit/.cache 0755 ominit users -"
     ];
 
-    fileSystems."/home/ominit/.cache/nix" = {
-      device = "/data/cache/nix-git";
-      fsType = "none";
-      options = ["bind"];
+    modules.persistence.bindMounts.codex = {
+      source = "/data/home/ominit/.codex";
+      target = "/home/ominit/.codex";
+      user = "ominit";
+      group = "users";
+    };
+
+    modules.persistence.bindMounts.nix-cache = {
+      source = "/data/home/ominit/.cache/nix";
+      target = "/home/ominit/.cache/nix";
+      user = "ominit";
+      group = "users";
     };
 
     fileSystems."/data".neededForBoot = true;
@@ -113,6 +122,11 @@
 
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
+    boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
+    boot.binfmt.emulatedSystems = ["aarch64-linux"];
+
+    services.scx.enable = true;
+    services.scx.scheduler = "scx_bpfland";
 
     nix.optimise = {
       automatic = true;

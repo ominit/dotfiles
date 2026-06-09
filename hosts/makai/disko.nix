@@ -50,6 +50,7 @@
                 type = "filesystem";
                 format = "xfs";
                 mountpoint = "/data";
+                mountOptions = ["rw"];
               };
             };
           };

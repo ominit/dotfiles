@@ -23,16 +23,22 @@
       "d /data/storage/gonic/podcasts 0755 gonic gonic -"
     ];
 
-    fileSystems."/var/lib/private/gonic" = {
-      device = "/data/services/gonic";
-      fsType = "none";
-      options = ["bind"];
+    modules.persistence.bindMounts.gonic-private = {
+      source = "/data/services/gonic";
+      target = "/var/lib/private/gonic";
+      user = "gonic";
+      group = "gonic";
+      mode = "0750";
+      resetPermissions = true;
     };
 
-    fileSystems."/var/lib/gonic" = {
-      device = "/data/services/gonic-a";
-      fsType = "none";
-      options = ["bind"];
+    modules.persistence.bindMounts.gonic = {
+      source = "/data/services/gonic-a";
+      target = "/var/lib/gonic";
+      user = "gonic";
+      group = "gonic";
+      mode = "0750";
+      resetPermissions = true;
     };
 
     systemd.services.gonic = {
