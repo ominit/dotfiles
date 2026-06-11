@@ -40,11 +40,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1781036278,
-        "narHash": "sha256-jwGXaMsByw+CyK/oPUPTvAp8w318LPmNVC7pzXVbix8=",
+        "lastModified": 1781175086,
+        "narHash": "sha256-a7B5WxzKGjb59EcCZuIyp6CIFgFtUptEOO3KQ5BSdaU=",
         "owner": "manic-systems",
         "repo": "circus",
-        "rev": "80ff12df56c2789a79ddc1a852a9e2b2d042281c",
+        "rev": "51b875b43cc4387bb3cb53bc674d3182a0425dc7",
         "type": "github"
       },
       "original": {
