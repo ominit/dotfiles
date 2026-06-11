@@ -37,6 +37,10 @@ in {
       '';
     };
 
+    systemd.tmpfiles.rules = [
+      "z /data/system/key.secret 0700 circus circus -"
+    ];
+
     services.circus = {
       enable = true;
 
