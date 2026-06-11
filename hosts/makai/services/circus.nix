@@ -55,12 +55,18 @@ in {
           host = "127.0.0.1";
           port = 10010;
           force_secure_cookies = true;
+          rate_limit_rps = 100;
+          rate_limit_burst = 20;
+        };
+
+        evaluator = {
+          allow_ifd = true;
         };
 
         database.url = "postgresql:///circus?host=/run/postgresql";
 
         gc.enabled = true;
-        gc.max_age_days = 90;
+        gc.max_age_days = 30;
 
         cache.enabled = true;
 
