@@ -16,7 +16,6 @@ with pkgs; [
   signal-desktop
   nautilus
   zenity
-  bitwarden-desktop
   cava
   feh
   vesktop
