@@ -10,6 +10,15 @@ in {
   imports = [circusModule];
 
   config = {
+    modules.persistence.bindMounts.postgresql = {
+      source = "/data/services/postgresql";
+      target = "/var/lib/postgresql";
+      user = "postgres";
+      group = "postgres";
+      mode = "0750";
+      resetPermissions = true;
+    };
+
     sops.secrets."circus/adminPassword" = {
       owner = "circus";
       group = "circus";
@@ -62,6 +71,8 @@ in {
           rate_limit_rps = 100;
           rate_limit_burst = 20;
         };
+
+        queue_runner.workers = 1;
 
         evaluator = {
           allow_ifd = true;
