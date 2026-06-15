@@ -16,6 +16,7 @@
     systemd.services.netbird.serviceConfig = {
       User = "netbird";
       Group = "netbird";
+      SupplementaryGroups = ["resolvconf"];
       AmbientCapabilities = [
         "CAP_NET_ADMIN"
         "CAP_NET_RAW"

@@ -16,5 +16,10 @@
         "/data/services/termix:/app/data"
       ];
     };
+
+    systemd.services.podman-termix = {
+      after = ["netbird.service"];
+      wants = ["netbird.service"];
+    };
   };
 }
