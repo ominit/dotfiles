@@ -128,6 +128,11 @@
     services.scx.enable = true;
     services.scx.scheduler = "scx_bpfland";
 
+    systemd.services.nix-daemon.serviceConfig = {
+      CPUWeight = 1;
+      Nice = 19;
+    };
+
     nix.optimise = {
       automatic = true;
     };
