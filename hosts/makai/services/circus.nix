@@ -48,6 +48,7 @@ in {
 
     systemd.tmpfiles.rules = [
       "z /data/system/key.secret 0700 circus circus -"
+      "Z /nix/var/nix/gcroots/per-user/circus - circus circus -"
     ];
 
     services.circus = {
