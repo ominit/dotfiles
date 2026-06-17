@@ -9,12 +9,11 @@
       };
     };
 
-    modules.persistence.bindMounts.actual = {
+    modules.persistence.directories.actual = {
       source = "/data/services/actual";
       target = "/var/lib/actual";
       user = "actual";
       group = "actual";
-      mode = "0700";
       resetPermissions = true;
     };
 

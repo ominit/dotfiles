@@ -10,8 +10,8 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/zellij" = {
-        source = ./config;
+      files.".config/zellij/config.kdl" = {
+        source = ./config/config.kdl;
         clobber = true;
       };
 

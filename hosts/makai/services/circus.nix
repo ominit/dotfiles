@@ -10,12 +10,11 @@ in {
   imports = [circusModule];
 
   config = {
-    modules.persistence.bindMounts.postgresql = {
+    modules.persistence.directories.postgresql = {
       source = "/data/services/postgresql";
       target = "/var/lib/postgresql";
       user = "postgres";
       group = "postgres";
-      mode = "0750";
       resetPermissions = true;
     };
 

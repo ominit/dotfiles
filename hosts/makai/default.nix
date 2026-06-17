@@ -70,21 +70,27 @@
     systemd.tmpfiles.rules = [
       "d /data/dotfiles 2700 ${config.users.users.ominit.name} ${config.users.users.ominit.group} -"
       "d /data/system/ssh 0750 root root -"
-      "d /home/ominit/.cache 0755 ominit users -"
+      "d /home/ominit/.cache - ominit users -"
+      "d /home/ominit/.ssh - ominit users -"
+      "d /home/ominit/.config/nushell - ominit users -"
+      "d /home/ominit/.config/ - ominit users -"
     ];
 
-    modules.persistence.bindMounts.codex = {
-      source = "/data/home/ominit/.codex";
-      target = "/home/ominit/.codex";
+    modules.persistence.groups.ominit-home = {
+      source = "/data/home/ominit";
+      target = "/home/ominit";
       user = "ominit";
       group = "users";
-    };
-
-    modules.persistence.bindMounts.nix-cache = {
-      source = "/data/home/ominit/.cache/nix";
-      target = "/home/ominit/.cache/nix";
-      user = "ominit";
-      group = "users";
+      directories = [
+        ".cache/nix"
+        ".codex"
+      ];
+      files = [
+        ".ssh/known_hosts"
+        ".config/nushell/history.sqlite3"
+        ".config/nushell/history.sqlite3-shm"
+        ".config/nushell/history.sqlite3-wal"
+      ];
     };
 
     fileSystems."/data".neededForBoot = true;

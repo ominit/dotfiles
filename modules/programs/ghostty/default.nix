@@ -10,9 +10,16 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/ghostty" = {
-        source = ./config;
-        clobber = true;
+      files = {
+        ".config/ghostty/config" = {
+          source = ./config/config;
+          clobber = true;
+        };
+
+        ".config/ghostty/embark-theme" = {
+          source = ./config/embark-theme;
+          clobber = true;
+        };
       };
 
       packages = with pkgs; [

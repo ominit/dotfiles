@@ -10,9 +10,16 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/bat" = {
-        source = ./config;
-        clobber = true;
+      files = {
+        ".config/bat/config" = {
+          source = ./config/config;
+          clobber = true;
+        };
+
+        ".config/bat/themes/Embark.tmTheme" = {
+          source = ./config/themes/Embark.tmTheme;
+          clobber = true;
+        };
       };
 
       packages = with pkgs; [

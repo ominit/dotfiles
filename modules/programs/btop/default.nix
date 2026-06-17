@@ -10,9 +10,16 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/btop" = {
-        source = ./config;
-        clobber = true;
+      files = {
+        ".config/btop/btop.conf" = {
+          source = ./config/btop.conf;
+          clobber = true;
+        };
+
+        ".config/btop/themes/embark.theme" = {
+          source = ./config/themes/embark.theme;
+          clobber = true;
+        };
       };
 
       packages = with pkgs; [

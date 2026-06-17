@@ -17,9 +17,21 @@ in {
     ];
 
     hjem.users."ominit" = {
-      files.".config/helix" = {
-        source = ./config;
-        clobber = true;
+      files = {
+        ".config/helix/config.toml" = {
+          source = ./config/config.toml;
+          clobber = true;
+        };
+
+        ".config/helix/languages.toml" = {
+          source = ./config/languages.toml;
+          clobber = true;
+        };
+
+        ".config/helix/themes/embark.toml" = {
+          source = ./config/themes/embark.toml;
+          clobber = true;
+        };
       };
 
       packages = with pkgs; [

@@ -4,12 +4,11 @@
       enable = true;
     };
 
-    modules.persistence.bindMounts.netbird = {
+    modules.persistence.directories.netbird = {
       source = "/data/services/netbird";
       target = "/var/lib/netbird";
       user = "netbird";
       group = "netbird";
-      mode = "0700";
       resetPermissions = true;
     };
 

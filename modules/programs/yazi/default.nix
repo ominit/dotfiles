@@ -10,8 +10,8 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/yazi" = {
-        source = ./config;
+      files.".config/yazi/yazi.toml" = {
+        source = ./config/yazi.toml;
         clobber = true;
       };
 

@@ -10,8 +10,8 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/rofi" = {
-        source = ./config;
+      files.".config/rofi/config.rasi" = {
+        source = ./config/config.rasi;
         clobber = true;
       };
 

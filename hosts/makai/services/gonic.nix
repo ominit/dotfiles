@@ -23,21 +23,19 @@
       "d /data/storage/gonic/podcasts 0755 gonic gonic -"
     ];
 
-    modules.persistence.bindMounts.gonic-private = {
+    modules.persistence.directories.gonic-private = {
       source = "/data/services/gonic";
       target = "/var/lib/private/gonic";
       user = "gonic";
       group = "gonic";
-      mode = "0750";
       resetPermissions = true;
     };
 
-    modules.persistence.bindMounts.gonic = {
+    modules.persistence.directories.gonic = {
       source = "/data/services/gonic-a";
       target = "/var/lib/gonic";
       user = "gonic";
       group = "gonic";
-      mode = "0750";
       resetPermissions = true;
     };
 

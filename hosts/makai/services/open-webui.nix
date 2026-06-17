@@ -30,12 +30,11 @@
       Group = "open-webui";
     };
 
-    modules.persistence.bindMounts.open-webui = {
+    modules.persistence.directories.open-webui = {
       source = "/data/services/open-webui";
       target = "/var/lib/open-webui";
       user = "open-webui";
       group = "open-webui";
-      mode = "0700";
       resetPermissions = true;
     };
 
