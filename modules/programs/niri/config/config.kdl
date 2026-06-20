@@ -99,7 +99,7 @@ layout {
     }
 }
 
-spawn-at-startup "noctalia-shell"
+spawn-at-startup "noctalia"
 spawn-at-startup "vicinae" "server"
 spawn-at-startup "fcitx5"
 
