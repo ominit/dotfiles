@@ -36,15 +36,6 @@ in {
       ];
     };
 
-    sops.templates."circus-env" = {
-      owner = "circus";
-      group = "circus";
-      mode = "0400";
-      content = ''
-        CIRCUS_NOTIFICATIONS__GITHUB_TOKEN=${config.sops.placeholder."circus/githubToken"}
-      '';
-    };
-
     systemd.tmpfiles.rules = [
       "z /data/system/key.secret 0700 circus circus -"
       "Z /nix/var/nix/gcroots/per-user/circus - circus circus -"
@@ -56,7 +47,7 @@ in {
       package = circusPkgs.circus-server;
       evaluatorPackage = circusPkgs.circus-evaluator;
       queueRunnerPackage = circusPkgs.circus-queue-runner;
-      migratePackage = circusPkgs.circus-migrate-cli;
+      migratePackage = circusPkgs.circus-cli;
 
       database.createLocally = true;
       server.enable = true;
@@ -72,10 +63,9 @@ in {
           rate_limit_burst = 20;
         };
 
-        queue_runner.workers = 1;
-
         evaluator = {
           allow_ifd = true;
+          restrict_eval = false;
         };
 
         database.url = "postgresql:///circus?host=/run/postgresql";
@@ -92,6 +82,8 @@ in {
 
         logs.compress = true;
 
+        # notifications.github_token_file = config.sops.secret."circus/githubToken".path;
+
         declarative = {
           projects = [
             {
@@ -105,6 +97,11 @@ in {
                 {
                   name = "nixosConfigurations";
                   nix_expression = "nixosConfigurations";
+                }
+                {
+                  name = "nixosConfigurations-updated";
+                  nix_expression = "nixosConfigurations";
+                  branch = "flake-update";
                 }
               ];
             }
@@ -165,19 +162,13 @@ in {
           users = [
             {
               username = "admin";
-              passwordFile = config.sops.secrets."circus/adminPassword".path;
+              password_file = config.sops.secrets."circus/adminPassword".path;
               role = "admin";
               email = "fake@example.com";
             }
           ];
         };
       };
-    };
-
-    systemd.services = {
-      circus-server.serviceConfig.EnvironmentFile = config.sops.templates."circus-env".path;
-      circus-evaluator.serviceConfig.EnvironmentFile = config.sops.templates."circus-env".path;
-      circus-queue-runner.serviceConfig.EnvironmentFile = config.sops.templates."circus-env".path;
     };
   };
 }
