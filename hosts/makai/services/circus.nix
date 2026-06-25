@@ -61,6 +61,24 @@ in {
           force_secure_cookies = true;
           rate_limit_rps = 100;
           rate_limit_burst = 20;
+
+          page_access = {
+            home = "public";
+            projects = "public";
+            project = "public";
+            jobset = "public";
+            jobset_jobs = "public";
+            evaluations = "public";
+            evaluation = "public";
+            builds = "public";
+            build = "public";
+            channels = "public";
+            channel = "public";
+            news = "public";
+            starred = "authenticated";
+            queue = "admin";
+            metrics = "admin";
+          };
         };
 
         evaluator = {
