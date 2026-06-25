@@ -2,7 +2,7 @@
   config = {
     virtualisation.oci-containers.containers.termix = {
       # image = "ghcr.io/lukegus/termix:latest";
-      image = "ghcr.io/lukegus/termix:release-2.3.1";
+      image = "ghcr.io/lukegus/termix:release-2.4.1";
       pull = "newer";
       ports = [
         "10008:10008"
