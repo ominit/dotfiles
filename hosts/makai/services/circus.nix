@@ -100,7 +100,7 @@ in {
 
         logs.compress = true;
 
-        # notifications.github_token_file = config.sops.secret."circus/githubToken".path;
+        notifications.github_token_file = config.sops.secrets."circus/githubToken".path;
 
         declarative = {
           projects = [
@@ -130,10 +130,12 @@ in {
                 {
                   name = "checks";
                   nix_expression = "checks";
+                  branch_pattern = "*";
                 }
                 {
                   name = "packages";
                   nix_expression = "packages";
+                  branch_pattern = "*";
                 }
               ];
             }
