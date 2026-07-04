@@ -109,16 +109,12 @@ in {
               repository_url = "https://github.com/ominit/dotfiles";
               jobsets = [
                 {
-                  name = "checks";
-                  nix_expression = "checks";
+                  name = "hydraJobs";
+                  nix_expression = "hydraJobs";
                 }
                 {
-                  name = "nixosConfigurations";
-                  nix_expression = "nixosConfigurations";
-                }
-                {
-                  name = "nixosConfigurations-updated";
-                  nix_expression = "nixosConfigurations";
+                  name = "hydraJobs-updated";
+                  nix_expression = "hydraJobs";
                   branch = "flake-update";
                 }
               ];
@@ -141,16 +137,6 @@ in {
                   name = "devShells";
                   nix_expression = "devShells";
                   branch_pattern = "*";
-                }
-              ];
-            }
-            {
-              name = "circus";
-              repository_url = "https://github.com/manic-systems/circus";
-              jobsets = [
-                {
-                  name = "packages";
-                  nix_expression = "packages.x86_64-linux";
                 }
               ];
             }
