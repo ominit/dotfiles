@@ -90,13 +90,6 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    odysseus = {
-      # url = "github:ToyVo/odysseus/feat-add-modules";
-      url = "github:pewdiepie-archdaemon/odysseus/pull/2568/head";
-      # url = "github:pewdiepie-archdaemon/odysseus";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     # quickshell = {
     #   url = "git+https://git.outfoxxed.me/quickshell/quickshell";
     #   inputs.nixpkgs.follows = "nixpkgs";
