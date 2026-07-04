@@ -137,6 +137,11 @@ in {
                   nix_expression = "packages";
                   branch_pattern = "*";
                 }
+                {
+                  name = "devShells";
+                  nix_expression = "devShells";
+                  branch_pattern = "*";
+                }
               ];
             }
             {
