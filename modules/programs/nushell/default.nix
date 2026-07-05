@@ -24,7 +24,7 @@ in {
           };
         }
         (builtins.listToAttrs (map (p: {
-            name = ".config/nushell/autoload/${builtins.baseNameOf p}";
+            name = ".config/nushell/autoload/${baseNameOf p}";
             value = {
               source = p;
               clobber = true;
