@@ -2,7 +2,7 @@
   config = {
     # TEMP https://github.com/NixOS/nixpkgs/pull/531941
     nixpkgs.overlays = [
-      (final: prev: {
+      (_final: prev: {
         ttyd = inputs.nixpkgs-ominit.legacyPackages.${prev.system}.ttyd;
       })
     ];
