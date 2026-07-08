@@ -6,7 +6,7 @@
   ...
 }: {
   flake.hydraJobs = let
-    requiredJobs =
+    allJobs =
       {
         nixosConfigurations =
           builtins.mapAttrs
@@ -19,11 +19,11 @@
         })
       );
   in
-    requiredJobs
+    allJobs
     // {
-      required = inputs.nixpkgs.legacyPackages.${builtins.head config.systems}.releaseTools.aggregate {
-        name = "required";
-        constituents = lib.collect lib.isDerivation requiredJobs;
+      allJobs = inputs.nixpkgs.legacyPackages.${builtins.head config.systems}.releaseTools.aggregate {
+        name = "allJobs";
+        constituents = lib.collect lib.isDerivation allJobs;
       };
     };
 }

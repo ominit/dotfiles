@@ -124,18 +124,8 @@ in {
               repository_url = "https://github.com/kraai-io/kraai";
               jobsets = [
                 {
-                  name = "checks";
-                  nix_expression = "checks";
-                  branch_pattern = "*";
-                }
-                {
-                  name = "packages";
-                  nix_expression = "packages";
-                  branch_pattern = "*";
-                }
-                {
-                  name = "devShells";
-                  nix_expression = "devShells";
+                  name = "hydraJobs";
+                  nix_expression = "hydraJobs";
                   branch_pattern = "*";
                 }
               ];
