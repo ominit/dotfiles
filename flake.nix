@@ -85,6 +85,12 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    nixbot = {
+      url = "github:mic92/nixbot";
+      inputs.nixpkgs.follows = "nixpkgs";
+      inputs.treefmt-nix.follows = "treefmt-nix";
+    };
+
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";

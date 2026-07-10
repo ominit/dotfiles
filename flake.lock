@@ -327,6 +327,29 @@
         "type": "github"
       }
     },
+    "nixbot": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ],
+        "treefmt-nix": [
+          "treefmt-nix"
+        ]
+      },
+      "locked": {
+        "lastModified": 1783577359,
+        "narHash": "sha256-8sSy44y+yb8dXorkLvpuFiRpC6ZlrOvBhOxIl7YH+Kg=",
+        "owner": "mic92",
+        "repo": "nixbot",
+        "rev": "254e2eec34888570b9a97384241b6b720d8c6e7e",
+        "type": "github"
+      },
+      "original": {
+        "owner": "mic92",
+        "repo": "nixbot",
+        "type": "github"
+      }
+    },
     "nixos-hardware": {
       "inputs": {
         "nixpkgs": "nixpkgs_3"
@@ -489,6 +512,7 @@
         "jujutsu": "jujutsu",
         "niri": "niri",
         "nix-cachyos-kernel": "nix-cachyos-kernel",
+        "nixbot": "nixbot",
         "nixos-hardware": "nixos-hardware",
         "nixos-wsl": "nixos-wsl",
         "nixpkgs": "nixpkgs_4",
