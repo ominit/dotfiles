@@ -3,9 +3,7 @@
   # inputs,
   # system,
   ...
-}: let
-  # circusPkgs = inputs.circus.packages.${system};
-in {
+}: {
   # imports = [inputs.circus.nixosModules.default];
 
   # config = {
