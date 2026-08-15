@@ -18,20 +18,19 @@
               };
             };
             swap = {
-              size = "40G";
+              size = "16G";
               content = {
                 type = "swap";
-                resumeDevice = true;
               };
             };
             nix = {
               size = "100%";
               content = {
                 type = "filesystem";
-                format = "btrfs";
-                extraArgs = ["-f"];
+                format = "ext4";
+                extraArgs = ["-F"];
                 mountpoint = "/nix";
-                mountOptions = ["compress=zstd"];
+                mountOptions = ["noatime"];
               };
             };
           };

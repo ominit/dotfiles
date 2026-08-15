@@ -43,6 +43,7 @@
     sops.secrets."hashedPassword".neededForUsers = true;
 
     nix.settings.trusted-users = ["root" "ominit"];
+    nix.channel.enable = false;
 
     users.users."ominit" = {
       isNormalUser = true;
