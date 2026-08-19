@@ -90,6 +90,7 @@
     nix.settings.trusted-users = ["root" "ominit"];
 
     services.resolved.enable = true;
+    services.tlp.enable = false;
 
     systemd.user.units."app-org.fcitx.Fcitx5@autostart.service".enable = false;
     i18n.inputMethod = {
