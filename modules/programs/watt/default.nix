@@ -8,6 +8,8 @@
 
   pkg = "watt";
 in {
+  disabledModules = ["services/hardware/watt.nix"];
+
   imports = [
     inputs.watt.nixosModules.watt
   ];
