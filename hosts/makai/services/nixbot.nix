@@ -24,7 +24,6 @@
         # OAuth credentials for the login button (from the same GitHub App).
         oauthId = "Iv23liyPwXJ18Vcvc2BA";
         oauthSecretFile = config.sops.secrets."nixbot/oauthSecret".path;
-        oauthPrivateRepoScope = true;
       };
 
       buildSystems = ["x86_64-linux" "aarch64-linux"];
