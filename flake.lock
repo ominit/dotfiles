@@ -628,11 +628,11 @@
         ]
       },
       "locked": {
-        "lastModified": 1783912592,
-        "narHash": "sha256-DYH/+WX2mIGpxtxHVmjyoj4qUdvlGxfYgrIBOu4SAqg=",
+        "lastModified": 1785244524,
+        "narHash": "sha256-1w8NCqJLMIO9H9bpCOHIcuMzPANX8fI3TzgY3+V5+HA=",
         "owner": "NotAShelf",
         "repo": "watt",
-        "rev": "fcc86eefbd172bb9cf44c63e6175dbabb19b34a3",
+        "rev": "db522b64c0ce29724edb7e91ecdc4fb71c8a96b8",
         "type": "github"
       },
       "original": {
