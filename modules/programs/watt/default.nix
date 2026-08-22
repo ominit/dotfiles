@@ -19,6 +19,8 @@ in {
       enable = true;
       settings = fromTOML (builtins.readFile ./config/config.toml);
     };
+
+    systemd.services.watt.environment.WATT_CONFIG = "/etc/watt.toml";
   };
 
   options.modules.programs."${pkg}" = {

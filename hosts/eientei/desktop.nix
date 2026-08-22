@@ -25,5 +25,9 @@
   services.gnome.gnome-keyring.enable = true;
   services.gvfs.enable = true;
   services.upower.enable = true;
+  services.udev.extraHwdb = ''
+    battery:*:*:dmi:*
+     CHARGE_LIMIT=80,85
+  '';
   services.displayManager.ly.enable = true;
 }
