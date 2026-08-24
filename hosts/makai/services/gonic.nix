@@ -7,7 +7,7 @@
         playlists-path = "/data/storage/gonic/playlists";
         podcast-path = "/data/storage/gonic/podcasts";
         listen-addr = "0.0.0.0:10001";
-        scan-interval = 1445;
+        scan-interval = 30;
         scan-at-start-enabled = true;
         multi-value-genre = "delim /";
         multi-value-artist = "delim /";
@@ -22,14 +22,6 @@
       "Z /data/storage/gonic/playlists 0755 gonic gonic -"
       "d /data/storage/gonic/podcasts 0755 gonic gonic -"
     ];
-
-    modules.persistence.directories.gonic-private = {
-      source = "/data/services/gonic";
-      target = "/var/lib/private/gonic";
-      user = "gonic";
-      group = "gonic";
-      resetPermissions = true;
-    };
 
     modules.persistence.directories.gonic = {
       source = "/data/services/gonic-a";
