@@ -42,10 +42,7 @@
     sops.defaultSopsFile = ./../../secrets/makai.yaml;
     sops.secrets."hashedPassword".neededForUsers = true;
 
-    nix.settings = {
-      build-dir = "/data/nix-build";
-      trusted-users = ["root" "ominit"];
-    };
+    nix.settings.trusted-users = ["root" "ominit"];
     nix.channel.enable = false;
 
     users.users."ominit" = {
@@ -75,7 +72,6 @@
 
     systemd.tmpfiles.rules = [
       "d /data/dotfiles 2700 ${config.users.users.ominit.name} ${config.users.users.ominit.group} -"
-      "D /data/nix-build 0755 root root -"
       "d /data/system/ssh 0750 root root -"
       "d /home/ominit/.cache - ominit users -"
       "d /home/ominit/.ssh - ominit users -"
