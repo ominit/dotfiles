@@ -1,8 +1,6 @@
 {
-  config,
   inputs,
   lib,
-  pkgs,
   ...
 }: {
   imports = [inputs.t3code.nixosModules.default];
