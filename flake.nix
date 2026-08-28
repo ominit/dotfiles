@@ -91,6 +91,11 @@
       inputs.treefmt-nix.follows = "treefmt-nix";
     };
 
+    t3code = {
+      url = "github:ominit/t3code-flake";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     noctalia = {
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";

@@ -61,11 +61,13 @@
         nh
         ripgrep
         jq
+        gh
+        codex
       ];
     };
 
     sops.secrets."sshKey" = {
-      path = "/home/ominit/.ssh/id_ed25519";
+      path = "/data/home/ominit/.ssh/id_ed25519";
       owner = "ominit";
       group = "users";
       mode = "0400";
@@ -81,21 +83,12 @@
       "d /home/ominit/.config/ - ominit users -"
     ];
 
-    modules.persistence.groups.ominit-home = {
+    modules.persistence.directories.ominit-home = {
       source = "/data/home/ominit";
       target = "/home/ominit";
       user = "ominit";
       group = "users";
-      directories = [
-        ".cache/nix"
-        ".codex"
-      ];
-      files = [
-        ".ssh/known_hosts"
-        ".config/nushell/history.sqlite3"
-        ".config/nushell/history.sqlite3-shm"
-        ".config/nushell/history.sqlite3-wal"
-      ];
+      mode = "0700";
     };
 
     fileSystems."/data".neededForBoot = true;
