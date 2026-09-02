@@ -17,7 +17,7 @@
     #
 
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
-    nixpkgs-ominit.url = "github:ominit/nixpkgs/master";
+    multiverse.url = "github:fzakaria/nixpkgs-multiverse";
 
     nixos-hardware.url = "github:nixos/nixos-hardware";
 

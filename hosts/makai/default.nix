@@ -59,7 +59,7 @@
         ripgrep
         jq
         gh
-        codex
+        inputs.multiverse.multiverse.${system}.latest.codex
       ];
     };
 
