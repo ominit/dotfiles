@@ -7,9 +7,9 @@
         "10002:9180"
       ];
       environment = {
-        SERVER_NAME = "gonic";
+        SERVER_NAME = "LMS";
         SERVER_TYPE = "subsonic";
-        SERVER_URL = "https://gonic.42nd.net";
+        SERVER_URL = "https://feishin.42nd.net";
         SERVER_LOCK = "true";
         TZ = "America/Los_Angeles";
       };
