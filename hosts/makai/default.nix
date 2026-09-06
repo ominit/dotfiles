@@ -14,24 +14,32 @@
     ++ (inputs.self.lib.filesIn ./services);
 
   config = {
-    modules.programs = {
-      helix = {
+    modules = {
+      agents = {
         enable = true;
-        package = inputs.helix.packages.${system}.default;
+        skills = ["unslop"];
+        extraAgentFiles = [./AGENTS.md];
       };
-      bat.enable = true;
-      jujutsu.enable = true;
-      zellij.enable = true;
-      git = {
-        enable = true;
-        deltaPager = true;
+
+      programs = {
+        helix = {
+          enable = true;
+          package = inputs.helix.packages.${system}.default;
+        };
+        bat.enable = true;
+        jujutsu.enable = true;
+        zellij.enable = true;
+        git = {
+          enable = true;
+          deltaPager = true;
+        };
+        nushell = {
+          enable = true;
+          extraSources = [./env-vars.nu];
+        };
+        btop.enable = true;
+        yazi.enable = true;
       };
-      nushell = {
-        enable = true;
-        extraSources = [./env-vars.nu];
-      };
-      btop.enable = true;
-      yazi.enable = true;
     };
 
     networking.firewall.enable = true;

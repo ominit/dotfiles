@@ -5,5 +5,5 @@
   programs = filesIn ./programs;
   persistence = filesIn ./persistence;
 in {
-  imports = [] ++ programs ++ persistence;
+  imports = [./agents] ++ programs ++ persistence;
 }
