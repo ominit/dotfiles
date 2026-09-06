@@ -1,4 +1,4 @@
-{ ...}: {
+{...}: {
   config = {
     services.ttyd = {
       enable = true;
