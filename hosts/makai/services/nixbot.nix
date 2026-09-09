@@ -30,6 +30,12 @@
       buildConcurrency = 2;
     };
 
+    # The root directory rule upstream does not repair descendants left
+    # with an old nixbot UID after system-user allocation changes.
+    systemd.tmpfiles.rules = [
+      "Z /nix/var/nix/gcroots/per-user/nixbot - nixbot nixbot - -"
+    ];
+
     sops.secrets."nixbot/appSecretKey" = {
       owner = "nixbot";
       group = "nixbot";
