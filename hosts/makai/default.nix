@@ -50,7 +50,11 @@
     sops.defaultSopsFile = ./../../secrets/makai.yaml;
     sops.secrets."hashedPassword".neededForUsers = true;
 
-    nix.settings.trusted-users = ["root" "ominit"];
+    nix.settings = {
+      trusted-users = ["root" "ominit"];
+      max-jobs = 3;
+      cores = 2;
+    };
     nix.channel.enable = false;
 
     users.users."ominit" = {
@@ -145,8 +149,8 @@
       ++ builtins.filter lib.attrsets.isDerivation (builtins.attrValues pkgs.nerd-fonts);
 
     systemd.services.nix-daemon.serviceConfig = {
-      CPUWeight = 1;
-      Nice = 19;
+      CPUWeight = 25;
+      Nice = 10;
     };
 
     nix.optimise = {

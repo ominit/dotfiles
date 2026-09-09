@@ -27,7 +27,7 @@
       };
 
       buildSystems = ["x86_64-linux" "aarch64-linux"];
-      buildConcurrency = 1;
+      buildConcurrency = 2;
     };
 
     sops.secrets."nixbot/appSecretKey" = {
