@@ -18,6 +18,8 @@
       agents = {
         enable = true;
         skills = ["unslop"];
+        mcpServers = ["notion"];
+        codexPackage = inputs.multiverse.multiverse.${system}.latest.codex;
         extraAgentFiles = [./AGENTS.md];
       };
 
@@ -71,7 +73,6 @@
         ripgrep
         jq
         gh
-        inputs.multiverse.multiverse.${system}.latest.codex
       ];
     };
 
