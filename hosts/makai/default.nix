@@ -113,7 +113,6 @@
     # TODO need to setup
     # networking.wireless.enable = true;
 
-    nixpkgs.config.cudaSupport = true;
     hardware.nvidia = {
       modesetting.enable = true;
       open = false;
