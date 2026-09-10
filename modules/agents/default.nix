@@ -25,6 +25,10 @@
     mcp_oauth_callback_port = 53682;
   };
   codexWithMcp = pkgs.writeShellScriptBin "codex" ''
+    if [ "''${1-}" = "app-server" ]; then
+      shift
+      exec ${lib.getExe cfg.codexPackage} app-server ${lib.escapeShellArgs mcpFlags} "$@"
+    fi
     exec ${lib.getExe cfg.codexPackage} ${lib.escapeShellArgs mcpFlags} "$@"
   '';
   skillRoot = ./skills;
