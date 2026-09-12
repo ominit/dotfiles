@@ -23,6 +23,13 @@
           mcpServers = ["notion"];
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
         }
+        {
+          name = "hermes";
+          skills = ["unslop"];
+          mcpServers = ["notion"];
+          agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
+          settings.mcp_servers.notion.auth = "oauth";
+        }
       ];
 
       programs = {
