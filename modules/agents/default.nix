@@ -4,94 +4,85 @@
   pkgs,
   ...
 }: let
-  inherit (lib) mkEnableOption mkIf mkOption nameValuePair types;
+  inherit (lib) mkOption nameValuePair types;
 
   cfg = config.modules.agents;
-  mcpRoot = ./mcp;
-  availableMcpServers = map (lib.removeSuffix ".nix") (builtins.attrNames (
-    lib.filterAttrs (name: type: type == "regular" && lib.hasSuffix ".nix" name) (builtins.readDir mcpRoot)
-  ));
-  enabledMcpServers = builtins.listToAttrs (map (name:
-    nameValuePair name (import (mcpRoot + "/${name}.nix")))
-  cfg.mcpServers);
-  # Codex expects unquoted dotted keys for CLI overrides.
-  configFlags = path: value:
-    if builtins.isAttrs value
-    then lib.concatLists (lib.mapAttrsToList (name: child: configFlags (path ++ [name]) child) value)
-    else ["-c" "${lib.concatStringsSep "." path}=${builtins.toJSON value}"];
-  mcpFlags = configFlags [] {
-    mcp_servers = enabledMcpServers;
-    mcp_oauth_credentials_store = "file";
-    mcp_oauth_callback_port = 53682;
-  };
-  codexWithMcp = pkgs.writeShellScriptBin "codex" ''
-    if [ "''${1-}" = "app-server" ]; then
-      shift
-      exec ${lib.getExe cfg.codexPackage} app-server ${lib.escapeShellArgs mcpFlags} "$@"
-    fi
-    exec ${lib.getExe cfg.codexPackage} ${lib.escapeShellArgs mcpFlags} "$@"
-  '';
-  skillRoot = ./skills;
-  availableSkills = builtins.attrNames (
-    lib.filterAttrs (_: type: type == "directory") (builtins.readDir skillRoot)
-  );
-  enabledSkillFiles = builtins.listToAttrs (map (name:
-    nameValuePair ".agents/skills/${name}" {
-      source = skillRoot + "/${name}";
-      clobber = true;
-    })
-  cfg.skills);
-  agentFiles = [./AGENTS.md] ++ cfg.extraAgentFiles;
-in {
-  options.modules.agents = {
-    enable = mkEnableOption "agent configuration";
-
-    skills = mkOption {
-      type = types.listOf (types.enum availableSkills);
-      default = [];
-      apply = lib.unique;
-      description = "Skills to expose in the user's shared agent skills directory.";
-    };
-
-    extraAgentFiles = mkOption {
-      type = types.listOf types.path;
-      default = [];
-      description = "Additional AGENTS.md fragments appended after the shared defaults.";
-    };
-
-    mcpServers = mkOption {
-      type = types.listOf (types.enum availableMcpServers);
-      default = [];
-      apply = lib.unique;
-      description = "MCP servers to configure for Codex on this host. Authenticate separately on each host.";
-    };
-
-    codexPackage = mkOption {
-      type = types.nullOr types.package;
-      default = null;
-      description = "Optional Codex package to install, wrapped when MCP servers are selected.";
-    };
-  };
-
-  config = mkIf cfg.enable {
-    users.users.ominit.packages = lib.optional (cfg.codexPackage != null) (
-      if cfg.mcpServers != []
-      then codexWithMcp
-      else cfg.codexPackage
+  harnessRoot = ./harnesses;
+  nixFiles = root:
+    lib.mapAttrs' (name: _: nameValuePair (lib.removeSuffix ".nix" name) (root + "/${name}")) (
+      lib.filterAttrs (name: type: type == "regular" && lib.hasSuffix ".nix" name) (builtins.readDir root)
     );
-
-    hjem.users."ominit".files =
-      {
-        ".codex/AGENTS.md" = {
-          text = lib.concatMapStringsSep "\n\n" builtins.readFile agentFiles;
-          clobber = true;
+  harnesses = lib.mapAttrs (_: path: import path {inherit lib pkgs;}) (nixFiles harnessRoot);
+  mcpServers = lib.mapAttrs (_: path: import path) (nixFiles ./mcp);
+  skills = lib.mapAttrs (name: _: ./skills + "/${name}") (
+    lib.filterAttrs (_: type: type == "directory") (builtins.readDir ./skills)
+  );
+  enabledHarnesses = map (harness:
+    harnesses.${harness.name}.configure (harness
+      // {
+        mcpServers = lib.getAttrs harness.mcpServers mcpServers;
+        skills = lib.getAttrs harness.skills skills;
+      }))
+  cfg.harnesses;
+in {
+  options.modules.agents.harnesses = mkOption {
+    type = types.listOf (types.submodule ({config, ...}: {
+      options = {
+        name = mkOption {
+          type = types.enum (builtins.attrNames harnesses);
+          description = "Agent harness to install and configure.";
         };
-      }
-      // enabledSkillFiles;
 
-    systemd.user.tmpfiles.users."ominit".rules = [
-      "d %h/.agents/skills 0700 - - -"
-      "d %h/.codex 0700 - - -"
+        package = mkOption {
+          type = types.package;
+          default = harnesses.${config.name}.package;
+          description = "Package to install for this harness.";
+        };
+
+        skills = mkOption {
+          type = types.listOf (types.enum (builtins.attrNames skills));
+          default = [];
+          apply = lib.unique;
+          description = "Skills to install for this harness.";
+        };
+
+        agentFiles = mkOption {
+          type = types.listOf types.path;
+          default = [];
+          description = "Instruction files to concatenate in order for this harness.";
+        };
+
+        mcpServers = mkOption {
+          type = types.listOf (types.enum (builtins.attrNames mcpServers));
+          default = [];
+          apply = lib.unique;
+          description = "MCP servers to configure for this harness. Authenticate separately on each host.";
+        };
+
+        settings = mkOption {
+          type = harnesses.${config.name}.settingsType;
+          default = {};
+          description = "Native harness settings, overriding the generated defaults.";
+        };
+      };
+    }));
+    default = [];
+    description = "Harnesses to install, each with its own configuration.";
+  };
+
+  config = lib.mkIf (cfg.harnesses != []) {
+    assertions = [
+      {
+        assertion = let
+          names = map (harness: harness.name) cfg.harnesses;
+        in
+          builtins.length names == builtins.length (lib.unique names);
+        message = "modules.agents.harnesses must contain each harness at most once.";
+      }
     ];
+
+    users.users.ominit.packages = map (harness: harness.package) enabledHarnesses;
+    hjem.users.ominit.files = lib.mkMerge (map (harness: harness.files) enabledHarnesses);
+    systemd.user.tmpfiles.users.ominit.rules = lib.concatMap (harness: harness.tmpfiles) enabledHarnesses;
   };
 }

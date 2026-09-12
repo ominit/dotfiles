@@ -15,13 +15,15 @@
 
   config = {
     modules = {
-      agents = {
-        enable = true;
-        skills = ["unslop"];
-        mcpServers = ["notion"];
-        codexPackage = inputs.multiverse.multiverse.${system}.latest.codex;
-        extraAgentFiles = [./AGENTS.md];
-      };
+      agents.harnesses = [
+        {
+          name = "codex";
+          package = inputs.multiverse.multiverse.${system}.latest.codex;
+          skills = ["unslop"];
+          mcpServers = ["notion"];
+          agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
+        }
+      ];
 
       programs = {
         helix = {
