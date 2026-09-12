@@ -25,10 +25,8 @@
         }
         {
           name = "hermes";
+          package = inputs.hermes-agent.packages.${system}.messaging;
           skills = ["unslop"];
-          mcpServers = ["notion"];
-          agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
-          settings.mcp_servers.notion.auth = "oauth";
         }
       ];
 
@@ -70,6 +68,18 @@
 
     users.users."ominit" = {
       isNormalUser = true;
+      subUidRanges = [
+        {
+          startUid = 100000;
+          count = 262144;
+        }
+      ];
+      subGidRanges = [
+        {
+          startGid = 100000;
+          count = 262144;
+        }
+      ];
       extraGroups = ["networkmanager" "wheel"];
       shell = config.modules.programs.nushell.package;
       openssh.authorizedKeys.keys = [

@@ -15,6 +15,15 @@
   ];
 
   config = {
+    modules.agents.harnesses = [
+      {
+        name = "codex";
+        package = inputs.multiverse.multiverse.${system}.latest.codex;
+        skills = ["unslop"];
+        agentFiles = [../../modules/agents/AGENTS.md];
+      }
+    ];
+
     modules.programs = {
       helix = {
         enable = true;
