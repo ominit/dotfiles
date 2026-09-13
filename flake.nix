@@ -57,6 +57,11 @@
     # programs
     #
 
+    ncro = {
+      url = "github:manic-systems/ncro";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     circus = {
       url = "github:manic-systems/circus";
       inputs.nixpkgs.follows = "nixpkgs";

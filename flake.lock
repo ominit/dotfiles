@@ -288,6 +288,26 @@
         "type": "github"
       }
     },
+    "ncro": {
+      "inputs": {
+        "nixpkgs": [
+          "nixpkgs"
+        ]
+      },
+      "locked": {
+        "lastModified": 1788018155,
+        "narHash": "sha256-TB3Q6xpaV7APiC6qAM4ENV6MNuUjR4OgatQtj88PBWY=",
+        "owner": "manic-systems",
+        "repo": "ncro",
+        "rev": "a367692d67bed3225d64fed0fffefed141927fd3",
+        "type": "github"
+      },
+      "original": {
+        "owner": "manic-systems",
+        "repo": "ncro",
+        "type": "github"
+      }
+    },
     "niri": {
       "inputs": {
         "nixpkgs": [
@@ -497,6 +517,7 @@
         "hjem": "hjem",
         "jujutsu": "jujutsu",
         "multiverse": "multiverse",
+        "ncro": "ncro",
         "niri": "niri",
         "nix-cachyos-kernel": "nix-cachyos-kernel",
         "nixbot": "nixbot",

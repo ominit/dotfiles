@@ -5,5 +5,5 @@
   programs = filesIn ./programs;
   persistence = filesIn ./persistence;
 in {
-  imports = [./agents] ++ programs ++ persistence;
+  imports = [./agents ./ncro.nix] ++ programs ++ persistence;
 }
