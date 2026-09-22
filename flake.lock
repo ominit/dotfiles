@@ -216,20 +216,18 @@
           "flake-parts"
         ],
         "home-manager": "home-manager",
-        "nixpkgs": [
-          "nixpkgs"
-        ],
+        "nixpkgs": "nixpkgs_2",
         "npm-lockfile-fix": "npm-lockfile-fix",
         "pyproject-build-systems": "pyproject-build-systems",
         "pyproject-nix": "pyproject-nix",
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1789181887,
-        "narHash": "sha256-6Lk/Y0sPUpvVsS85kQQOcUmYwysyu4YHAx+tc/HDAW0=",
+        "lastModified": 1790082352,
+        "narHash": "sha256-NwtVxca4QL/wrpWJ0W8hOH3wrG6EF23OO1qs1fi3Zwo=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "284d220ba48e25f2e3623b3afe72db8f24a4c2db",
+        "rev": "e2f8a0731bf26e95b31e35d73e71e183a1045b81",
         "type": "github"
       },
       "original": {
@@ -381,7 +379,7 @@
       "inputs": {
         "flake-compat": "flake-compat",
         "flake-parts": "flake-parts_2",
-        "nixpkgs": "nixpkgs_2"
+        "nixpkgs": "nixpkgs_3"
       },
       "locked": {
         "lastModified": 1789241994,
@@ -423,7 +421,7 @@
     },
     "nixos-hardware": {
       "inputs": {
-        "nixpkgs": "nixpkgs_3"
+        "nixpkgs": "nixpkgs_4"
       },
       "locked": {
         "lastModified": 1789752250,
@@ -493,6 +491,22 @@
     },
     "nixpkgs_2": {
       "locked": {
+        "lastModified": 1790046670,
+        "narHash": "sha256-MYiI+CzL0tuWgRPjGsKCDHqYs2T3OzMlMQWOYWG0qso=",
+        "owner": "NixOS",
+        "repo": "nixpkgs",
+        "rev": "6774f7bc253789b113a4f39285dc0fa100abeacc",
+        "type": "github"
+      },
+      "original": {
+        "owner": "NixOS",
+        "ref": "nixos-unstable",
+        "repo": "nixpkgs",
+        "type": "github"
+      }
+    },
+    "nixpkgs_3": {
+      "locked": {
         "lastModified": 1789181251,
         "narHash": "sha256-8yaO1XLoObzYgb6Uj+0IkUxbkCI6kBLuImoZAuAHzB4=",
         "owner": "NixOS",
@@ -507,7 +521,7 @@
         "type": "github"
       }
     },
-    "nixpkgs_3": {
+    "nixpkgs_4": {
       "locked": {
         "lastModified": 1789546076,
         "narHash": "sha256-vWkSk5bbfTqdtMoSgD9FshACO8JCvXTFi+3cqEp0mH0=",
@@ -520,7 +534,7 @@
         "url": "https://channels.nixos.org/nixos-unstable/nixexprs.tar.xz"
       }
     },
-    "nixpkgs_4": {
+    "nixpkgs_5": {
       "locked": {
         "lastModified": 1789684949,
         "narHash": "sha256-ZKhUe/2IJUq1JhKxKMu8rbkgSGmPP2ZCqlIPn40aGCM=",
@@ -644,7 +658,7 @@
         "nixbot": "nixbot",
         "nixos-hardware": "nixos-hardware",
         "nixos-wsl": "nixos-wsl",
-        "nixpkgs": "nixpkgs_4",
+        "nixpkgs": "nixpkgs_5",
         "noctalia": "noctalia",
         "sops-nix": "sops-nix",
         "t3code": "t3code",
@@ -739,11 +753,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1789675793,
-        "narHash": "sha256-Lb9nP76iVUWy+2zObzqYEdgh36XsYQrefoMqmrOv5XI=",
+        "lastModified": 1789994938,
+        "narHash": "sha256-wwe1bIaGhNBrSkOS1H+CJfwmBM9hGHZHH1xy3GEbFrQ=",
         "owner": "ominit",
         "repo": "t3code-flake",
-        "rev": "e7e3cf98e6b60ab11f159c938990c4541bba0a8a",
+        "rev": "24a6d7c5f0e7b2983ba163ed3411d4d4d6245dcd",
         "type": "github"
       },
       "original": {

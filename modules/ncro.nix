@@ -13,6 +13,10 @@
       logging.timestamps = false;
       upstreams = [
         {
+          url = "https://hermes-agent.cachix.org";
+          public_key = "hermes-agent.cachix.org-1:jN3pjR50Mxi4SESKC/FIMNM6/LCosvPk2VUwzVvebzU=";
+        }
+        {
           url = "https://cache.nixos.org";
           public_key = "cache.nixos.org-1:6NCHdD59X431o0gWypbMrAURkbJ16ZPMQFGspcDShjY=";
         }
