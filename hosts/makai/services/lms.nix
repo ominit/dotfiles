@@ -3,6 +3,7 @@
   pkgs,
   ...
 }: let
+  package = pkgs.lms.override {boost = pkgs.boost190;};
   lmsConfig = pkgs.runCommand "lms.conf" {} ''
     cp ${pkgs.lms}/share/lms/lms.conf $out
     substituteInPlace $out \
@@ -25,7 +26,7 @@ in {
       ];
 
       serviceConfig = {
-        ExecStart = "${lib.getExe pkgs.lms} ${lmsConfig}";
+        ExecStart = "${lib.getExe package} ${lmsConfig}";
         User = "lms";
         Group = "lms";
         StateDirectory = "lms";
