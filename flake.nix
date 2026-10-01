@@ -19,6 +19,11 @@
     nixpkgs.url = "github:nixos/nixpkgs/nixos-unstable";
     multiverse.url = "github:fzakaria/nixpkgs-multiverse";
 
+    nix-index-database = {
+      url = "github:nix-community/nix-index-database";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     nixos-hardware.url = "github:nixos/nixos-hardware";
 
     nixos-wsl = {
@@ -56,6 +61,11 @@
     #
     # programs
     #
+
+    cade = {
+      url = "github:manic-systems/cade";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
 
     ncro = {
       url = "github:manic-systems/ncro";
@@ -110,11 +120,6 @@
       url = "github:noctalia-dev/noctalia-shell";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # quickshell = {
-    #   url = "git+https://git.outfoxxed.me/quickshell/quickshell";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
 
     watt = {
       url = "github:NotAShelf/watt";

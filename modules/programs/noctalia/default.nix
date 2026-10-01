@@ -10,16 +10,6 @@
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
-      files.".config/noctalia/settings.json" = {
-        source = ./config/settings.json;
-        clobber = true;
-      };
-
-      files.".config/noctalia/colorschemes/Embark/Embark.json" = {
-        source = ./config/colorschemes/Embark/Embark.json;
-        clobber = true;
-      };
-
       packages =
         [
           config.modules.programs."${pkg}".package

@@ -28,15 +28,12 @@ with pkgs; [
   ripgrep
   fd
   fzf
-  zoxide
   imagemagick
   poppler
-  autorandr
   wayland
   gitui
   egl-wayland
   xwayland
-  fastfetch
   pavucontrol
   networkmanager
   networkmanagerapplet
@@ -47,14 +44,10 @@ with pkgs; [
   trash-cli
   pciutils
   lm_sensors
-  grimblast
   slurp
   swappy
-  waybar
   nh
   hyprpolkitagent
-  hyprpicker
-  clipse
   wl-clipboard
   brightnessctl
   playerctl

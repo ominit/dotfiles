@@ -26,7 +26,6 @@ input {
 }
 
 environment {
-  GTK_IM_MODULE   "fcitx"
   QT_IM_MODULE    "fcitx"
   XMODIFIERS      "@im=fcitx"
   SDL_IM_MODULE   "fcitx"
@@ -142,20 +141,15 @@ binds {
 
     Mod+T hotkey-overlay-title="ghostty" { spawn "ghostty"; }
     Mod+Space hotkey-overlay-title="vicinae" repeat=false { spawn "vicinae" "toggle"; }
-    Mod+L hotkey-overlay-title="lock" { spawn "noctalia-shell" "ipc" "call" "sessionMenu" "toggle"; }
+    Mod+L repeat=false hotkey-overlay-title="Session menu" { spawn "noctalia" "msg" "panel-toggle" "session"; }
 
-    Mod+Tab repeat=false { spawn "niriswitcherctl" "show" "--window"; }
-    Mod+Shift+Tab repeat=false { spawn "niriswitcherctl" "show" "--window"; }
-    Mod+Grave repeat=false { spawn "niriswitcherctl" "show" "--workspace"; }
-    Mod+Shift+Grave repeat=false { spawn "niriswitcherctl" "show" "--workspace"; }
-    
-    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
-    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
+    XF86AudioRaiseVolume allow-when-locked=true { spawn "wpctl" "set-volume" "--limit" "1.0" "@DEFAULT_AUDIO_SINK@" "0.1+"; }
+    XF86AudioLowerVolume allow-when-locked=true { spawn "wpctl" "set-volume" "--limit" "1.0" "@DEFAULT_AUDIO_SINK@" "0.1-"; }
     XF86AudioMute        allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SINK@" "toggle"; }
     XF86AudioMicMute     allow-when-locked=true { spawn "wpctl" "set-mute" "@DEFAULT_AUDIO_SOURCE@" "toggle"; }
 
-    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "+10%"; }
-    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "set" "10%-"; }
+    XF86MonBrightnessUp allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "--exponent=4" "set" "+5%"; }
+    XF86MonBrightnessDown allow-when-locked=true { spawn "brightnessctl" "--class=backlight" "--exponent=4" "set" "5%-"; }
 
     Mod+O repeat=false { toggle-overview; }
 
@@ -351,6 +345,7 @@ binds {
     // Mod+Shift+Space { switch-layout "prev"; }
 
     Print { screenshot; }
+    Mod+Shift+S repeat=false { screenshot; }
     Ctrl+Print { screenshot-screen; }
     Alt+Print { screenshot-window; }
 

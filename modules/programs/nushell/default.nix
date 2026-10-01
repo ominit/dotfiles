@@ -2,11 +2,14 @@
   pkgs,
   lib,
   config,
+  inputs,
+  system,
   ...
 }: let
   inherit (lib) types mkIf mkEnableOption mkOption mkPackageOption mkMerge;
 
   pkg = "nushell";
+  cade = inputs.cade.packages.${system}.default;
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
     hjem.users."ominit" = {
@@ -18,8 +21,17 @@ in {
           };
         }
         {
+          ".config/nushell/autoload/cade.nu" = {
+            source = pkgs.runCommand "cade.nu" {} ''
+              ${lib.getExe cade} hook nushell > "$out"
+            '';
+            clobber = true;
+          };
+
           ".config/nushell/autoload/starship.nu" = {
-            source = ./config/autoload/starship.nu;
+            source = pkgs.runCommand "starship.nu" {} ''
+              ${lib.getExe pkgs.starship} init nu > "$out"
+            '';
             clobber = true;
           };
         }
@@ -35,6 +47,7 @@ in {
 
       packages = with pkgs; [
         config.modules.programs."${pkg}".package
+        cade
 
         starship
         fish
