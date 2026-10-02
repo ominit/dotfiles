@@ -365,11 +365,11 @@
     },
     "multiverse": {
       "locked": {
-        "lastModified": 1790886253,
-        "narHash": "sha256-+rC1pY4SagHKKjsYLbHuBg4pO4JceQLJhH0+V500I/g=",
+        "lastModified": 1790967710,
+        "narHash": "sha256-Gu+QKVKuj3PTWTgc55xmT63CK3CCaY/H1O+jYRlIgYE=",
         "owner": "fzakaria",
         "repo": "nixpkgs-multiverse",
-        "rev": "592e223937ba624e61e0fbcb6ebca27c71cadc21",
+        "rev": "2e5edc7ef5ebd398589e9fec7865c10370f05671",
         "type": "github"
       },
       "original": {
@@ -835,11 +835,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1790859172,
-        "narHash": "sha256-tKTPaRJvq77pAfwBFc27uWJQKFUTwqsX7yspbvmOGqA=",
+        "lastModified": 1790965213,
+        "narHash": "sha256-2Vfnkhsqsm/zSpeZD4E0yjuZRbz7t3V0VMqhuD2tDLo=",
         "owner": "ominit",
         "repo": "t3code-flake",
-        "rev": "9c14161d8aea75033c9a5342685f43893916df8c",
+        "rev": "2a80ca81432744ceec2110c8f90c51a957e2998e",
         "type": "github"
       },
       "original": {
