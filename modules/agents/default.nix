@@ -26,6 +26,13 @@
       }))
   cfg.harnesses;
 in {
+  options.modules.agents.skills = mkOption {
+    type = types.listOf (types.enum (builtins.attrNames skills));
+    default = [];
+    apply = lib.unique;
+    description = "Skills to install in the shared agent skills directory.";
+  };
+
   options.modules.agents.harnesses = mkOption {
     type = types.listOf (types.submodule ({config, ...}: {
       options = {
@@ -71,7 +78,7 @@ in {
     description = "Harnesses to install, each with its own configuration.";
   };
 
-  config = lib.mkIf (cfg.harnesses != []) {
+  config = lib.mkIf (cfg.harnesses != [] || cfg.skills != []) {
     assertions = [
       {
         assertion = let
@@ -83,7 +90,21 @@ in {
     ];
 
     users.users.ominit.packages = map (harness: harness.package) enabledHarnesses;
-    hjem.users.ominit.files = lib.mkMerge (map (harness: harness.files) enabledHarnesses);
-    systemd.user.tmpfiles.users.ominit.rules = lib.concatMap (harness: harness.tmpfiles) enabledHarnesses;
+    hjem.users.ominit.files = lib.mkMerge (
+      [
+        (lib.genAttrs' cfg.skills (name:
+          nameValuePair ".agents/skills/${name}" {
+            source = skills.${name};
+            clobber = true;
+          }))
+      ]
+      ++ map (harness: harness.files) enabledHarnesses
+    );
+    systemd.user.tmpfiles.users.ominit.rules =
+      lib.optionals (cfg.skills != []) [
+        "d %h/.agents 0700 - - -"
+        "d %h/.agents/skills 0700 - - -"
+      ]
+      ++ lib.concatMap (harness: harness.tmpfiles) enabledHarnesses;
   };
 }

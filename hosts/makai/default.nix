@@ -15,11 +15,12 @@
 
   config = {
     modules = {
+      agents.skills = ["unslop"];
       agents.harnesses = [
+        {name = "kraai";}
         {
           name = "codex";
           package = inputs.multiverse.multiverse.${system}.latest.codex;
-          skills = ["unslop"];
           mcpServers = ["notion"];
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
         }
