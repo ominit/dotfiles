@@ -52,6 +52,8 @@
       };
     };
 
+    environment.systemPackages = [pkgs.ghostty.terminfo];
+
     networking.firewall.enable = true;
 
     # don't allow mutation of users outside of the config
