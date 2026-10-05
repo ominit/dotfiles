@@ -17,7 +17,10 @@
     modules = {
       agents.skills = ["unslop"];
       agents.harnesses = [
-        {name = "kraai";}
+        {
+          name = "kraai";
+          agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
+        }
         {
           name = "codex";
           package = inputs.multiverse.multiverse.${system}.latest.codex;

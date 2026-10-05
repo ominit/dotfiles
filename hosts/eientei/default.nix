@@ -17,7 +17,10 @@
   config = {
     modules.agents.skills = ["unslop"];
     modules.agents.harnesses = [
-      {name = "kraai";}
+      {
+        name = "kraai";
+        agentFiles = [../../modules/agents/AGENTS.md];
+      }
       {
         name = "codex";
         package = inputs.multiverse.multiverse.${system}.latest.codex;
