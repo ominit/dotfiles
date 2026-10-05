@@ -2,6 +2,11 @@ auto-update = off
 confirm-close-surface = false
 clipboard-paste-protection = true
 
+working-directory = home
+window-inherit-working-directory = false
+tab-inherit-working-directory = true
+split-inherit-working-directory = true
+
 # style
 window-padding-x = 10
 window-padding-y = 2
