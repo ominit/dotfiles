@@ -1,6 +1,7 @@
 {
   inputs,
   config,
+  pkgs,
   ...
 }: {
   imports = [inputs.nixbot.nixosModules.nixbot];
@@ -28,6 +29,12 @@
 
       buildSystems = ["x86_64-linux" "aarch64-linux"];
       buildConcurrency = 2;
+      packages.nixbot =
+        (pkgs.python3.pkgs.callPackage "${inputs.nixbot}/packages/nixbot.nix" {
+          inherit (config.services.nixbot.packages) nix-eval-jobs;
+        }).overridePythonAttrs (old: {
+          patches = (old.patches or []) ++ [../../../patches/nixbot-fast-eval.patch];
+        });
     };
 
     # The root directory rule upstream does not repair descendants left

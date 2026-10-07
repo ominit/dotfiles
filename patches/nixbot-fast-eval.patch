@@ -1,0 +1,28 @@
+--- a/nixbot/nix_eval.py
++++ b/nixbot/nix_eval.py
+@@ -201,3 +201,3 @@
+         "--force-recurse",
+-        "--check-cache-status",
++        "--show-input-drvs",
+         *(["--eval-store", "daemon"] if settings.build_store_url else []),
+--- a/nixbot/models.py
++++ b/nixbot/models.py
+@@ -45,4 +45,5 @@
+     )
+-    needed_builds: list[str] = Field(validation_alias="neededBuilds")
+-    needed_substitutes: list[str] = Field(validation_alias="neededSubstitutes")
++    needed_builds: list[str] = Field(default_factory=list, validation_alias="neededBuilds")
++    needed_substitutes: list[str] = Field(default_factory=list, validation_alias="neededSubstitutes")
++    input_drvs: dict[str, list[str]] = Field(default_factory=dict, validation_alias="inputDrvs")
+     drv_path: str = Field(validation_alias="drvPath")
+--- a/nixbot/executor.py
++++ b/nixbot/executor.py
+@@ -370,3 +370,7 @@
+     if job.build_dependencies_only:
+-        return [f"{d}^*" for d in job.needed_builds if d != job.drv_path]
++        return [
++            f"{drv}^{output}"
++            for drv, outputs in job.input_drvs.items()
++            for output in outputs
++        ]
+     return [f"{job.drv_path}^*"]
