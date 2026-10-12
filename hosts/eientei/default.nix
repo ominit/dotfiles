@@ -2,6 +2,7 @@
   inputs,
   system,
   pkgs,
+  multiverse,
   ...
 }: {
   imports = [
@@ -23,7 +24,7 @@
       }
       {
         name = "codex";
-        package = inputs.multiverse.multiverse.${system}.latest.codex;
+        package = multiverse.latest.codex;
         agentFiles = [../../modules/agents/AGENTS.md];
       }
     ];

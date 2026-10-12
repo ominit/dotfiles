@@ -31,6 +31,12 @@
               nix.settings.experimental-features = ["nix-command" "flakes" "ca-derivations" "dynamic-derivations" "recursive-nix"];
               nixpkgs.config.allowUnfree = true;
             }
+            ({config, ...}: {
+              _module.args.multiverse = inputs.multiverse.lib.mkMultiverse {
+                inherit system;
+                inherit (config.nixpkgs) config;
+              };
+            })
             ./../modules
           ]
           ++ modules;

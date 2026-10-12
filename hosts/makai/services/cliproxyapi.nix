@@ -1,9 +1,8 @@
 {
   config,
-  inputs,
   lib,
   pkgs,
-  system,
+  multiverse,
   ...
 }: let
   configPath = "/var/lib/cliproxyapi/config.yaml";
@@ -12,7 +11,7 @@ in {
   config = {
     services.cliproxyapi = {
       enable = true;
-      package = inputs.multiverse.multiverse.${system}.latest.cliproxyapi;
+      package = multiverse.latest.cliproxyapi;
       settings = {
         server = {
           host = "0.0.0.0";

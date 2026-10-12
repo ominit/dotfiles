@@ -3,6 +3,7 @@
   inputs,
   config,
   system,
+  multiverse,
   ...
 }: {
   imports =
@@ -23,8 +24,19 @@
         }
         {
           name = "codex";
-          package = inputs.multiverse.multiverse.${system}.latest.codex;
+          package = multiverse.latest.codex;
           mcpServers = ["notion"];
+          agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
+        }
+        {
+          name = "claude-code";
+          package = multiverse.latest.claude-code;
+          mcpServers = ["notion"];
+          skills = ["unslop"];
+          settings.attribution = {
+            commit = "";
+            pr = "";
+          };
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
         }
         {
