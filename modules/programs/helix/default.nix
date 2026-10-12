@@ -49,6 +49,26 @@ in {
 
   options.modules.programs."${pkg}" = {
     enable = mkEnableOption "enable helix";
-    package = mkPackageOption pkgs "helix" {};
+    package =
+      mkPackageOption pkgs "helix" {}
+      // {
+        apply = package:
+          if (lib.functionArgs package.override) ? grammarOverlays
+          then
+            package.override {
+              grammarOverlays = [
+                (_: prev: {
+                  perl = prev.perl.overrideAttrs (old: {
+                    postPatch =
+                      (old.postPatch or "")
+                      + ''
+                        sed -i 's/\bbsearch(/tsp_bsearch(/' src/bsearch.c src/tsp_unicode.h
+                      '';
+                  });
+                })
+              ];
+            }
+          else package;
+      };
   };
 }
