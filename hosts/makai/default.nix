@@ -59,6 +59,14 @@
         };
         btop.enable = true;
         yazi.enable = true;
+        ghostty.enable = true;
+        niri = {
+          enable = true;
+          package = inputs.niri.packages.${system}.default;
+        };
+        vicinae.enable = true;
+        noctalia.enable = true;
+        noctalia.package = inputs.noctalia.packages.${system}.default;
       };
     };
 
