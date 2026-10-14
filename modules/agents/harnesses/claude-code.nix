@@ -10,10 +10,7 @@
     mcpConfig = json.generate "claude-mcp.json" {
       mcpServers = lib.mapAttrs (_: server: {type = "http";} // server) cfg.mcpServers;
     };
-    settings = json.generate "claude-settings.json" cfg.settings;
-    flags =
-      lib.optionals (cfg.mcpServers != {}) ["--mcp-config" "${mcpConfig}"]
-      ++ lib.optionals (cfg.settings != {}) ["--settings" "${settings}"];
+    flags = lib.optionals (cfg.mcpServers != {}) ["--mcp-config" "${mcpConfig}"];
     package =
       if flags == []
       then cfg.package
@@ -37,6 +34,10 @@
           clobber = true;
         })
       cfg.skills;
+
+    etc = lib.optionalAttrs (cfg.settings != {}) {
+      "claude-code/managed-settings.json".source = json.generate "claude-managed-settings.json" cfg.settings;
+    };
 
     tmpfiles = [
       "d %h/.claude 0700 - - -"

@@ -100,6 +100,7 @@ in {
       ]
       ++ map (harness: harness.files) enabledHarnesses
     );
+    environment.etc = lib.mkMerge (map (harness: harness.etc or {}) enabledHarnesses);
     systemd.user.tmpfiles.users.ominit.rules =
       lib.optionals (cfg.skills != []) [
         "d %h/.agents 0700 - - -"
