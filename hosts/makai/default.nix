@@ -39,11 +39,6 @@
           };
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
         }
-        {
-          name = "hermes";
-          package = inputs.hermes-agent.packages.${system}.messaging;
-          skills = ["unslop"];
-        }
       ];
 
       programs = {
