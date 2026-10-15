@@ -72,13 +72,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
-    circus = {
-      url = "github:manic-systems/circus";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     cua = {
-      url = "github:trycua/cua/cua-driver-rs-v0.35.4";
+      url = "github:trycua/cua";
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
@@ -98,12 +93,6 @@
       url = "github:NousResearch/hermes-agent";
       inputs.flake-parts.follows = "flake-parts";
     };
-
-    # don't follow nixpkgs for binary cache
-    # hyprland.url = "git+https://github.com/hyprwm/hyprland?submodules=1";
-
-    jujutsu.url = "github:jj-vcs/jj";
-    jujutsu.inputs.nixpkgs.follows = "nixpkgs";
 
     niri = {
       url = "github:yalter/niri";
@@ -130,11 +119,6 @@
       url = "github:NotAShelf/watt";
       inputs.nixpkgs.follows = "nixpkgs";
     };
-
-    # zed = {
-    #   url = "github:zed-industries/zed";
-    #   inputs.nixpkgs.follows = "nixpkgs";
-    # };
 
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
