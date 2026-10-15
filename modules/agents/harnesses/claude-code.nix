@@ -8,7 +8,15 @@
   configure = cfg: let
     json = pkgs.formats.json {};
     mcpConfig = json.generate "claude-mcp.json" {
-      mcpServers = lib.mapAttrs (_: server: {type = "http";} // server) cfg.mcpServers;
+      mcpServers = lib.mapAttrs (_: server:
+        {
+          type =
+            if server ? url
+            then "http"
+            else "stdio";
+        }
+        // server)
+      cfg.mcpServers;
     };
     flags = lib.optionals (cfg.mcpServers != {}) ["--mcp-config" "${mcpConfig}"];
     package =

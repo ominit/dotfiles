@@ -14,7 +14,7 @@
       lib.filterAttrs (name: type: type == "regular" && lib.hasSuffix ".nix" name) (builtins.readDir root)
     );
   harnesses = lib.mapAttrs (_: path: lib.callPackageWith {inherit inputs lib pkgs;} path {}) (nixFiles harnessRoot);
-  mcpServers = lib.mapAttrs (_: path: import path) (nixFiles ./mcp);
+  mcpServers = lib.mapAttrs (_: path: import path {inherit inputs lib pkgs;}) (nixFiles ./mcp);
   skills = lib.mapAttrs (name: _: ./skills + "/${name}") (
     lib.filterAttrs (_: type: type == "directory") (builtins.readDir ./skills)
   );

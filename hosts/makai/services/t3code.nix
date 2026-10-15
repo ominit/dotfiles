@@ -14,7 +14,14 @@
       dataDir = "/home/ominit/.t3";
       host = "0.0.0.0";
       port = 10009;
-      environment.HOME = "/home/ominit";
+      environment = {
+        HOME = "/home/ominit";
+        CUA_DRIVER_RS_TELEMETRY_ENABLED = "0";
+        XDG_RUNTIME_DIR = "/run/user/1000";
+        DBUS_SESSION_BUS_ADDRESS = "unix:path=/run/user/1000/bus";
+        WAYLAND_DISPLAY = "wayland-session";
+        SWAYSOCK = "/run/user/1000/sway-ipc.sock";
+      };
     };
 
     systemd.services.t3code.path = lib.mkAfter [

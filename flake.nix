@@ -77,6 +77,11 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    cua = {
+      url = "github:trycua/cua/cua-driver-rs-v0.35.4";
+      inputs.nixpkgs.follows = "nixpkgs";
+    };
+
     helium = {
       url = "github:ominit/helium-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";

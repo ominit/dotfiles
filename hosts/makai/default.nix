@@ -25,13 +25,13 @@
         {
           name = "codex";
           package = multiverse.latest.codex;
-          mcpServers = ["notion"];
+          mcpServers = ["notion" "cua-driver" "chrome-devtools"];
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
         }
         {
           name = "claude-code";
           package = multiverse.latest.claude-code;
-          mcpServers = ["notion"];
+          mcpServers = ["notion" "cua-driver" "chrome-devtools"];
           skills = ["unslop"];
           settings.attribution = {
             commit = "";
@@ -60,13 +60,6 @@
         btop.enable = true;
         yazi.enable = true;
         ghostty.enable = true;
-        niri = {
-          enable = true;
-          package = inputs.niri.packages.${system}.default;
-        };
-        vicinae.enable = true;
-        noctalia.enable = true;
-        noctalia.package = inputs.noctalia.packages.${system}.default;
       };
     };
 
