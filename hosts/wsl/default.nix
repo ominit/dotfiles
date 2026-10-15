@@ -13,7 +13,6 @@
     modules.programs = {
       helix = {
         enable = true;
-        # package = pkgs.helix_git; # from chaotic (cached)
         package = inputs.helix.packages.${system}.default;
       };
       bat.enable = true;
@@ -25,7 +24,6 @@
       btop.enable = true;
       yazi.enable = true;
       jujutsu.enable = true;
-      # jujutsu.package = inputs.jujutsu.packages.${system}.default;
       zellij.enable = true;
     };
 
