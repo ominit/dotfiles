@@ -1,0 +1,78 @@
+--- a/crates/platform-linux/src/wayland/sway_ipc.rs
++++ b/crates/platform-linux/src/wayland/sway_ipc.rs
+@@ -19,9 +19,9 @@
+ #[derive(Clone, Debug, Default, Deserialize)]
+ struct Node {
+     id: u64,
+-    #[serde(default)]
++    #[serde(default, deserialize_with = "null_as_default")]
+     name: String,
+-    #[serde(default)]
++    #[serde(default, deserialize_with = "null_as_default")]
+     app_id: String,
+     pid: Option<u32>,
+     #[serde(default)]
+@@ -46,6 +46,18 @@
+     true
+ }
+ 
++/// Sway reports `"name": null` for split, tabbed and stacked containers and
++/// `"app_id": null` for views without one, including every XWayland window.
++/// `#[serde(default)]` only covers a missing key, so without this one null
++/// fails the whole tree.
++fn null_as_default<'de, D, T>(deserializer: D) -> Result<T, D::Error>
++where
++    D: serde::Deserializer<'de>,
++    T: Default + Deserialize<'de>,
++{
++    Ok(Option::<T>::deserialize(deserializer)?.unwrap_or_default())
++}
++
+ #[derive(Clone, Debug, Eq, PartialEq)]
+ pub struct Window {
+     pub id: u64,
+@@ -290,6 +302,44 @@
+     }
+ 
+     #[test]
++    fn parses_null_container_name_and_null_app_id() {
++        let tree = br#"{
++          "id": 1,
++          "name": "root",
++          "nodes": [{
++            "id": 4,
++            "name": "1",
++            "nodes": [{
++              "id": 6,
++              "name": null,
++              "layout": "tabbed",
++              "nodes": [{
++                "id": 5,
++                "name": "Browser",
++                "app_id": "helium",
++                "pid": 200,
++                "visible": true,
++                "rect": {"x": 0, "y": 25, "width": 1280, "height": 695}
++              }, {
++                "id": 7,
++                "name": "XWayland App",
++                "app_id": null,
++                "pid": 201,
++                "visible": false,
++                "rect": {"x": 0, "y": 25, "width": 1280, "height": 695}
++              }]
++            }]
++          }]
++        }"#;
++        let windows = parse_tree(tree).expect("parse Sway tree with null fields");
++        assert_eq!(windows.len(), 2);
++        assert_eq!((windows[0].id, windows[0].app_id.as_str()), (5, "helium"));
++        assert!(windows[0].visible);
++        assert_eq!((windows[1].id, windows[1].app_id.as_str()), (7, ""));
++        assert!(!windows[1].visible);
++    }
++
++    #[test]
+     fn decoration_height_fills_zero_window_content_origin() {
+         let tree = br#"{
+           "id": 1,

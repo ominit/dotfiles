@@ -1,0 +1,39 @@
+--- a/crates/platform-linux/src/wayland/mod.rs
++++ b/crates/platform-linux/src/wayland/mod.rs
+@@ -858,6 +858,17 @@
+         if mmap_ptr.is_null() || mmap_len == 0 {
+             anyhow::bail!("screencopy ready without a backing buffer");
+         }
++        // Sway on some drivers (e.g. proprietary nvidia) offers only a
++        // 24-bit shm format, so the pixel size follows the format.
++        let bytes_per_pixel = match wl_shm::Format::try_from(format).ok() {
++            Some(wl_shm::Format::Bgr888 | wl_shm::Format::Rgb888) => 3,
++            _ => 4,
++        };
++        if stride < (w as usize) * bytes_per_pixel || stride * (h as usize) > mmap_len {
++            anyhow::bail!(
++                "screencopy buffer {mmap_len} bytes at stride {stride} cannot hold {w}x{h} format {format:#x}"
++            );
++        }
+         let raw = unsafe { std::slice::from_raw_parts(mmap_ptr as *const u8, mmap_len) };
+         let mut rgba = Vec::with_capacity((w as usize) * (h as usize) * 4);
+         for row in 0..(h as usize) {
+@@ -868,13 +879,17 @@
+             };
+             let base = src_row * stride;
+             for col in 0..(w as usize) {
+-                let px = &raw[base + col * 4..base + col * 4 + 4];
++                let offset = base + col * bytes_per_pixel;
++                let px = &raw[offset..offset + bytes_per_pixel];
+                 let (r, g, b, a) = match wl_shm::Format::try_from(format).ok() {
+                     // Argb8888 / Xrgb8888 over wl_shm are little-endian BGRA / BGRX.
+                     Some(wl_shm::Format::Argb8888) => (px[2], px[1], px[0], px[3]),
+                     Some(wl_shm::Format::Xrgb8888) => (px[2], px[1], px[0], 255),
+                     Some(wl_shm::Format::Abgr8888) => (px[0], px[1], px[2], px[3]),
+                     Some(wl_shm::Format::Xbgr8888) => (px[0], px[1], px[2], 255),
++                    // Bgr888 / Rgb888 are little-endian RGB / BGR.
++                    Some(wl_shm::Format::Bgr888) => (px[0], px[1], px[2], 255),
++                    Some(wl_shm::Format::Rgb888) => (px[2], px[1], px[0], 255),
+                     _ => (px[2], px[1], px[0], px[3]),
+                 };
+                 rgba.extend_from_slice(&[r, g, b, a]);

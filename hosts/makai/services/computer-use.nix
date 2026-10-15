@@ -23,7 +23,14 @@ in {
   config = {
     services.cua-driver = {
       enable = true;
-      package = inputs.cua.packages.${system}.cua-driver;
+      package = inputs.cua.packages.${system}.cua-driver.overrideAttrs (old: {
+        patches =
+          (old.patches or [])
+          ++ [
+            ../../../patches/cua-driver-sway-null-fields.patch
+            ../../../patches/cua-driver-24-bit-screencopy.patch
+          ];
+      });
     };
 
     programs.sway = {
