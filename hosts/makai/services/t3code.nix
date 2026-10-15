@@ -1,5 +1,6 @@
 {
   inputs,
+  system,
   lib,
   ...
 }: {
@@ -8,6 +9,7 @@
   config = {
     services.t3code = {
       enable = true;
+      package = inputs.t3code.packages.${system}.t3code-nightly;
       user = "ominit";
       group = "users";
       createUser = false;
