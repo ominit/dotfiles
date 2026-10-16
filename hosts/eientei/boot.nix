@@ -5,7 +5,7 @@
 }: {
   environment.etc."vconsole.conf".text = lib.mkForce "KEYMAP=colemak";
 
-  boot.kernelPackages = pkgs.cachyosKernels.linuxPackages-cachyos-latest;
+  boot.kernelPackages = pkgs.linuxPackages_cachyos;
   boot.loader.systemd-boot.enable = true;
   boot.loader.efi.canTouchEfiVariables = true;
   boot.binfmt.emulatedSystems = ["aarch64-linux"];

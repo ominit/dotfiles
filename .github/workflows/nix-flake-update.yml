@@ -15,7 +15,7 @@ permissions:
 env:
   # Inputs that only fetch prebuilt or already-cached outputs. Every other
   # root input is updated in the weekly lane.
-  HOURLY_INPUTS: t3code helium zen-browser multiverse nix-cachyos-kernel nix-index-database hermes-agent
+  HOURLY_INPUTS: t3code helium zen-browser multiverse chaotic nix-index-database hermes-agent
 jobs:
   update-nix-flake:
     runs-on: ubuntu-latest

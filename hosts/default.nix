@@ -11,10 +11,10 @@
       inputs.sops-nix.nixosModules.sops
       inputs.hjem.nixosModules.default
       inputs.nix-index-database.nixosModules.nix-index
+      inputs.chaotic.nixosModules.nyx-overlay
       {
         programs.nix-index-database.comma.enable = true;
         sops.defaultSopsFormat = "yaml";
-        nixpkgs.overlays = [inputs.nix-cachyos-kernel.overlays.pinned];
       }
     ];
   in {

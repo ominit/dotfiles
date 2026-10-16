@@ -29,8 +29,8 @@
           public_key = "nix-community.cachix.org-1:mB9FSh9qf2dCimDSUo8Zy7bkq5CX+/rkCWyvRCYg3Fs=";
         }
         {
-          url = "https://attic.xuyh0120.win/lantian";
-          public_key = "lantian:EeAUQ+W+6r7EtwnmYjeVwx5kOGEBpjlBfPlzGlTNvHc=";
+          url = "https://nyx-cache.chaotic.cx";
+          public_key = "nyx-cache.chaotic.cx:dJxTrgMC3V3cFfyIiBQDQorG6k1LsqurH/srpMSq7qk=";
         }
         {
           url = "https://cache.numtide.com";
