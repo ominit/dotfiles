@@ -175,6 +175,16 @@
     services.scx.enable = true;
     services.scx.scheduler = "scx_bpfland";
 
+    zramSwap.enable = true;
+    boot.kernelParams = ["zswap.enabled=0"];
+    boot.kernelModules = ["tcp_bbr"];
+    boot.kernel.sysctl = {
+      "vm.swappiness" = 180;
+      "vm.page-cluster" = 0;
+      "net.core.default_qdisc" = "fq";
+      "net.ipv4.tcp_congestion_control" = "bbr";
+    };
+
     fonts.packages = with pkgs;
       [
         noto-fonts
@@ -187,6 +197,8 @@
       CPUWeight = 25;
       Nice = 10;
     };
+    nix.daemonCPUSchedPolicy = "batch";
+    nix.daemonIOSchedClass = "idle";
 
     nix.optimise = {
       automatic = true;
