@@ -16,6 +16,7 @@
   services.fwupd.enable = true;
 
   zramSwap.enable = true;
+  systemd.oomd.enableUserSlices = true;
   boot.kernelParams = ["zswap.enabled=0" "nowatchdog"];
   boot.kernelModules = ["tcp_bbr"];
   boot.kernel.sysctl = {

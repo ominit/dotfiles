@@ -176,6 +176,7 @@
     services.scx.scheduler = "scx_bpfland";
 
     zramSwap.enable = true;
+    systemd.oomd.enableSystemSlice = true;
     boot.kernelParams = ["zswap.enabled=0"];
     boot.kernelModules = ["tcp_bbr"];
     boot.kernel.sysctl = {
