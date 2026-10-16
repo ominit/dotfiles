@@ -32,7 +32,7 @@
     modules.programs = {
       helix = {
         enable = true;
-        package = inputs.helix.packages.${system}.default;
+        package = pkgs.helix_git;
       };
       bat.enable = true;
       git = {
@@ -45,10 +45,13 @@
       };
       btop.enable = true;
       yazi.enable = true;
-      ghostty.enable = true;
+      ghostty = {
+        enable = true;
+        package = pkgs.ghostty_git;
+      };
       niri = {
         enable = true;
-        package = inputs.niri.packages.${system}.default;
+        package = pkgs.niri_git;
       };
       vicinae.enable = true;
       noctalia.enable = true;

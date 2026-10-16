@@ -2,7 +2,6 @@
   pkgs,
   inputs,
   config,
-  system,
   multiverse,
   ...
 }: {
@@ -44,7 +43,7 @@
       programs = {
         helix = {
           enable = true;
-          package = inputs.helix.packages.${system}.default;
+          package = pkgs.helix_git;
         };
         bat.enable = true;
         jujutsu.enable = true;
@@ -59,7 +58,10 @@
         };
         btop.enable = true;
         yazi.enable = true;
-        ghostty.enable = true;
+        ghostty = {
+          enable = true;
+          package = pkgs.ghostty_git;
+        };
       };
     };
 

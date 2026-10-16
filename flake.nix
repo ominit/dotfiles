@@ -81,19 +81,9 @@
       inputs.flake-parts.follows = "flake-parts";
     };
 
-    helix = {
-      url = "github:helix-editor/helix";
-      inputs.nixpkgs.follows = "nixpkgs";
-    };
-
     hermes-agent = {
       url = "github:NousResearch/hermes-agent";
       inputs.flake-parts.follows = "flake-parts";
-    };
-
-    niri = {
-      url = "github:yalter/niri";
-      inputs.nixpkgs.follows = "nixpkgs";
     };
 
     nixbot = {

@@ -1,7 +1,6 @@
 {
   pkgs,
   inputs,
-  system,
   config,
   ...
 }: {
@@ -13,7 +12,7 @@
     modules.programs = {
       helix = {
         enable = true;
-        package = inputs.helix.packages.${system}.default;
+        package = pkgs.helix_git;
       };
       bat.enable = true;
       git = {

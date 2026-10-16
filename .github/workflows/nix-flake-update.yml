@@ -1,21 +1,21 @@
 name: Update flake lock
 on:
   schedule:
-    - cron: "17 * * * *" # hourly
+    - cron: "17 13,21 * * *" # 9am and 5pm EDT, 6am and 2pm PDT
     - cron: "23 8 * * 6" # weekly
   workflow_dispatch:
     inputs:
       lane:
         type: choice
-        options: [hourly, weekly]
-        default: hourly
+        options: [frequent, weekly]
+        default: frequent
 permissions:
   contents: write
   pull-requests: write
 env:
   # Inputs that only fetch prebuilt or already-cached outputs. Every other
   # root input is updated in the weekly lane.
-  HOURLY_INPUTS: t3code helium zen-browser multiverse chaotic nix-index-database hermes-agent
+  FREQUENT_INPUTS: t3code helium zen-browser multiverse chaotic nix-index-database hermes-agent
 jobs:
   update-nix-flake:
     runs-on: ubuntu-latest
@@ -27,7 +27,7 @@ jobs:
           elif [ "${{ github.event.schedule }}" = "23 8 * * 6" ]; then
             lane=weekly
           else
-            lane=hourly
+            lane=frequent
           fi
           echo "lane=$lane" >> "$GITHUB_OUTPUT"
       - uses: actions/checkout@v4
@@ -37,10 +37,10 @@ jobs:
         with:
           github_access_token: ${{ github.token }}
       - run: |
-          if [ "${{ steps.lane.outputs.lane }}" = hourly ]; then
-            read -ra inputs <<< "$HOURLY_INPUTS"
+          if [ "${{ steps.lane.outputs.lane }}" = frequent ]; then
+            read -ra inputs <<< "$FREQUENT_INPUTS"
           else
-            mapfile -t inputs < <(nix flake metadata --json | jq -r --arg hourly "$HOURLY_INPUTS" '.locks.nodes.root.inputs | keys - ($hourly | split(" ")) | .[]')
+            mapfile -t inputs < <(nix flake metadata --json | jq -r --arg frequent "$FREQUENT_INPUTS" '.locks.nodes.root.inputs | keys - ($frequent | split(" ")) | .[]')
           fi
           nix flake update "${inputs[@]}"
       - id: pr
