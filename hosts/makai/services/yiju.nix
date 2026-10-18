@@ -17,6 +17,7 @@
         DynamicUser = lib.mkForce false;
         User = "yiju";
         Group = "yiju";
+        UMask = lib.mkForce "0000";
       };
     };
 
@@ -25,8 +26,9 @@
       target = "/var/lib/yiju";
       user = "yiju";
       group = "yiju";
-      mode = "0700";
+      mode = "0777";
       resetPermissions = true;
+      resetMode = "0777";
     };
 
     users.users.yiju = {
