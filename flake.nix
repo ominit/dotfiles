@@ -107,6 +107,8 @@
       inputs.nixpkgs.follows = "nixpkgs";
     };
 
+    yiju.url = "github:ominit/yiju";
+
     zen-browser = {
       url = "github:0xc000022070/zen-browser-flake";
       inputs.nixpkgs.follows = "nixpkgs";
