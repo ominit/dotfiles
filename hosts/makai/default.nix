@@ -38,6 +38,13 @@
           };
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
         }
+        {
+          name = "opencode";
+          package = multiverse.latest.opencode;
+          mcpServers = ["notion" "cua-driver" "chrome-devtools"];
+          skills = ["unslop"];
+          agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md];
+        }
       ];
 
       programs = {
