@@ -12,6 +12,15 @@
     partOf = [sessionTarget];
     after = [sessionTarget];
   };
+  heliumAgent = lib.concatStringsSep " " [
+    (lib.getExe inputs.helium.packages.${system}.helium)
+    "--user-data-dir=${config.users.users.ominit.home}/.local/share/helium-agent"
+    "--remote-debugging-port=9222"
+    "--force-renderer-accessibility"
+    "--ozone-platform=wayland"
+    "--no-first-run"
+    "--no-default-browser-check"
+  ];
   workspaceBinds = focus: move: suffix:
     lib.concatMapStrings (n: ''
       bindsym ${focus}${n} workspace number ${n}${suffix}
@@ -118,6 +127,28 @@ in {
       '';
     };
 
+    hjem.users.ominit.files.".local/share/applications/helium-agent.desktop" = {
+      clobber = true;
+      text = ''
+        [Desktop Entry]
+        Type=Application
+        Name=Helium (agent)
+        Exec=${heliumAgent} %U
+        MimeType=text/html;x-scheme-handler/http;x-scheme-handler/https;
+        NoDisplay=true
+      '';
+    };
+
+    hjem.users.ominit.files.".config/mimeapps.list" = {
+      clobber = true;
+      text = ''
+        [Default Applications]
+        text/html=helium-agent.desktop
+        x-scheme-handler/http=helium-agent.desktop
+        x-scheme-handler/https=helium-agent.desktop
+      '';
+    };
+
     systemd.user.targets.sway-session = {
       description = "sway compositor session";
       bindsTo = ["graphical-session.target"];
@@ -149,15 +180,7 @@ in {
       // {
         description = "helium browser driven by agents over CDP";
         serviceConfig = {
-          ExecStart = lib.concatStringsSep " " [
-            (lib.getExe inputs.helium.packages.${system}.helium)
-            "--user-data-dir=%h/.local/share/helium-agent"
-            "--remote-debugging-port=9222"
-            "--force-renderer-accessibility"
-            "--ozone-platform=wayland"
-            "--no-first-run"
-            "--no-default-browser-check"
-          ];
+          ExecStart = heliumAgent;
           Restart = "always";
           RestartSec = 2;
         };
