@@ -783,11 +783,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1792612860,
-        "narHash": "sha256-Awy+vLJfNYfjTjiNYbFEp0cXGt5T0WYDAAAiqm3znqo=",
+        "lastModified": 1792636451,
+        "narHash": "sha256-jKd4tkazRkSXsOuty0pk5ux2lukN+IIMyIBL7iKqJ5M=",
         "owner": "ominit",
         "repo": "t3code-flake",
-        "rev": "fc611b6969d20b0d99ff684b972b6d6e60906d93",
+        "rev": "ca744e987c1ea1338c8326ef44fd3d2d463ba532",
         "type": "github"
       },
       "original": {
