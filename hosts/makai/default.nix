@@ -24,12 +24,14 @@
           name = "codex";
           package = multiverse.latest.codex;
           mcpServers = ["notion" "cua-driver" "chrome-devtools"];
+          skills = ["frontend-design"];
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md ../../modules/agents/skills/unslop/SKILL.md];
         }
         {
           name = "claude-code";
           package = multiverse.latest.claude-code;
           mcpServers = ["notion" "cua-driver" "chrome-devtools"];
+          skills = ["frontend-design"];
           settings.attribution = {
             commit = "";
             pr = "";
@@ -40,6 +42,7 @@
           name = "opencode";
           package = multiverse.latest.opencode;
           mcpServers = ["notion" "cua-driver" "chrome-devtools"];
+          skills = ["frontend-design"];
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md ../../modules/agents/skills/unslop/SKILL.md];
         }
       ];

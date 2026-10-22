@@ -24,6 +24,7 @@
       {
         name = "codex";
         package = multiverse.latest.codex;
+        skills = ["frontend-design"];
         agentFiles = [../../modules/agents/AGENTS.md ../../modules/agents/skills/unslop/SKILL.md];
       }
     ];
