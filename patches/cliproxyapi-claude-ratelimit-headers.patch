@@ -1,0 +1,166 @@
+--- a/internal/runtime/executor/claude_executor_request.go
++++ b/internal/runtime/executor/claude_executor_request.go
+@@ -671,6 +671,26 @@
+ type claudeRateLimitError struct {
+ 	statusErr
+ 	credentialScoped bool
++	headers          http.Header
++}
++
++func (e claudeRateLimitError) Headers() http.Header {
++	return claudeRateLimitResponseHeaders(e.headers)
++}
++
++func claudeRateLimitResponseHeaders(src http.Header) http.Header {
++	var out http.Header
++	for key, values := range src {
++		canonical := http.CanonicalHeaderKey(key)
++		if len(values) == 0 || (canonical != "Retry-After" && !strings.HasPrefix(strings.ToLower(canonical), "anthropic-ratelimit-unified-")) {
++			continue
++		}
++		if out == nil {
++			out = make(http.Header)
++		}
++		out[canonical] = append([]string(nil), values...)
++	}
++	return out
+ }
+ 
+ func (e claudeRateLimitError) IsCredentialScoped() bool {
+@@ -703,13 +723,13 @@
+ 	err := statusErr{code: statusCode, msg: string(body), retryAfter: retryAfter}
+ 	if statusCode == http.StatusTooManyRequests {
+ 		if !modelLevelCooling && helps.ClaudeHeadersIndicateUnifiedRateLimitRejection(headers) {
+-			return claudeRateLimitError{statusErr: err, credentialScoped: true}
++			return claudeRateLimitError{statusErr: err, credentialScoped: true, headers: claudeRateLimitResponseHeaders(headers)}
+ 		}
+ 		if claudeBodyIndicatesFastModeCredits(body) {
+ 			return claudeEntitlementError{err}
+ 		}
+ 		// Ordinary model-level Claude 429 (not a unified 5h/7d rejection)
+-		return claudeRateLimitError{statusErr: err, credentialScoped: false}
++		return claudeRateLimitError{statusErr: err, credentialScoped: false, headers: claudeRateLimitResponseHeaders(headers)}
+ 	}
+ 	return err
+ }
+--- a/sdk/cliproxy/auth/selector.go
++++ b/sdk/cliproxy/auth/selector.go
+@@ -85,6 +85,9 @@
+ 	resetIn  time.Duration
+ 	provider string
+ 	cause    error
++	// replayHeaders holds the last observed upstream quota headers of the
++	// cooling credential, replayed so clients can show the real reset time.
++	replayHeaders http.Header
+ }
+ 
+ // NewModelCooldownError creates an error representing model-level cooldown.
+@@ -352,6 +355,9 @@
+ 
+ func (e *modelCooldownError) Headers() http.Header {
+ 	headers := make(http.Header)
++	for key, values := range e.replayHeaders {
++		headers[key] = append([]string(nil), values...)
++	}
+ 	headers.Set("Content-Type", "application/json")
+ 	resetSeconds := int(math.Ceil(e.resetIn.Seconds()))
+ 	if resetSeconds < 0 {
+--- a/sdk/cliproxy/auth/quota_signals.go
++++ b/sdk/cliproxy/auth/quota_signals.go
+@@ -225,3 +225,57 @@
+ 	target.Signals = source.Clone().Signals
+ 	return target
+ }
++
++// withClaudeCooldownQuotaHeaders attaches the last observed
++// anthropic-ratelimit-unified-* signals of the cooling Claude credential that
++// recovers first, so a cooldown 429 carries the same reset headers as the
++// upstream 429 that started it.
++func (m *Manager) withClaudeCooldownQuotaHeaders(err error, providers []string, model string) error {
++	cooldown, ok := err.(*modelCooldownError)
++	if !ok || cooldown == nil || m == nil || len(cooldown.replayHeaders) > 0 {
++		return err
++	}
++	claudeRequested := false
++	for _, provider := range providers {
++		if canonicalSchedulingProvider(provider) == "claude" {
++			claudeRequested = true
++			break
++		}
++	}
++	if !claudeRequested {
++		return err
++	}
++	now := time.Now()
++	var headers http.Header
++	var bestNext time.Time
++	m.mu.RLock()
++	for _, auth := range m.auths {
++		if auth == nil || executorKeyFromAuth(auth) != "claude" || len(auth.Quota.Signals) == 0 {
++			continue
++		}
++		blocked, reason, next := isAuthBlockedForModel(auth, model, now)
++		if !blocked || reason != blockReasonCooldown || (headers != nil && !next.Before(bestNext)) {
++			continue
++		}
++		var candidate http.Header
++		for name, value := range auth.Quota.Signals {
++			if strings.HasPrefix(strings.ToLower(name), "anthropic-ratelimit-unified-") {
++				if candidate == nil {
++					candidate = make(http.Header)
++				}
++				candidate.Set(name, value)
++			}
++		}
++		if candidate != nil {
++			headers = candidate
++			bestNext = next
++		}
++	}
++	m.mu.RUnlock()
++	if headers == nil {
++		return err
++	}
++	replayed := *cooldown
++	replayed.replayHeaders = headers
++	return &replayed
++}
+--- a/sdk/cliproxy/auth/conductor_execution.go
++++ b/sdk/cliproxy/auth/conductor_execution.go
+@@ -166,6 +166,7 @@
+ 		}
+ 		lastErr = preferredExecutionAttemptError(lastErr, preferredUpstreamErr)
+ 		lastErr = unwrapExecutionBoundaryError(lastErr)
++		lastErr = m.withClaudeCooldownQuotaHeaders(lastErr, normalized, retryModel)
+ 		if hasAntigravityProvider(normalized) && shouldAttemptAntigravityCreditsFallback(m, lastErr, normalized) {
+ 			if resp, ok, errCredits := m.tryAntigravityCreditsExecute(ctx, req, opts); errCredits != nil {
+ 				return cliproxyexecutor.Response{}, errCredits
+@@ -303,6 +304,7 @@
+ 			lastErr = preferredExecutionAttemptError(lastErr, preferredUpstreamErr)
+ 		}
+ 		lastErr = unwrapExecutionBoundaryError(lastErr)
++		lastErr = m.withClaudeCooldownQuotaHeaders(lastErr, normalized, retryModel)
+ 		if hasAntigravityProvider(normalized) && shouldAttemptAntigravityCreditsFallback(m, lastErr, normalized) {
+ 			if result, ok, errCredits := m.tryAntigravityCreditsExecuteStream(ctx, req, opts); errCredits != nil {
+ 				return nil, errCredits
+--- a/sdk/api/handlers/claude/code_handlers.go
++++ b/sdk/api/handlers/claude/code_handlers.go
+@@ -407,6 +407,18 @@
+ 			c.Writer.Header().Add("Retry-After", value)
+ 		}
+ 	}
++	if msg != nil && msg.Addon != nil && status == http.StatusTooManyRequests {
++		for key, values := range msg.Addon {
++			canonical := http.CanonicalHeaderKey(key)
++			if len(values) == 0 || (canonical != "Retry-After" && !strings.HasPrefix(strings.ToLower(canonical), "anthropic-ratelimit-unified-")) {
++				continue
++			}
++			c.Writer.Header().Del(canonical)
++			for _, value := range values {
++				c.Writer.Header().Add(canonical, value)
++			}
++		}
++	}
+ 	if msg != nil && msg.Addon != nil && handlers.PassthroughHeadersEnabled(h.Cfg) {
+ 		for key, values := range msg.Addon {
+ 			if len(values) == 0 || handlers.IsCPAReservedResponseHeader(key) {

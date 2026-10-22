@@ -11,7 +11,9 @@ in {
   config = {
     services.cliproxyapi = {
       enable = true;
-      package = multiverse.latest.cliproxyapi;
+      package = multiverse.latest.cliproxyapi.overrideAttrs (old: {
+        patches = (old.patches or []) ++ [../../../patches/cliproxyapi-claude-ratelimit-headers.patch];
+      });
       settings = {
         server = {
           host = "0.0.0.0";
