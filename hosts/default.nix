@@ -23,7 +23,6 @@
         # otherwise the cacert build fails on an unknown blocklist entry.
         security.pki.caCertificateBlacklist = [
           "Comodo AAA Services root"
-          "emSign ECC Root CA - G3"
         ];
       }
     ];
