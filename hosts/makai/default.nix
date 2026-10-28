@@ -184,7 +184,11 @@
 
     zramSwap.enable = true;
     systemd.oomd.enableSystemSlice = true;
-    boot.kernelParams = ["zswap.enabled=0"];
+    boot.kernelParams = [
+      "zswap.enabled=0"
+      # memtest86+ found bit flips in 0x8063e0000-0x8063e7fff, keep the kernel off that range
+      "memmap=4M$0x806200000"
+    ];
     boot.kernelModules = ["tcp_bbr"];
     boot.kernel.sysctl = {
       "vm.swappiness" = 180;
