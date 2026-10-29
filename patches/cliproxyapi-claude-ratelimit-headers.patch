@@ -1,6 +1,6 @@
 --- a/internal/runtime/executor/claude_executor_request.go
 +++ b/internal/runtime/executor/claude_executor_request.go
-@@ -671,6 +671,26 @@
+@@ -787,6 +787,26 @@
  type claudeRateLimitError struct {
  	statusErr
  	credentialScoped bool
@@ -27,7 +27,7 @@
  }
  
  func (e claudeRateLimitError) IsCredentialScoped() bool {
-@@ -703,13 +723,13 @@
+@@ -819,13 +839,13 @@
  	err := statusErr{code: statusCode, msg: string(body), retryAfter: retryAfter}
  	if statusCode == http.StatusTooManyRequests {
  		if !modelLevelCooling && helps.ClaudeHeadersIndicateUnifiedRateLimitRejection(headers) {
@@ -145,7 +145,7 @@
  				return nil, errCredits
 --- a/sdk/api/handlers/claude/code_handlers.go
 +++ b/sdk/api/handlers/claude/code_handlers.go
-@@ -407,6 +407,18 @@
+@@ -597,6 +597,18 @@
  			c.Writer.Header().Add("Retry-After", value)
  		}
  	}
@@ -161,6 +161,6 @@
 +			}
 +		}
 +	}
- 	if msg != nil && msg.Addon != nil && handlers.PassthroughHeadersEnabled(h.Cfg) {
+ 	if msg != nil && msg.Addon != nil && handlers.PassthroughHeadersEnabled(h.CurrentConfig()) {
  		for key, values := range msg.Addon {
  			if len(values) == 0 || handlers.IsCPAReservedResponseHeader(key) {
