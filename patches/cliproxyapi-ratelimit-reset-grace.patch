@@ -1,0 +1,199 @@
+diff --git a/sdk/api/handlers/claude/code_handlers.go b/sdk/api/handlers/claude/code_handlers.go
+index 00670a7..2ec76b1 100644
+--- a/sdk/api/handlers/claude/code_handlers.go
++++ b/sdk/api/handlers/claude/code_handlers.go
+@@ -620,6 +620,9 @@ func (h *ClaudeCodeAPIHandler) WriteErrorResponse(c *gin.Context, msg *interface
+ 			}
+ 		}
+ 	}
++	if handlers.ShouldExtendRateLimitReset(status, msg) {
++		handlers.ExtendRateLimitResetHeaders(c.Writer.Header())
++	}
+ 
+ 	body, err := json.Marshal(h.toClaudeError(msg))
+ 	if err != nil {
+diff --git a/sdk/api/handlers/claude/code_handlers_error_test.go b/sdk/api/handlers/claude/code_handlers_error_test.go
+index 3ff08c3..25ae02b 100644
+--- a/sdk/api/handlers/claude/code_handlers_error_test.go
++++ b/sdk/api/handlers/claude/code_handlers_error_test.go
+@@ -282,8 +282,8 @@ func TestWriteClaudeErrorResponse_IncludesRetryAfterForModelCooldownDefaultSetti
+ 	if recorder.Code != http.StatusTooManyRequests {
+ 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusTooManyRequests)
+ 	}
+-	if got := recorder.Header().Get("Retry-After"); got != "20" {
+-		t.Fatalf("Retry-After = %q, want 20", got)
++	if got := recorder.Header().Get("Retry-After"); got != "80" {
++		t.Fatalf("Retry-After = %q, want 80", got)
+ 	}
+ }
+ 
+diff --git a/sdk/api/handlers/handlers_error_response_test.go b/sdk/api/handlers/handlers_error_response_test.go
+index c75481c..44ad8f4 100644
+--- a/sdk/api/handlers/handlers_error_response_test.go
++++ b/sdk/api/handlers/handlers_error_response_test.go
+@@ -233,8 +233,8 @@ func TestWriteErrorResponse_AddonHeadersEnabled(t *testing.T) {
+ 	if recorder.Code != http.StatusTooManyRequests {
+ 		t.Fatalf("status = %d, want %d", recorder.Code, http.StatusTooManyRequests)
+ 	}
+-	if got := recorder.Header().Get("Retry-After"); got != "30" {
+-		t.Fatalf("Retry-After = %q, want %q", got, "30")
++	if got := recorder.Header().Get("Retry-After"); got != "90" {
++		t.Fatalf("Retry-After = %q, want %q", got, "90")
+ 	}
+ 	if got := recorder.Header().Values("X-Request-Id"); !reflect.DeepEqual(got, []string{"new-1", "new-2"}) {
+ 		t.Fatalf("X-Request-Id = %#v, want %#v", got, []string{"new-1", "new-2"})
+diff --git a/sdk/api/handlers/handlers_errors.go b/sdk/api/handlers/handlers_errors.go
+index 7893da0..e60176a 100644
+--- a/sdk/api/handlers/handlers_errors.go
++++ b/sdk/api/handlers/handlers_errors.go
+@@ -139,6 +139,9 @@ func (h *BaseAPIHandler) WriteErrorResponse(c *gin.Context, msg *interfaces.Erro
+ 			}
+ 		}
+ 	}
++	if ShouldExtendRateLimitReset(status, msg) {
++		ExtendRateLimitResetHeaders(c.Writer.Header())
++	}
+ 
+ 	errText := http.StatusText(status)
+ 	if msg != nil && msg.Error != nil {
+@@ -173,6 +176,9 @@ func (h *BaseAPIHandler) WriteErrorResponse(c *gin.Context, msg *interfaces.Erro
+ 		c.Writer.Header().Set("Content-Type", "application/json")
+ 	}
+ 	c.Status(status)
++	if ShouldExtendRateLimitReset(status, msg) {
++		body = ExtendRateLimitResetBody(body)
++	}
+ 	_, _ = c.Writer.Write(body)
+ }
+ 
+diff --git a/sdk/api/handlers/ratelimit_reset_grace.go b/sdk/api/handlers/ratelimit_reset_grace.go
+new file mode 100644
+index 0000000..ecd3081
+--- /dev/null
++++ b/sdk/api/handlers/ratelimit_reset_grace.go
+@@ -0,0 +1,106 @@
++package handlers
++
++import (
++	"errors"
++	"net/http"
++	"strconv"
++	"strings"
++	"time"
++
++	"github.com/router-for-me/CLIProxyAPI/v8/internal/interfaces"
++	coreauth "github.com/router-for-me/CLIProxyAPI/v8/sdk/cliproxy/auth"
++	"github.com/tidwall/gjson"
++	"github.com/tidwall/sjson"
++)
++
++// rateLimitResetGrace is added to every reset time a 429 reports to clients,
++// so a client that retries exactly at the reset does not race a provider whose
++// clock runs slightly behind the reported deadline.
++const rateLimitResetGrace = time.Minute
++
++// ShouldExtendRateLimitReset reports whether an error response reports a
++// provider rate limit. A local concurrency-busy 429 keeps its short hint.
++func ShouldExtendRateLimitReset(status int, msg *interfaces.ErrorMessage) bool {
++	if status != http.StatusTooManyRequests {
++		return false
++	}
++	var busy *coreauth.HomeConcurrencyBusyError
++	return msg == nil || !errors.As(msg.Error, &busy)
++}
++
++// ExtendRateLimitResetHeaders pushes the Retry-After and provider reset
++// headers of a 429 response back by rateLimitResetGrace.
++func ExtendRateLimitResetHeaders(headers http.Header) {
++	for key, values := range headers {
++		lower := strings.ToLower(key)
++		var shift func(string) (string, bool)
++		switch {
++		case lower == "retry-after":
++			shift = shiftRetryAfter
++		case strings.HasPrefix(lower, "anthropic-ratelimit-unified-") && strings.HasSuffix(lower, "reset"),
++			strings.HasPrefix(lower, "x-codex-") && strings.HasSuffix(lower, "-reset-at"):
++			shift = shiftResetTimestamp
++		case strings.HasPrefix(lower, "x-codex-") && strings.HasSuffix(lower, "-reset-after-seconds"):
++			shift = shiftSeconds
++		default:
++			continue
++		}
++		for i, value := range values {
++			if shifted, ok := shift(strings.TrimSpace(value)); ok {
++				values[i] = shifted
++			}
++		}
++	}
++}
++
++// ExtendRateLimitResetBody pushes the resets_at and resets_in_seconds fields
++// of a 429 usage-limit error body back by rateLimitResetGrace.
++func ExtendRateLimitResetBody(body []byte) []byte {
++	if !gjson.ValidBytes(body) {
++		return body
++	}
++	grace := int64(rateLimitResetGrace / time.Second)
++	for _, path := range []string{"error.resets_at", "resets_at", "error.resets_in_seconds", "resets_in_seconds"} {
++		value := gjson.GetBytes(body, path)
++		if value.Type != gjson.Number || value.Int() <= 0 {
++			continue
++		}
++		if updated, errSet := sjson.SetBytes(body, path, value.Int()+grace); errSet == nil {
++			body = updated
++		}
++	}
++	return body
++}
++
++func shiftSeconds(value string) (string, bool) {
++	seconds, errParse := strconv.ParseInt(value, 10, 64)
++	if errParse != nil || seconds < 0 {
++		return "", false
++	}
++	return strconv.FormatInt(seconds+int64(rateLimitResetGrace/time.Second), 10), true
++}
++
++func shiftRetryAfter(value string) (string, bool) {
++	if shifted, ok := shiftSeconds(value); ok {
++		return shifted, true
++	}
++	at, errParse := http.ParseTime(value)
++	if errParse != nil {
++		return "", false
++	}
++	return at.Add(rateLimitResetGrace).UTC().Format(http.TimeFormat), true
++}
++
++func shiftResetTimestamp(value string) (string, bool) {
++	if unix, errParse := strconv.ParseInt(value, 10, 64); errParse == nil {
++		if unix <= 0 {
++			return "", false
++		}
++		return strconv.FormatInt(unix+int64(rateLimitResetGrace/time.Second), 10), true
++	}
++	at, errParse := time.Parse(time.RFC3339, value)
++	if errParse != nil {
++		return "", false
++	}
++	return at.Add(rateLimitResetGrace).Format(time.RFC3339), true
++}
+diff --git a/sdk/api/handlers/retry_deadline_test.go b/sdk/api/handlers/retry_deadline_test.go
+index 5178a1e..7d6f9c3 100644
+--- a/sdk/api/handlers/retry_deadline_test.go
++++ b/sdk/api/handlers/retry_deadline_test.go
+@@ -34,11 +34,11 @@ func TestLocalRecoveryHintsSurviveDefaultHeaderPolicyAndEnrichment(t *testing.T)
+ 				ctx.Request.Header.Set("Accept", "text/event-stream")
+ 			}
+ 			NewBaseAPIHandlers(nil, nil).WriteErrorResponse(ctx, executionErrorMessage(err))
+-			wantStatus := 503
++			wantStatus, wantRetryAfter := 503, "60"
+ 			if quota {
+-				wantStatus = 429
++				wantStatus, wantRetryAfter = 429, "120"
+ 			}
+-			if recorder.Code != wantStatus || recorder.Header().Get("Retry-After") != "60" {
++			if recorder.Code != wantStatus || recorder.Header().Get("Retry-After") != wantRetryAfter {
+ 				t.Fatalf("quota=%t streaming=%t status=%d Retry-After=%q", quota, streaming, recorder.Code, recorder.Header().Get("Retry-After"))
+ 			}
+ 			if !strings.Contains(recorder.Body.String(), "gpt-5.6-luna") {

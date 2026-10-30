@@ -12,7 +12,12 @@ in {
     services.cliproxyapi = {
       enable = true;
       package = multiverse.latest.cliproxyapi.overrideAttrs (old: {
-        patches = (old.patches or []) ++ [../../../patches/cliproxyapi-claude-ratelimit-headers.patch];
+        patches =
+          (old.patches or [])
+          ++ [
+            ../../../patches/cliproxyapi-claude-ratelimit-headers.patch
+            ../../../patches/cliproxyapi-ratelimit-reset-grace.patch
+          ];
       });
       settings = {
         server = {
