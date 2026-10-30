@@ -28,11 +28,11 @@
         "nixpkgs": "nixpkgs"
       },
       "locked": {
-        "lastModified": 1793269630,
-        "narHash": "sha256-P40QZOKQ3+K08LTKVpDW8PzcLCfACgMPVUY1b4tGtSk=",
+        "lastModified": 1793351639,
+        "narHash": "sha256-Q2q890U2dzD9AeaQeyjCsi09aUSK7eYIyjyUaGc8IxI=",
         "owner": "chaotic-cx",
         "repo": "nyx",
-        "rev": "c486ed9fdd227134c4047ab3e18a3cadbae33912",
+        "rev": "ad22a6460f26a1195b6b77b6b85bf7d681cbda42",
         "type": "github"
       },
       "original": {
@@ -252,11 +252,11 @@
         "uv2nix": "uv2nix"
       },
       "locked": {
-        "lastModified": 1793305799,
-        "narHash": "sha256-kQw9pjvLfQn9zi/TOCBV+WrM26mQIEeLdmzxMzAgkz4=",
+        "lastModified": 1793382662,
+        "narHash": "sha256-iRhWh0DAwqwOHmJsPnxCR/jh6hYayP7k6shaQ68x650=",
         "owner": "NousResearch",
         "repo": "hermes-agent",
-        "rev": "088f657ecf77674c7b8e2ededf4e3576d82e042c",
+        "rev": "7020ea3e96c3fdbc768c5296493e186df46f075b",
         "type": "github"
       },
       "original": {
@@ -350,11 +350,11 @@
     },
     "multiverse": {
       "locked": {
-        "lastModified": 1793225784,
-        "narHash": "sha256-LrmP77kg/iG2ImBew1qtvWeybi6Xq0iXX6ryM2vwgdc=",
+        "lastModified": 1793374604,
+        "narHash": "sha256-Kv7L62JHTk5TIBRNMjqoGLhGp5Ra98spPeBLyt8rQig=",
         "owner": "fzakaria",
         "repo": "nixpkgs-multiverse",
-        "rev": "8c6c586bdbcbef036fcb5838b173af6ce6b0ab03",
+        "rev": "cfa9032dcf30c7aee5fa77a3897144b8ffa953a1",
         "type": "github"
       },
       "original": {
@@ -783,11 +783,11 @@
         "treefmt-nix": "treefmt-nix"
       },
       "locked": {
-        "lastModified": 1793305531,
-        "narHash": "sha256-fILdiJvYD7y7kgHZsXhECAfPdatsg8OF5rYEsk+1LZE=",
+        "lastModified": 1793368689,
+        "narHash": "sha256-P128A7ZAmd+EqmQTa/NOe0R0RSKFQFlYGfHMXpk8YzI=",
         "owner": "ominit",
         "repo": "t3code-flake",
-        "rev": "2fb0cf3e118b98e3646c59614bace5e88fe6b0e5",
+        "rev": "38101838a216ed46e3ceba10e183a30a8b9671c3",
         "type": "github"
       },
       "original": {
@@ -938,11 +938,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1793158888,
-        "narHash": "sha256-omd7KO5z6mw2Ujm/6WUYawfmMJbUA2EJE1iCxsJQV8E=",
+        "lastModified": 1793334354,
+        "narHash": "sha256-T3odNee+Gbt+yZgK0FOkPGCsSL7bOkmVCAY2uYrFla4=",
         "owner": "ominit",
         "repo": "yiju",
-        "rev": "4c6377db724003ad9eedd0acccfd220073314fbf",
+        "rev": "17440764c3ace36393141946e77e49fe5277ab3c",
         "type": "github"
       },
       "original": {
