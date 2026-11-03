@@ -938,11 +938,11 @@
         "uv2nix": "uv2nix_2"
       },
       "locked": {
-        "lastModified": 1793334354,
-        "narHash": "sha256-T3odNee+Gbt+yZgK0FOkPGCsSL7bOkmVCAY2uYrFla4=",
+        "lastModified": 1793723194,
+        "narHash": "sha256-5WQZXuqTcUvSIDGE/c5tYPwxBGJOIwtL1eXyIB1BmNs=",
         "owner": "ominit",
         "repo": "yiju",
-        "rev": "17440764c3ace36393141946e77e49fe5277ab3c",
+        "rev": "aeb2902215e6cffa6a762e69c2aec127aec000b1",
         "type": "github"
       },
       "original": {
