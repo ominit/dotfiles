@@ -14,7 +14,7 @@
       group = "users";
       createUser = false;
       dataDir = "/home/ominit/.t3";
-      host = "0.0.0.0";
+      host = "127.0.0.1";
       port = 10009;
       environment = {
         HOME = "/home/ominit";

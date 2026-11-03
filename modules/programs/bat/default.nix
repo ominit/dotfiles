@@ -7,8 +7,13 @@
   inherit (lib) mkIf mkEnableOption mkPackageOption;
 
   pkg = "bat";
+  cache = pkgs.runCommand "bat-cache" {} ''
+    ${lib.getExe config.modules.programs."${pkg}".package} cache --build --source ${./config} --target "$out"
+  '';
 in {
   config = mkIf config.modules.programs."${pkg}".enable {
+    environment.sessionVariables.BAT_CACHE_PATH = "${cache}";
+
     hjem.users."ominit" = {
       files = {
         ".config/bat/config" = {
@@ -25,13 +30,6 @@ in {
       packages = with pkgs; [
         config.modules.programs."${pkg}".package
       ];
-    };
-
-    # need to run `bat cache --build` to apply config
-    system.userActivationScripts.batCacheBuild = {
-      text = ''
-        ${config.modules.programs."${pkg}".package}/bin/bat cache --build
-      '';
     };
   };
 

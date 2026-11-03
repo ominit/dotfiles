@@ -30,14 +30,9 @@ with pkgs; [
   fzf
   imagemagick
   poppler
-  wayland
   gitui
-  egl-wayland
-  xwayland
   pavucontrol
-  networkmanager
   networkmanagerapplet
-  bluez
   bluez-tools
   blueman
   udiskie
@@ -47,7 +42,6 @@ with pkgs; [
   slurp
   swappy
   nh
-  hyprpolkitagent
   wl-clipboard
   brightnessctl
   playerctl

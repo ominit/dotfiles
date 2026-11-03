@@ -34,7 +34,7 @@
 
     users.users."ominit" = {
       isNormalUser = true;
-      extraGroups = ["networkmanager" "wheel"];
+      extraGroups = ["wheel"];
       shell = config.modules.programs.nushell.package;
       packages = with pkgs; [
         nh

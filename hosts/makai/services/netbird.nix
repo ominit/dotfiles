@@ -31,6 +31,6 @@
 
     users.groups.netbird = {};
 
-    networking.firewall.allowedUDPPorts = [53];
+    networking.firewall.interfaces.wt0.allowedUDPPorts = [53];
   };
 }

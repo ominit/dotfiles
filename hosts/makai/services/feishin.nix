@@ -4,7 +4,7 @@
       image = "ghcr.io/jeffvli/feishin:latest";
       pull = "newer";
       ports = [
-        "10002:9180"
+        "127.0.0.1:10002:9180"
       ];
       environment = {
         SERVER_NAME = "LMS";
