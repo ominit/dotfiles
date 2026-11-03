@@ -27,6 +27,11 @@
         oauthSecretFile = config.sops.secrets."nixbot/oauthSecret".path;
       };
 
+      branches.merge-queue = {
+        matchGlob = "gh-readonly-queue/*";
+        registerGCRoots = true;
+      };
+
       buildSystems = ["x86_64-linux" "aarch64-linux"];
       buildConcurrency = 2;
       packages.nixbot =
