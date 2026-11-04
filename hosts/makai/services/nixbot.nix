@@ -38,7 +38,12 @@
         (pkgs.python3.pkgs.callPackage "${inputs.nixbot}/packages/nixbot.nix" {
           inherit (config.services.nixbot.packages) nix-eval-jobs;
         }).overridePythonAttrs (old: {
-          patches = (old.patches or []) ++ [../../../patches/nixbot-fast-eval.patch];
+          patches =
+            (old.patches or [])
+            ++ [
+              ../../../patches/nixbot-fast-eval.patch
+              ../../../patches/nixbot-retry-disk-full.patch
+            ];
         });
     };
 

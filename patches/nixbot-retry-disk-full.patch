@@ -1,0 +1,370 @@
+diff --git a/nixbot/executor.py b/nixbot/executor.py
+index ebfd81d..50e477c 100644
+--- a/nixbot/executor.py
++++ b/nixbot/executor.py
+@@ -7,7 +7,8 @@ Runs `nix build` per derivation with:
+   other projects,
+ - per-attribute timeout (default 3h) plus nix's --max-silent-time
+   (default 20min),
+-- one automatic retry on transient infrastructure errors, suppressed
++- one automatic retry on transient infrastructure errors, and up to
++  three after running out of disk once there is room again, suppressed
+   once cancellation is requested,
+ - process-group kill on cancel/timeout,
+ - frame-chunked zstd log capture: one zstd frame per flush so live
+@@ -29,9 +30,11 @@ import json
+ import logging
+ import os
+ import re
++import shutil
+ import time
+ from collections import OrderedDict, deque
+ from dataclasses import dataclass, field
++from enum import StrEnum
+ from typing import TYPE_CHECKING, Any
+ from urllib.parse import quote
+ 
+@@ -124,6 +127,20 @@ TRANSIENT_ERROR_MARKERS = (
+     "substituter",
+ )
+ 
++# Nix's own hint plus the errno text builders print. Retried after the
++# store filesystem has room again, since the GC that frees it usually
++# runs alongside other builds.
++DISK_FULL_ERROR_MARKERS = (
++    "No space left on device",
++    "build failure may have been caused by lack of free disk space",
++)
++
++
++class RetryReason(StrEnum):
++    none = "none"
++    transient = "transient"
++    disk_full = "disk_full"
++
+ 
+ class FairScheduler:
+     """Global slot pool with round-robin dequeue across keys (builds)
+@@ -361,6 +378,14 @@ class BuildSettings:
+     extra_args: list[str] = field(default_factory=list)
+     store: BuildStoreConfig | None = None
+     issuer: IdentityIssuer | None = None
++    # Builds that ran out of disk are retried up to this many times. Each
++    # retry first waits, up to disk_full_wait seconds, for disk_full_path
++    # to have disk_full_min_free bytes free.
++    disk_full_retries: int = 3
++    disk_full_path: str = "/nix/store"
++    disk_full_min_free: int = 10 * 1024 * 1024 * 1024
++    disk_full_wait: float = 15 * 60
++    disk_full_poll: float = 30
+ 
+ 
+ def build_installables(job: NixEvalJobSuccess) -> list[str]:
+@@ -781,6 +806,18 @@ def is_transient_error(output_tail: str) -> bool:
+     return any(marker in output_tail for marker in TRANSIENT_ERROR_MARKERS)
+ 
+ 
++def is_disk_full_error(output_tail: str) -> bool:
++    return any(marker in output_tail for marker in DISK_FULL_ERROR_MARKERS)
++
++
++def retry_reason(output_tail: str) -> RetryReason:
++    if is_disk_full_error(output_tail):
++        return RetryReason.disk_full
++    if is_transient_error(output_tail):
++        return RetryReason.transient
++    return RetryReason.none
++
++
+ async def _pump_output(
+     stream: asyncio.StreamReader,
+     output_tail: deque[bytes],
+@@ -815,7 +852,8 @@ class NixBuildExecutor:
+         identity: EffectIdentity | None = None,
+     ) -> BuildOutcome:
+         """Run `nix build` for one attribute, with one automatic retry
+-        on transient errors (suppressed when cancellation is requested).
++        on transient errors and up to disk_full_retries after running out
++        of disk (suppressed when cancellation is requested).
+ 
+         on_start fires once a slot is acquired, right before nix runs;
+         a False return (row already terminal) skips the build. on_built
+@@ -856,24 +894,77 @@ class NixBuildExecutor:
+         try:
+             if on_start is not None and not await on_start():
+                 return BuildOutcome.cancelled
+-            outcome, transient = await self._run_once(
++            return await self._run_with_retries(
+                 job, log_writer, cwd, cancel_event, on_built, identity
+             )
+-            if outcome == BuildOutcome.failure and transient:
++        finally:
++            self.queue.release()
++
++    async def _run_with_retries(  # noqa: PLR0913
++        self,
++        job: NixEvalJobSuccess,
++        log_writer: LogWriter,
++        cwd: Path,
++        cancel_event: asyncio.Event,
++        on_built: Callable[[str], None] | None,
++        identity: EffectIdentity | None,
++    ) -> BuildOutcome:
++        outcome, reason = await self._run_once(
++            job, log_writer, cwd, cancel_event, on_built, identity
++        )
++        retries = {RetryReason.transient: 0, RetryReason.disk_full: 0}
++        limits = {
++            RetryReason.transient: 1,
++            RetryReason.disk_full: self.settings.disk_full_retries,
++        }
++        while (
++            outcome == BuildOutcome.failure
++            and reason != RetryReason.none
++            and retries[reason] < limits[reason]
++        ):
++            if cancel_event.is_set():
++                # Cancel arrived while the retry was pending: the retry
++                # must not fire and the attribute ends cancelled (never
++                # cached as a failure).
++                return BuildOutcome.cancelled
++            retries[reason] += 1
++            if reason == RetryReason.disk_full:
++                await log_writer.write(
++                    f"\n\nnixbot: build ran out of disk space, retrying once "
++                    f"there is room ({retries[reason]}/{limits[reason]})\n\n".encode()
++                )
++                await self._wait_for_free_space(cancel_event)
+                 if cancel_event.is_set():
+-                    # Cancel arrived while the retry was pending: the
+-                    # retry must not fire and the attribute ends
+-                    # cancelled (never cached as a failure).
+                     return BuildOutcome.cancelled
++            else:
+                 await log_writer.write(
+                     b"\n\nnixbot: transient error detected, retrying once\n\n"
+                 )
+-                outcome, _ = await self._run_once(
+-                    job, log_writer, cwd, cancel_event, on_built, identity
++            outcome, reason = await self._run_once(
++                job, log_writer, cwd, cancel_event, on_built, identity
++            )
++        return outcome
++
++    async def _wait_for_free_space(self, cancel_event: asyncio.Event) -> None:
++        """Wait until the store filesystem has room, giving up after
++        disk_full_wait seconds: a retry with too little space still
++        starts nix's auto-GC."""
++        if self.settings.store is not None:
++            # Remote build store: local free space says nothing.
++            return
++        deadline = time.monotonic() + self.settings.disk_full_wait
++        while time.monotonic() < deadline:
++            free = shutil.disk_usage(self.settings.disk_full_path).free
++            if free >= self.settings.disk_full_min_free:
++                return
++            with contextlib.suppress(TimeoutError):
++                await asyncio.wait_for(
++                    cancel_event.wait(),
++                    timeout=min(
++                        self.settings.disk_full_poll, deadline - time.monotonic()
++                    ),
+                 )
+-            return outcome
+-        finally:
+-            self.queue.release()
++                return
+ 
+     @contextlib.asynccontextmanager
+     async def _store_env(
+@@ -898,9 +989,9 @@ class NixBuildExecutor:
+         cancel_event: asyncio.Event,
+         on_built: Callable[[str], None] | None = None,
+         identity: EffectIdentity | None = None,
+-    ) -> tuple[BuildOutcome, bool]:
++    ) -> tuple[BuildOutcome, RetryReason]:
+         if cancel_event.is_set():
+-            return BuildOutcome.cancelled, False
++            return BuildOutcome.cancelled, RetryReason.none
+         out_link = cwd / f"result-{safe_attr_filename(job.attr)}"
+         cmd = build_nix_command(job, self.settings, out_link)
+         async with self._store_env(identity) as env:
+@@ -917,7 +1008,7 @@ class NixBuildExecutor:
+         cwd: Path,
+         cancel_event: asyncio.Event,
+         on_built: Callable[[str], None] | None,
+-    ) -> tuple[BuildOutcome, bool]:
++    ) -> tuple[BuildOutcome, RetryReason]:
+         group = await ProcessGroup.start(
+             cmd,
+             cwd=cwd,
+@@ -957,19 +1048,19 @@ class NixBuildExecutor:
+                     capture, log_writer, job.drv_path, failed=True
+                 )
+                 # Timeouts are genuine failures (cached when enabled).
+-                return BuildOutcome.failure, False
++                return BuildOutcome.failure, RetryReason.none
+             if proc.returncode == 0:
+                 # Even when the kill raced a clean exit: the build
+                 # finished, the result is real.
+                 await _finalize_container(
+                     capture, log_writer, job.drv_path, failed=False
+                 )
+-                return BuildOutcome.success, False
++                return BuildOutcome.success, RetryReason.none
+             if cancel_event.is_set():
+-                return BuildOutcome.cancelled, False
++                return BuildOutcome.cancelled, RetryReason.none
+             await _finalize_container(capture, log_writer, job.drv_path, failed=True)
+             tail_text = b"".join(output_tail).decode(errors="replace")
+-            return BuildOutcome.failure, is_transient_error(tail_text)
++            return BuildOutcome.failure, retry_reason(tail_text)
+         finally:
+             # Terminate live viewers even on the cancel/timeout paths;
+             # idempotent with the close in _finalize_container.
+diff --git a/nixbot/tests/test_executor.py b/nixbot/tests/test_executor.py
+index bf8aaaa..47cdd45 100644
+--- a/nixbot/tests/test_executor.py
++++ b/nixbot/tests/test_executor.py
+@@ -27,6 +27,7 @@ from nixbot.executor import (
+     FairScheduler,
+     LogWriter,
+     NixBuildExecutor,
++    RetryReason,
+     StructuredCapture,
+     build_nix_command,
+     failure_excerpt,
+@@ -34,6 +35,7 @@ from nixbot.executor import (
+     iter_lines,
+     read_log,
+     render_log_event,
++    retry_reason,
+ )
+ from nixbot.logstore import LogContainerReader
+ 
+@@ -268,6 +270,20 @@ def test_is_transient_error() -> None:
+     assert not is_transient_error("error: builder failed with exit code 1")
+ 
+ 
++def test_retry_reason() -> None:
++    assert retry_reason("cp: error copying: No space left on device") == (
++        RetryReason.disk_full
++    )
++    assert (
++        retry_reason(
++            "note: build failure may have been caused by lack of free disk space"
++        )
++        == RetryReason.disk_full
++    )
++    assert retry_reason("Connection reset by peer") == RetryReason.transient
++    assert retry_reason("error: builder failed with exit code 1") == (RetryReason.none)
++
++
+ # --- NixBuildExecutor with fake nix -----------------------------------------
+ 
+ 
+@@ -288,6 +304,14 @@ case "$(cat "$control" 2>/dev/null)" in
+     echo "error: unable to download 'https://cache': Connection reset by peer"
+     exit 1 ;;
+   transient) echo ok; exit 0 ;;
++  diskfull-once)
++    echo ok > "$control"
++    echo "cp: error writing '/nix/store/x': No space left on device"
++    exit 1 ;;
++  diskfull)
++    echo run >> {tmp_path}/runs
++    echo "note: build failure may have been caused by lack of free disk space"
++    exit 1 ;;
+   hang) sleep 60 ;;
+   hangpid) echo $$ > {tmp_path}/pid; sleep 60 ;;
+   racepid) echo $$ > {tmp_path}/pid; echo ok ;;
+@@ -339,6 +363,89 @@ async def test_executor_transient_retry_succeeds(
+     assert b"retrying once" in log
+ 
+ 
++class FakeUsage:
++    def __init__(self, free: int) -> None:
++        self.free = free
++
++
++def disk_full_settings(tmp_path: Path, **overrides: float) -> BuildSettings:
++    return BuildSettings(
++        log_dir=tmp_path,
++        disk_full_path=str(tmp_path),
++        disk_full_min_free=100,
++        disk_full_poll=0.01,
++        **overrides,
++    )
++
++
++async def test_executor_disk_full_retry_succeeds(
++    tmp_path: Path, fake_nix: Path, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    monkeypatch.setattr(executor_mod.shutil, "disk_usage", lambda _: FakeUsage(100))
++    fake_nix.write_text("diskfull-once")
++    outcome, log = await run_build(tmp_path, disk_full_settings(tmp_path))
++    assert outcome == BuildOutcome.success
++    assert b"ran out of disk space, retrying once there is room (1/3)" in log
++
++
++async def test_executor_disk_full_retries_are_capped(
++    tmp_path: Path, fake_nix: Path, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    monkeypatch.setattr(executor_mod.shutil, "disk_usage", lambda _: FakeUsage(100))
++    fake_nix.write_text("diskfull")
++    outcome, log = await run_build(tmp_path, disk_full_settings(tmp_path))
++    assert outcome == BuildOutcome.failure
++    assert (tmp_path / "runs").read_text().count("run") == 4
++    assert b"(3/3)" in log
++
++
++async def test_executor_disk_full_waits_for_free_space(
++    tmp_path: Path, fake_nix: Path, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    free = iter([0, 0, 100])
++    checks: list[int] = []
++
++    def disk_usage(path: str) -> FakeUsage:
++        assert path == str(tmp_path)
++        checks.append(1)
++        return FakeUsage(next(free))
++
++    monkeypatch.setattr(executor_mod.shutil, "disk_usage", disk_usage)
++    fake_nix.write_text("diskfull-once")
++    outcome, _ = await run_build(tmp_path, disk_full_settings(tmp_path))
++    assert outcome == BuildOutcome.success
++    assert len(checks) == 3
++
++
++async def test_executor_disk_full_retries_after_wait_runs_out(
++    tmp_path: Path, fake_nix: Path, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    monkeypatch.setattr(executor_mod.shutil, "disk_usage", lambda _: FakeUsage(0))
++    fake_nix.write_text("diskfull-once")
++    outcome, _ = await run_build(
++        tmp_path, disk_full_settings(tmp_path, disk_full_wait=0.05)
++    )
++    assert outcome == BuildOutcome.success
++
++
++async def test_executor_cancel_during_disk_full_wait(
++    tmp_path: Path, fake_nix: Path, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    monkeypatch.setattr(executor_mod.shutil, "disk_usage", lambda _: FakeUsage(0))
++    fake_nix.write_text("diskfull")
++    cancel_event = asyncio.Event()
++    task = asyncio.create_task(
++        run_build(tmp_path, disk_full_settings(tmp_path), cancel_event)
++    )
++    while not (tmp_path / "runs").exists():  # noqa: ASYNC110
++        await asyncio.sleep(0.01)
++    await asyncio.sleep(0.05)
++    cancel_event.set()
++    outcome, _ = await asyncio.wait_for(task, timeout=5)
++    assert outcome == BuildOutcome.cancelled
++    assert (tmp_path / "runs").read_text().count("run") == 1
++
++
+ async def test_executor_timeout(tmp_path: Path, fake_nix: Path) -> None:
+     fake_nix.write_text("hang")
+     outcome, log = await run_build(tmp_path, BuildSettings(log_dir=tmp_path, timeout=1))
