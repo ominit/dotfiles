@@ -1,5 +1,5 @@
 diff --git a/nixbot/executor.py b/nixbot/executor.py
-index ebfd81d..50e477c 100644
+index ebfd81d..fe84e54 100644
 --- a/nixbot/executor.py
 +++ b/nixbot/executor.py
 @@ -7,7 +7,8 @@ Runs `nix build` per derivation with:
@@ -89,7 +89,7 @@ index ebfd81d..50e477c 100644
  
          on_start fires once a slot is acquired, right before nix runs;
          a False return (row already terminal) skips the build. on_built
-@@ -856,24 +894,77 @@ class NixBuildExecutor:
+@@ -856,24 +894,81 @@ class NixBuildExecutor:
          try:
              if on_start is not None and not await on_start():
                  return BuildOutcome.cancelled
@@ -160,7 +160,11 @@ index ebfd81d..50e477c 100644
 +            return
 +        deadline = time.monotonic() + self.settings.disk_full_wait
 +        while time.monotonic() < deadline:
-+            free = shutil.disk_usage(self.settings.disk_full_path).free
++            try:
++                free = shutil.disk_usage(self.settings.disk_full_path).free
++            except OSError:
++                logger.exception("cannot read free space, retrying without waiting")
++                return
 +            if free >= self.settings.disk_full_min_free:
 +                return
 +            with contextlib.suppress(TimeoutError):
@@ -177,7 +181,7 @@ index ebfd81d..50e477c 100644
  
      @contextlib.asynccontextmanager
      async def _store_env(
-@@ -898,9 +989,9 @@ class NixBuildExecutor:
+@@ -898,9 +993,9 @@ class NixBuildExecutor:
          cancel_event: asyncio.Event,
          on_built: Callable[[str], None] | None = None,
          identity: EffectIdentity | None = None,
@@ -189,7 +193,7 @@ index ebfd81d..50e477c 100644
          out_link = cwd / f"result-{safe_attr_filename(job.attr)}"
          cmd = build_nix_command(job, self.settings, out_link)
          async with self._store_env(identity) as env:
-@@ -917,7 +1008,7 @@ class NixBuildExecutor:
+@@ -917,7 +1012,7 @@ class NixBuildExecutor:
          cwd: Path,
          cancel_event: asyncio.Event,
          on_built: Callable[[str], None] | None,
@@ -198,7 +202,7 @@ index ebfd81d..50e477c 100644
          group = await ProcessGroup.start(
              cmd,
              cwd=cwd,
-@@ -957,19 +1048,19 @@ class NixBuildExecutor:
+@@ -957,19 +1052,19 @@ class NixBuildExecutor:
                      capture, log_writer, job.drv_path, failed=True
                  )
                  # Timeouts are genuine failures (cached when enabled).
@@ -223,7 +227,7 @@ index ebfd81d..50e477c 100644
              # Terminate live viewers even on the cancel/timeout paths;
              # idempotent with the close in _finalize_container.
 diff --git a/nixbot/tests/test_executor.py b/nixbot/tests/test_executor.py
-index bf8aaaa..47cdd45 100644
+index bf8aaaa..1717c01 100644
 --- a/nixbot/tests/test_executor.py
 +++ b/nixbot/tests/test_executor.py
 @@ -27,6 +27,7 @@ from nixbot.executor import (
@@ -278,7 +282,7 @@ index bf8aaaa..47cdd45 100644
    hang) sleep 60 ;;
    hangpid) echo $$ > {tmp_path}/pid; sleep 60 ;;
    racepid) echo $$ > {tmp_path}/pid; echo ok ;;
-@@ -339,6 +363,89 @@ async def test_executor_transient_retry_succeeds(
+@@ -339,6 +363,101 @@ async def test_executor_transient_retry_succeeds(
      assert b"retrying once" in log
  
  
@@ -344,6 +348,18 @@ index bf8aaaa..47cdd45 100644
 +    outcome, _ = await run_build(
 +        tmp_path, disk_full_settings(tmp_path, disk_full_wait=0.05)
 +    )
++    assert outcome == BuildOutcome.success
++
++
++async def test_executor_disk_full_retries_when_free_space_is_unreadable(
++    tmp_path: Path, fake_nix: Path, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    def disk_usage(_: str) -> FakeUsage:
++        raise FileNotFoundError
++
++    monkeypatch.setattr(executor_mod.shutil, "disk_usage", disk_usage)
++    fake_nix.write_text("diskfull-once")
++    outcome, _ = await run_build(tmp_path, disk_full_settings(tmp_path))
 +    assert outcome == BuildOutcome.success
 +
 +
