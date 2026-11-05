@@ -144,6 +144,13 @@
 
     fileSystems."/data".neededForBoot = true;
 
+    modules.persistence.directories.journal = {
+      source = "/data/system/journal";
+      target = "/var/log/journal";
+    };
+    # journald must start writing to disk after the journal bind mount exists
+    systemd.services.systemd-journal-flush.after = ["persistence-bind-mounts.service"];
+
     services.openssh = {
       enable = true;
       hostKeys = [

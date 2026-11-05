@@ -11,7 +11,7 @@
       enable = true;
 
       domain = "nixbot.42nd.net";
-      port = 10012;
+      port = 10001;
       useHTTPS = true;
       nginx.enable = false;
 

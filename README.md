@@ -4,6 +4,7 @@
 - [`hosts`](hosts) configuration per host
 	- [`eientei`](hosts/eientei) T480 Thinkpad laptop - Daily driver for notes and programming
 	- [`makai`](hosts/makai) HP Pavilion Gaming Desktop - Homelab server - 魔界: where dæmons live
+	- [`mayohiga`](hosts/mayohiga) Dell OptiPlex XE3 - Build server - マヨヒガ: where the shikigami work
 	- [`wsl`](hosts/wsl) Windows Subsystem for Linux
 - [`libEx`](libEx) extra lib commands
 - [`modules`](modules) custom modules consumed by hosts
@@ -49,7 +50,6 @@ These are based on locations from the Touhou Project.
 - gensokyo
 - geidontei
 - hakugyokurou
-- mayohiga
 - moriya
 - muenzuka
 - mugenkan

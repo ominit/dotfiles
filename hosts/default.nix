@@ -35,6 +35,13 @@
       modules = defaultModules ++ [./makai];
     };
 
+    mayohiga = mkNixosSystem {
+      inherit withSystem;
+      hostname = "mayohiga";
+      system = "x86_64-linux";
+      modules = defaultModules ++ [./mayohiga];
+    };
+
     wsl = mkNixosSystem {
       inherit withSystem;
       hostname = "wsl";

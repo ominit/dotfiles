@@ -5,7 +5,7 @@
         enable = true;
         signKeyPaths = ["/data/system/key.secret"];
         settings = {
-          bind = "127.0.0.1:10013";
+          bind = "127.0.0.1:10002";
           enable_compression = true;
         };
       };
