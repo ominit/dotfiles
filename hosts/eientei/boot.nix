@@ -10,8 +10,8 @@
   boot.loader.efi.canTouchEfiVariables = true;
   boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
-  services.scx.enable = true;
-  services.scx.scheduler = "scx_bpfland";
+  services.scx-loader.enable = true;
+  services.scx-loader.config.default_sched = "scx_bpfland";
 
   services.fwupd.enable = true;
 
