@@ -183,8 +183,8 @@
     boot.kernelPackages = pkgs.linuxPackages_cachyos-server;
     boot.binfmt.emulatedSystems = ["aarch64-linux"];
 
-    services.scx.enable = true;
-    services.scx.scheduler = "scx_bpfland";
+    services.scx-loader.enable = true;
+    services.scx-loader.config.default_sched = "scx_bpfland";
 
     zramSwap.enable = true;
     systemd.oomd.enableSystemSlice = true;
