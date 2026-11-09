@@ -1,6 +1,7 @@
 {
   pkgs,
   inputs,
+  system,
   config,
   multiverse,
   ...
@@ -22,14 +23,14 @@
         }
         {
           name = "codex";
-          package = multiverse.versions.codex."0.166.0";
+          package = inputs.llm-agents.packages.${system}.codex;
           mcpServers = ["notion" "cua-driver" "chrome-devtools"];
           skills = ["frontend-design"];
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md ../../modules/agents/skills/unslop/SKILL.md];
         }
         {
           name = "claude-code";
-          package = multiverse.latest.claude-code;
+          package = inputs.llm-agents.packages.${system}.claude-code;
           mcpServers = ["notion" "cua-driver" "chrome-devtools"];
           skills = ["frontend-design"];
           settings.attribution = {

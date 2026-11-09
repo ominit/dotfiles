@@ -2,7 +2,6 @@
   inputs,
   system,
   pkgs,
-  multiverse,
   ...
 }: {
   imports = [
@@ -23,7 +22,7 @@
       }
       {
         name = "codex";
-        package = multiverse.versions.codex."0.166.0";
+        package = inputs.llm-agents.packages.${system}.codex;
         skills = ["frontend-design"];
         agentFiles = [../../modules/agents/AGENTS.md ../../modules/agents/skills/unslop/SKILL.md];
       }
