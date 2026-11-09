@@ -22,7 +22,7 @@
         }
         {
           name = "codex";
-          package = multiverse.latest.codex;
+          package = multiverse.versions.codex."0.166.0";
           mcpServers = ["notion" "cua-driver" "chrome-devtools"];
           skills = ["frontend-design"];
           agentFiles = [../../modules/agents/AGENTS.md ./AGENTS.md ../../modules/agents/skills/unslop/SKILL.md];

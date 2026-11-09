@@ -23,7 +23,7 @@
       }
       {
         name = "codex";
-        package = multiverse.latest.codex;
+        package = multiverse.versions.codex."0.166.0";
         skills = ["frontend-design"];
         agentFiles = [../../modules/agents/AGENTS.md ../../modules/agents/skills/unslop/SKILL.md];
       }
