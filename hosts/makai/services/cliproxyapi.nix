@@ -30,6 +30,11 @@ in {
         management = {
           allow-remote = true;
         };
+        upstream.claude.header-defaults = {
+          user-agent = "claude-cli/2.1.321 (external, cli)";
+          package-version = "0.128.0";
+          runtime-version = "v26.12.1";
+        };
       };
     };
 
