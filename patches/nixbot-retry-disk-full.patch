@@ -54,7 +54,7 @@ index a971418..baa9633 100644
 +    # to have disk_full_min_free bytes free.
 +    disk_full_retries: int = 3
 +    disk_full_path: str = "/nix/store"
-+    disk_full_min_free: int = 10 * 1024 * 1024 * 1024
++    disk_full_min_free: int = 30 * 1024 * 1024 * 1024
 +    disk_full_wait: float = 15 * 60
 +    disk_full_poll: float = 30
  
@@ -387,3 +387,34 @@ index b447041..db7e5d8 100644
  async def test_executor_timeout(tmp_path: Path, fake_nix: Path) -> None:
      fake_nix.write_text("hang")
      outcome, log = await run_build(tmp_path, BuildSettings(log_dir=tmp_path, timeout=1))
+diff --git a/nixbot/tests/test_races.py b/nixbot/tests/test_races.py
+index f20b8b8..e2fb607 100644
+--- a/nixbot/tests/test_races.py
++++ b/nixbot/tests/test_races.py
+@@ -15,6 +15,7 @@ from nixbot.executor import (
+     FairScheduler,
+     LogWriter,
+     NixBuildExecutor,
++    RetryReason,
+ )
+ 
+ from .support import mk_job
+@@ -39,15 +40,15 @@ async def test_cancel_during_retry_window(tmp_path: Path) -> None:
+         on_built: object = None,
+         identity: object = None,
+         store: object = None,
+-    ) -> tuple[BuildOutcome, bool]:
++    ) -> tuple[BuildOutcome, RetryReason]:
+         nonlocal attempts
+         attempts += 1
+         if attempts == 1:
+             # Transient failure. Cancel lands while the retry is
+             # being considered.
+             cancel_event.set()
+-            return BuildOutcome.failure, True
+-        return BuildOutcome.success, False
++            return BuildOutcome.failure, RetryReason.transient
++        return BuildOutcome.success, RetryReason.none
+ 
+     executor._run_once = fake_run_once  # type: ignore[assignment,method-assign]  # noqa: SLF001
+     writer = LogWriter(path=tmp_path / "log.zst")

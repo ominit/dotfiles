@@ -34,17 +34,29 @@
 
       buildSystems = ["x86_64-linux" "aarch64-linux"];
       buildConcurrency = 2;
-      packages.nixbot =
-        (pkgs.python3.pkgs.callPackage "${inputs.nixbot}/packages/nixbot.nix" {
-          inherit (config.services.nixbot.packages) nix-eval-jobs;
-        }).overridePythonAttrs (old: {
-          patches =
-            (old.patches or [])
-            ++ [
-              ../../../patches/nixbot-fast-eval.patch
-              ../../../patches/nixbot-retry-disk-full.patch
-            ];
-        });
+      buildMaxSilentTime = 60 * 60;
+      packages.nixbot = let
+        python3Packages = pkgs.python3.pkgs;
+        # nixbot.nix only defines passthru.tests.pytest when handed the package itself.
+        nixbot =
+          (python3Packages.callPackage "${inputs.nixbot}/packages/nixbot.nix" {
+            inherit (config.services.nixbot.packages) nix-eval-jobs;
+            inherit nixbot;
+            nixbot-cli = python3Packages.callPackage "${inputs.nixbot}/packages/nixbot-cli.nix" {};
+          }).overridePythonAttrs (old: {
+            patches =
+              (old.patches or [])
+              ++ [
+                ../../../patches/nixbot-fast-eval.patch
+                ../../../patches/nixbot-retry-disk-full.patch
+                ../../../patches/nixbot-branch-gcroots.patch
+                ../../../patches/nixbot-silent-timeout-retry.patch
+                ../../../patches/nixbot-build-priority.patch
+                ../../../patches/nixbot-merge-queue-fail-fast.patch
+              ];
+          });
+      in
+        nixbot;
     };
 
     # The root directory rule upstream does not repair descendants left

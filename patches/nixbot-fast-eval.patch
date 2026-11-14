@@ -1,23 +1,10 @@
---- a/nixbot/nix_eval.py
-+++ b/nixbot/nix_eval.py
-@@ -201,3 +201,3 @@
-         "--force-recurse",
--        "--check-cache-status",
-+        "--show-input-drvs",
-         *(["--eval-store", "daemon"] if settings.build_store_url else []),
---- a/nixbot/models.py
-+++ b/nixbot/models.py
-@@ -45,4 +45,5 @@
-     )
--    needed_builds: list[str] = Field(validation_alias="neededBuilds")
--    needed_substitutes: list[str] = Field(validation_alias="neededSubstitutes")
-+    needed_builds: list[str] = Field(default_factory=list, validation_alias="neededBuilds")
-+    needed_substitutes: list[str] = Field(default_factory=list, validation_alias="neededSubstitutes")
-+    input_drvs: dict[str, list[str]] = Field(default_factory=dict, validation_alias="inputDrvs")
-     drv_path: str = Field(validation_alias="drvPath")
+diff --git a/nixbot/executor.py b/nixbot/executor.py
+index 31aebd9..a971418 100644
 --- a/nixbot/executor.py
 +++ b/nixbot/executor.py
-@@ -370,3 +370,7 @@
+@@ -368,7 +368,11 @@ def build_installables(job: NixEvalJobSuccess) -> list[str]:
+     itself, or only its missing dependencies for buildDependenciesOnly
+     attributes (shells)."""
      if job.build_dependencies_only:
 -        return [f"{d}^*" for d in job.needed_builds if d != job.drv_path]
 +        return [
@@ -26,3 +13,65 @@
 +            for output in outputs
 +        ]
      return [f"{job.drv_path}^*"]
+ 
+ 
+diff --git a/nixbot/models.py b/nixbot/models.py
+index fb6e83e..5d61735 100644
+--- a/nixbot/models.py
++++ b/nixbot/models.py
+@@ -43,8 +43,9 @@ class NixEvalJobSuccess(BaseModel):
+     cache_status: CacheStatus | None = Field(
+         default=None, validation_alias="cacheStatus"
+     )
+-    needed_builds: list[str] = Field(validation_alias="neededBuilds")
+-    needed_substitutes: list[str] = Field(validation_alias="neededSubstitutes")
++    needed_builds: list[str] = Field(default_factory=list, validation_alias="neededBuilds")
++    needed_substitutes: list[str] = Field(default_factory=list, validation_alias="neededSubstitutes")
++    input_drvs: dict[str, list[str]] = Field(default_factory=dict, validation_alias="inputDrvs")
+     drv_path: str = Field(validation_alias="drvPath")
+     name: str
+     # builtins.warn / builtins.trace output emitted while evaluating
+diff --git a/nixbot/nix_eval.py b/nixbot/nix_eval.py
+index 1598b98..ed413eb 100644
+--- a/nixbot/nix_eval.py
++++ b/nixbot/nix_eval.py
+@@ -199,7 +199,7 @@ def build_eval_command(
+         "--gc-roots-dir",
+         str(settings.gc_roots_dir),
+         "--force-recurse",
+-        "--check-cache-status",
++        "--show-input-drvs",
+         *(["--eval-store", "daemon"] if settings.build_store_url else []),
+         *select_args,
+         *settings.extra_args,
+diff --git a/nixbot/tests/test_pipeline.py b/nixbot/tests/test_pipeline.py
+index 436238d..dc70bce 100644
+--- a/nixbot/tests/test_pipeline.py
++++ b/nixbot/tests/test_pipeline.py
+@@ -194,16 +194,16 @@ async def test_full_pipeline(flake: Path, tmp_path: Path) -> None:
+     assert "deliberate eval failure" in (errors[f"checks.{system}.evalfail"] or "")
+ 
+ 
+-async def test_cached_skip_on_second_run(flake: Path, tmp_path: Path) -> None:
+-    # First run built base/dependent (test ordering within module);
+-    # a second eval marks them local and the scheduler skips them.
++async def test_second_run_rebuilds_without_cache_status(
++    flake: Path, tmp_path: Path
++) -> None:
++    # First run built base/dependent (test ordering within module).
++    # Evaluation runs without --check-cache-status, so nothing is known
++    # to be local: nix build gets them again and finds them present.
+     result, executor = await run_pipeline(flake, tmp_path)
+     system = current_system()
+     statuses = {r.attr: r.status for r in result.results}
+-    assert statuses[f"checks.{system}.base"] == AttributeStatus.skipped_local
+-    assert statuses[f"checks.{system}.dependent"] == AttributeStatus.skipped_local
+-    assert f"checks.{system}.base" not in executor.built
+-    assert f"checks.{system}.dependent" not in executor.built
+-    # Skipped jobs still expose out paths for gcroots/outputs updates.
+-    skipped = dict(result.skipped_out_paths)
+-    assert skipped[f"checks.{system}.base"].startswith(f"{store_dir()}/")
++    for attr in (f"checks.{system}.base", f"checks.{system}.dependent"):
++        assert statuses[attr] == AttributeStatus.succeeded
++        assert attr in executor.built
++        assert attr not in dict(result.skipped_out_paths)

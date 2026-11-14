@@ -1,0 +1,175 @@
+diff --git a/nixbot/executor.py b/nixbot/executor.py
+index 07435e1..b965bb3 100644
+--- a/nixbot/executor.py
++++ b/nixbot/executor.py
+@@ -7,7 +7,8 @@ Runs `nix build` per derivation with:
+   other projects,
+ - per-attribute timeout (default 3h) plus nix's --max-silent-time
+   (default 20min),
+-- one automatic retry on transient infrastructure errors, and up to
++- one automatic retry on transient infrastructure errors, one with a
++  doubled --max-silent-time after nix killed a silent build, and up to
+   three after running out of disk once there is room again, suppressed
+   once cancellation is requested,
+ - process-group kill on cancel/timeout,
+@@ -136,10 +137,16 @@ DISK_FULL_ERROR_MARKERS = (
+ )
+ 
+ 
++# --max-silent-time kills usually mean the machine was overloaded (a long
++# LTO link with no output), not that the build is broken.
++SILENT_TIMEOUT_ERROR = re.compile(r"timed out after \d+ seconds")
++
++
+ class RetryReason(StrEnum):
+     none = "none"
+     transient = "transient"
+     disk_full = "disk_full"
++    silent_timeout = "silent_timeout"
+ 
+ 
+ class FairScheduler:
+@@ -406,6 +413,7 @@ def build_nix_command(
+     settings: BuildSettings,
+     out_link: Path,
+     store: BuildStoreConfig | None = None,
++    max_silent_time: int | None = None,
+ ) -> list[str]:
+     store = store if store is not None else settings.store
+     return [
+@@ -422,7 +430,7 @@ def build_nix_command(
+         "keep-going",
+         "true",
+         "--max-silent-time",
+-        str(settings.max_silent_time),
++        str(max_silent_time or settings.max_silent_time),
+         # Hosts without flakes enabled in nix.conf (single-user
+         # installs, containers) must still build. The eval command
+         # carries the same override.
+@@ -819,6 +827,8 @@ def retry_reason(output_tail: str) -> RetryReason:
+         return RetryReason.disk_full
+     if is_transient_error(output_tail):
+         return RetryReason.transient
++    if SILENT_TIMEOUT_ERROR.search(output_tail):
++        return RetryReason.silent_timeout
+     return RetryReason.none
+ 
+ 
+@@ -919,11 +929,17 @@ class NixBuildExecutor:
+         outcome, reason = await self._run_once(
+             job, log_writer, cwd, cancel_event, on_built, identity, store
+         )
+-        retries = {RetryReason.transient: 0, RetryReason.disk_full: 0}
++        retries = {
++            RetryReason.transient: 0,
++            RetryReason.disk_full: 0,
++            RetryReason.silent_timeout: 0,
++        }
+         limits = {
+             RetryReason.transient: 1,
+             RetryReason.disk_full: self.settings.disk_full_retries,
++            RetryReason.silent_timeout: 1,
+         }
++        max_silent_time: int | None = None
+         while (
+             outcome == BuildOutcome.failure
+             and reason != RetryReason.none
+@@ -943,12 +959,26 @@ class NixBuildExecutor:
+                 await self._wait_for_free_space(cancel_event, store)
+                 if cancel_event.is_set():
+                     return BuildOutcome.cancelled
++            elif reason == RetryReason.silent_timeout:
++                max_silent_time = self.settings.max_silent_time * 2
++                await log_writer.write(
++                    f"\n\nnixbot: nix killed a build that printed nothing for "
++                    f"{self.settings.max_silent_time}s, retrying once with "
++                    f"{max_silent_time}s\n\n".encode()
++                )
+             else:
+                 await log_writer.write(
+                     b"\n\nnixbot: transient error detected, retrying once\n\n"
+                 )
+             outcome, reason = await self._run_once(
+-                job, log_writer, cwd, cancel_event, on_built, identity, store
++                job,
++                log_writer,
++                cwd,
++                cancel_event,
++                on_built,
++                identity,
++                store,
++                max_silent_time,
+             )
+         return outcome
+ 
+@@ -1003,11 +1033,12 @@ class NixBuildExecutor:
+         on_built: Callable[[str], None] | None = None,
+         identity: EffectIdentity | None = None,
+         store: BuildStoreConfig | None = None,
++        max_silent_time: int | None = None,
+     ) -> tuple[BuildOutcome, RetryReason]:
+         if cancel_event.is_set():
+             return BuildOutcome.cancelled, RetryReason.none
+         out_link = cwd / f"result-{safe_attr_filename(job.attr)}"
+-        cmd = build_nix_command(job, self.settings, out_link, store)
++        cmd = build_nix_command(job, self.settings, out_link, store, max_silent_time)
+         async with self._store_env(identity, store) as env:
+             return await self._run_nix(
+                 cmd, env, job, log_writer, cwd, cancel_event, on_built
+diff --git a/nixbot/tests/test_executor.py b/nixbot/tests/test_executor.py
+index db7e5d8..192c91d 100644
+--- a/nixbot/tests/test_executor.py
++++ b/nixbot/tests/test_executor.py
+@@ -319,6 +319,9 @@ def test_retry_reason() -> None:
+         == RetryReason.disk_full
+     )
+     assert retry_reason("Connection reset by peer") == RetryReason.transient
++    assert retry_reason("error: timed out after 1200 seconds") == (
++        RetryReason.silent_timeout
++    )
+     assert retry_reason("error: builder failed with exit code 1") == (RetryReason.none)
+ 
+ 
+@@ -350,6 +353,14 @@ case "$(cat "$control" 2>/dev/null)" in
+     echo run >> {tmp_path}/runs
+     echo "note: build failure may have been caused by lack of free disk space"
+     exit 1 ;;
++  silent-once)
++    echo ok > "$control"
++    echo "error: timed out after 1200 seconds"
++    exit 1 ;;
++  silent)
++    echo run >> {tmp_path}/runs
++    echo "error: timed out after 1200 seconds"
++    exit 1 ;;
+   hang) sleep 60 ;;
+   hangpid) echo $$ > {tmp_path}/pid; sleep 60 ;;
+   racepid) echo $$ > {tmp_path}/pid; echo ok ;;
+@@ -401,6 +412,27 @@ async def test_executor_transient_retry_succeeds(
+     assert b"retrying once" in log
+ 
+ 
++async def test_executor_silent_timeout_retries_with_doubled_limit(
++    tmp_path: Path, fake_nix: Path
++) -> None:
++    fake_nix.write_text("silent-once")
++    outcome, log = await run_build(
++        tmp_path, BuildSettings(log_dir=tmp_path, max_silent_time=600)
++    )
++    assert outcome == BuildOutcome.success
++    assert b"printed nothing for 600s, retrying once with 1200s" in log
++    assert b"--max-silent-time 1200" in log
++
++
++async def test_executor_silent_timeout_retries_once(
++    tmp_path: Path, fake_nix: Path
++) -> None:
++    fake_nix.write_text("silent")
++    outcome, _ = await run_build(tmp_path)
++    assert outcome == BuildOutcome.failure
++    assert (tmp_path / "runs").read_text().count("run") == 2
++
++
+ class FakeUsage:
+     def __init__(self, free: int) -> None:
+         self.free = free

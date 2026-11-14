@@ -1,0 +1,216 @@
+diff --git a/nixbot/build_run.py b/nixbot/build_run.py
+index 8805fad..c4db79a 100644
+--- a/nixbot/build_run.py
++++ b/nixbot/build_run.py
+@@ -19,6 +19,7 @@ from typing import TYPE_CHECKING, Any
+ from . import db
+ from .after_build import after_build
+ from .build_scheduler import (
++    TERMINAL_FAILURES,
+     AttributeResult,
+     AttributeStatus,
+     BuildOutcome,
+@@ -547,11 +548,20 @@ async def build_attributes(  # noqa: PLR0913
+     Accepts either a complete job list or a queue fed during an
+     ongoing evaluation. Returns the aggregated build status."""
+     cancel_event = o.cancel_events.setdefault(build.id_, asyncio.Event())
++    # A merge queue drops an entry at its first failure, so the rest of a
++    # failed queue build is wasted work. Stopping it leaves the remaining
++    # attributes cancelled and the build failed.
++    fail_fast = (
++        asyncio.Event()
++        if event.pr_number is None and is_merge_queue_branch(event.branch)
++        else None
++    )
+ 
+     async def record_early(result: AttributeResult) -> None:
+         """Persist skips and dependency failures as they happen;
+         otherwise they stay pending until the whole build ends."""
+         await db.complete_attribute(o.pool, build.id_, result, if_unfinished=True)
++        _stop_on_failure(fail_fast, build, result.status)
+ 
+     failed_build_cache: FailedBuildCache | None = (
+         o.failed_build_cache(build.project_id)
+@@ -561,7 +571,7 @@ async def build_attributes(  # noqa: PLR0913
+     if failed_build_cache is not None and not cache_failures:
+         failed_build_cache = _ReadOnlyFailedBuildCache(failed_build_cache)
+     scheduler = JobScheduler(
+-        _OrchestratorExecutor(o, event, build, worktree_path, cancel_event),
++        _OrchestratorExecutor(o, event, build, worktree_path, cancel_event, fail_fast),
+         o.config.build_systems,
+         failed_build_cache=failed_build_cache,
+         build_url=f"{o.config.url}/repos/{event.repo.forge}/{event.repo.name}/builds/{build.number}",
+@@ -622,6 +632,28 @@ async def build_attributes(  # noqa: PLR0913
+     return status
+ 
+ 
++async def _set_on_first(target: asyncio.Event, *events: asyncio.Event | None) -> None:
++    waits = [asyncio.ensure_future(e.wait()) for e in events if e is not None]
++    try:
++        await asyncio.wait(waits, return_when=asyncio.FIRST_COMPLETED)
++    finally:
++        for wait in waits:
++            wait.cancel()
++    target.set()
++
++
++def _stop_on_failure(
++    fail_fast: asyncio.Event | None, build: BuildRecord, status: AttributeStatus
++) -> None:
++    if fail_fast is None or fail_fast.is_set() or status not in TERMINAL_FAILURES:
++        return
++    logger.info(
++        "merge-queue build failed, cancelling its remaining attributes",
++        extra={"build_id": build.id_},
++    )
++    fail_fast.set()
++
++
+ class _ReadOnlyFailedBuildCache:
+     """Failed-build cache that skips known failures but records none.
+ 
+@@ -659,19 +691,21 @@ class _OrchestratorExecutor:
+     steps, gcroots, outputs, and writes the attribute completion as one
+     transactional write."""
+ 
+-    def __init__(
++    def __init__(  # noqa: PLR0913
+         self,
+         orchestrator: Orchestrator,
+         event: ChangeEvent,
+         build: BuildRecord,
+         worktree_path: Path,
+         cancel_event: asyncio.Event,
++        fail_fast: asyncio.Event | None = None,
+     ) -> None:
+         self.o = orchestrator
+         self.event = event
+         self.build_record = build
+         self.worktree_path = worktree_path
+         self.cancel_event = cancel_event
++        self.fail_fast = fail_fast
+ 
+     async def build(self, job: NixEvalJobSuccess) -> BuildOutcome:
+         try:
+@@ -744,15 +778,13 @@ class _OrchestratorExecutor:
+         attr_cancel = asyncio.Event()
+         self.o.attr_cancel_events[(self.build_record.id_, job.attr)] = attr_cancel
+ 
+-        async def _mirror_build_cancel() -> None:
+-            await self.cancel_event.wait()
+-            attr_cancel.set()
+-
+         def on_built(drv: str) -> None:
+             for uploader in self.o.uploaders:
+                 uploader.enqueue_nowait(drv)
+ 
+-        mirror = asyncio.create_task(_mirror_build_cancel())
++        mirror = asyncio.create_task(
++            _set_on_first(attr_cancel, self.cancel_event, self.fail_fast)
++        )
+         try:
+             async with self.o.open_log(self.build_record.id_, job.attr) as writer:
+                 outcome = await self.o.executor.build_attribute(
+@@ -776,6 +808,7 @@ class _OrchestratorExecutor:
+             self.o.attr_cancel_events.pop((self.build_record.id_, job.attr), None)
+ 
+         status, error = outcome_status(job, outcome)
++        _stop_on_failure(self.fail_fast, self.build_record, status)
+         # Failed attributes carry a log-tail excerpt so the build page
+         # answers "why" without a click into the log. ANSI stays: the
+         # web layer renders it, the API strips it.
+diff --git a/nixbot/tests/test_orchestrator.py b/nixbot/tests/test_orchestrator.py
+index 019d0c0..0673e57 100644
+--- a/nixbot/tests/test_orchestrator.py
++++ b/nixbot/tests/test_orchestrator.py
+@@ -335,6 +335,90 @@ async def test_default_branch_builds_take_slots_first(
+     assert executor.priorities == [1]
+ 
+ 
++@dataclass
++class FailFirstExecutor(FakeExecutor):
++    """ "a" fails at once. The others wait for cancellation and succeed
++    if none arrives."""
++
++    async def build_attribute(  # noqa: PLR0913
++        self,
++        build_key: object,
++        job: NixEvalJobSuccess,
++        log_writer: LogWriter,
++        cwd: Path,
++        cancel_event: asyncio.Event | None = None,
++        on_start: Callable[[], Awaitable[bool]] | None = None,
++        on_built: Callable[[str], None] | None = None,
++        identity: EffectIdentity | None = None,
++        store: BuildStoreConfig | None = None,
++        priority: int = 0,
++    ) -> BuildOutcome:
++        if on_start is not None and not await on_start():
++            return BuildOutcome.cancelled
++        if job.attr == "a":
++            return BuildOutcome.failure
++        assert cancel_event is not None
++        try:
++            await asyncio.wait_for(cancel_event.wait(), timeout=1)
++        except TimeoutError:
++            return BuildOutcome.success
++        return BuildOutcome.cancelled
++
++
++async def _attr_statuses(pool: asyncpg.Pool, build_id: int) -> dict[str, str]:
++    rows = await pool.fetch(
++        "SELECT attr, status FROM build_attributes WHERE build_id = $1", build_id
++    )
++    return {r["attr"]: r["status"] for r in rows}
++
++
++async def test_merge_queue_build_stops_at_first_failure(
++    pool: asyncpg.Pool, make_env: EnvFactory, upstream: Path
++) -> None:
++    orchestrator, _, project = await make_env(
++        FakeEvalRunner([mk_job("a"), mk_job("b"), mk_job("c")]),
++        FailFirstExecutor(),
++        name="queued",
++    )
++    build = await orchestrator.handle_change_event(
++        ChangeEvent(
++            repo=project,
++            branch="gh-readonly-queue/main/pr-1-c0ffee",
++            commit_sha=git(upstream, "rev-parse", "HEAD"),
++        )
++    )
++    assert build is not None
++    assert await _attr_statuses(pool, build.id_) == {
++        "a": "failed",
++        "b": "cancelled",
++        "c": "cancelled",
++    }
++    status = await pool.fetchval("SELECT status FROM builds WHERE id = $1", build.id_)
++    assert status == BuildStatus.FAILED
++
++
++async def test_default_branch_build_keeps_going_after_a_failure(
++    pool: asyncpg.Pool, make_env: EnvFactory, upstream: Path
++) -> None:
++    orchestrator, _, project = await make_env(
++        FakeEvalRunner([mk_job("a"), mk_job("b")]),
++        FailFirstExecutor(),
++        name="unqueued",
++    )
++    build = await orchestrator.handle_change_event(
++        ChangeEvent(
++            repo=project,
++            branch="main",
++            commit_sha=git(upstream, "rev-parse", "HEAD"),
++        )
++    )
++    assert build is not None
++    assert await _attr_statuses(pool, build.id_) == {
++        "a": "failed",
++        "b": "succeeded",
++    }
++
++
+ @pytest.mark.asyncio
+ async def test_per_repo_build_store_reaches_the_executor(
+     make_env: EnvFactory, upstream: Path

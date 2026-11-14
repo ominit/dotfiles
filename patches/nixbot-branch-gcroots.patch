@@ -1,0 +1,476 @@
+diff --git a/nixbot/branch_gcroots.py b/nixbot/branch_gcroots.py
+new file mode 100644
+index 0000000..77dad47
+--- /dev/null
++++ b/nixbot/branch_gcroots.py
+@@ -0,0 +1,126 @@
++"""Removes the gc-roots of non-default branches the forge has deleted.
++
++Merge-queue branches live seconds to minutes. Their roots only need to
++outlive the default-branch push that reuses the queue build, which
++registers roots of its own. Roots are removed only when the forge
++answers 404 for the branch, so a forge outage keeps them.
++"""
++
++from __future__ import annotations
++
++import asyncio
++import logging
++import shutil
++from typing import TYPE_CHECKING
++from urllib.parse import quote
++
++from .gcroots import branch_gcroot_dirs
++from .repos import repo_info
++
++if TYPE_CHECKING:
++    from collections.abc import Awaitable, Callable, Iterable
++    from pathlib import Path
++
++    import httpx
++
++    from .forge import GiteaClient, GitHubAppClient, GitlabClient
++    from .repos import RepoRecord
++
++    BranchExists = Callable[[RepoRecord, str], Awaitable[bool | None]]
++
++logger = logging.getLogger(__name__)
++
++_NOT_FOUND = 404
++
++
++def _exists(response: httpx.Response) -> bool | None:
++    if response.status_code == _NOT_FOUND:
++        return False
++    if response.is_success:
++        return True
++    return None
++
++
++async def github_branch_exists(
++    client: GitHubAppClient, project: RepoRecord, branch: str
++) -> bool | None:
++    name = f"{project.owner}/{project.name}"
++    installation_id = await client.installation_for_repo(name)
++    if installation_id is None:
++        return None
++    token = await client.installation_token(installation_id)
++    response = await client.http.get(
++        f"{client.api_url}/repos/{name}/branches/{quote(branch, safe='')}",
++        headers={"Authorization": f"Bearer {token}"},
++    )
++    return _exists(response)
++
++
++async def gitea_branch_exists(
++    client: GiteaClient, project: RepoRecord, branch: str
++) -> bool | None:
++    response = await client.http.get(
++        f"{client.instance_url}/api/v1/repos/{project.owner}/{project.name}"
++        f"/branches/{quote(branch, safe='')}",
++        headers=client.auth_headers(),
++    )
++    return _exists(response)
++
++
++async def gitlab_branch_exists(
++    client: GitlabClient, project: RepoRecord, branch: str
++) -> bool | None:
++    response = await client.http.get(
++        f"{client.project_api_url(project.owner, project.name)}"
++        f"/repository/branches/{quote(branch, safe='')}",
++        headers=client.auth_headers(),
++    )
++    return _exists(response)
++
++
++def forge_branch_exists(
++    github: GitHubAppClient | None,
++    gitea: GiteaClient | None,
++    gitlab: GitlabClient | None,
++) -> BranchExists:
++    """True/False from the project's forge, None when it can't tell."""
++
++    async def check(project: RepoRecord, branch: str) -> bool | None:
++        if project.forge == "github" and github is not None:
++            return await github_branch_exists(github, project, branch)
++        if project.forge == "gitea" and gitea is not None:
++            return await gitea_branch_exists(gitea, project, branch)
++        if project.forge == "gitlab" and gitlab is not None:
++            return await gitlab_branch_exists(gitlab, project, branch)
++        return None
++
++    return check
++
++
++async def sweep_branch_gcroots(
++    gcroots_dir: Path,
++    projects: Iterable[RepoRecord],
++    branch_exists: BranchExists,
++) -> int:
++    """Delete root directories of deleted branches. Returns how many."""
++    removed = 0
++    for project in projects:
++        key = repo_info(project).key
++        for branch, root_dir in branch_gcroot_dirs(gcroots_dir, key).items():
++            try:
++                exists = await branch_exists(project, branch)
++            except Exception:
++                logger.exception(
++                    "branch lookup failed",
++                    extra={"project": key, "branch": branch},
++                )
++                continue
++            if exists is not False:
++                continue
++            await asyncio.to_thread(shutil.rmtree, root_dir, ignore_errors=True)
++            removed += 1
++            logger.info(
++                "removed gcroots of deleted branch",
++                extra={"project": key, "branch": branch},
++            )
++    return removed
+diff --git a/nixbot/build_reuse.py b/nixbot/build_reuse.py
+index a1d8ca3..be33bf3 100644
+--- a/nixbot/build_reuse.py
++++ b/nixbot/build_reuse.py
+@@ -21,7 +21,7 @@ from .db_gen import builds as builds_q
+ from .db_gen import maintenance as q
+ from .effects_run import post_effects_summary
+ from .events import BuildResult, EvalReport
+-from .gcroots import GcrootRegistrationError
++from .gcroots import GcrootRegistrationError, gcroot_project
+ from .gitrepo import GitError, run_git
+ 
+ if TYPE_CHECKING:
+@@ -213,6 +213,11 @@ async def post_process_skipped(
+     repo = event.repo
+     if event.pr_number is not None:
+         return  # push events only, matching current behavior
++    # Tags keep the project-level roots: the branch sweep would see
++    # them as deleted branches.
++    root_project = gcroot_project(
++        repo.key, None if event.tag else event.branch, repo.default_branch
++    )
+     for attr, out_path in skipped:
+         if not out_path:
+             continue
+@@ -220,7 +225,9 @@ async def post_process_skipped(
+         # must not share gc-roots or outputs files.
+         if branches.do_register_gcroot(repo.default_branch, event.branch):
+             try:
+-                await o.register_gcroot(o.config.gcroots_dir, repo.key, attr, out_path)
++                await o.register_gcroot(
++                    o.config.gcroots_dir, root_project, attr, out_path
++                )
+             except GcrootRegistrationError as e:
+                 # A recorded output may be gone (remote-built, GC'd). Not
+                 # worth failing the reuse or the remaining attrs over.
+diff --git a/nixbot/gcroots.py b/nixbot/gcroots.py
+index 7e4395c..dc74d98 100644
+--- a/nixbot/gcroots.py
++++ b/nixbot/gcroots.py
+@@ -5,6 +5,10 @@ garbage collection under <gcroots_dir>/<project>/<attr> (in
+ production /nix/var/nix/gcroots/per-user/nixbot). Skipped-as-
+ already-built attributes are registered too. Re-registration is
+ skipped when the root already points at the same store path.
++
++Other branches with registerGCRoots (a merge queue, say) keep their
++roots under <gcroots_dir>/<project>/%branches/<branch>/<attr>, so they
++never replace the default branch's root for the same attribute.
+ """
+ 
+ from __future__ import annotations
+@@ -13,7 +17,7 @@ import asyncio
+ import logging
+ import os
+ from typing import TYPE_CHECKING
+-from urllib.parse import quote
++from urllib.parse import quote, unquote
+ 
+ if TYPE_CHECKING:
+     from pathlib import Path
+@@ -45,6 +49,31 @@ def gcroot_path(gcroots_dir: Path, project: str, attr: str) -> Path:
+     return gcroots_dir / project / safe_attr_filename(attr)
+ 
+ 
++# safe_attr_filename never yields "%b", so no attribute root can take
++# this name.
++BRANCHES_DIR = "%branches"
++
++
++def gcroot_project(project: str, branch: str | None, default_branch: str) -> str:
++    """The project path that `branch` registers its roots under."""
++    if branch is None or branch == default_branch:
++        return project
++    return f"{project}/{BRANCHES_DIR}/{safe_attr_filename(branch)}"
++
++
++def branch_gcroot_dirs(gcroots_dir: Path, project: str) -> dict[str, Path]:
++    """Root directories of the project's non-default branches, by branch."""
++    try:
++        entries = list((gcroots_dir / project / BRANCHES_DIR).iterdir())
++    except FileNotFoundError:
++        return {}
++    return {
++        unquote(entry.name): entry
++        for entry in entries
++        if not entry.is_symlink() and entry.is_dir()
++    }
++
++
+ def gcroot_already_points_to(gc_root: Path, out_path: str) -> bool:
+     try:
+         return str(gc_root.readlink()) == out_path
+diff --git a/nixbot/service.py b/nixbot/service.py
+index f95c6d9..b1912e2 100644
+--- a/nixbot/service.py
++++ b/nixbot/service.py
+@@ -17,6 +17,7 @@ from fnmatch import fnmatch
+ from typing import TYPE_CHECKING, Any
+ 
+ from . import approval, db, discovery, restart_dispatch, schedule_runner
++from .branch_gcroots import forge_branch_exists, sweep_branch_gcroots
+ from .config import ScheduleWhen
+ from .db import BuildStatus
+ from .db_gen import approvals as approvals_q
+@@ -927,6 +928,14 @@ class CIService:
+                 await self.orchestrator.repos.gc()
+             except Exception:
+                 logger.exception("maintenance run failed")
++            try:
++                await sweep_branch_gcroots(
++                    self.config.gcroots_dir,
++                    await self.repo_store.enabled_repos(),
++                    forge_branch_exists(self.github, self.gitea, self.gitlab),
++                )
++            except Exception:
++                logger.exception("branch gcroot sweep failed")
+             await asyncio.sleep(MAINTENANCE_INTERVAL)
+ 
+     async def scheduled_effects_loop(self) -> None:
+diff --git a/nixbot/tests/test_branch_gcroots.py b/nixbot/tests/test_branch_gcroots.py
+new file mode 100644
+index 0000000..e9218b9
+--- /dev/null
++++ b/nixbot/tests/test_branch_gcroots.py
+@@ -0,0 +1,219 @@
++"""Per-branch gc-roots and the sweep of deleted branches."""
++
++from __future__ import annotations
++
++from types import SimpleNamespace
++from typing import TYPE_CHECKING, Any, cast
++
++import httpx
++
++from nixbot.branch_gcroots import (
++    gitea_branch_exists,
++    github_branch_exists,
++    gitlab_branch_exists,
++    sweep_branch_gcroots,
++)
++from nixbot.build_reuse import post_process_skipped
++from nixbot.config import BranchConfig, BranchConfigDict
++from nixbot.events import ChangeEvent, RepoInfo
++from nixbot.forge import GitHubAppClient
++from nixbot.gcroots import BRANCHES_DIR, branch_gcroot_dirs, gcroot_project
++
++from .support import gitea_client, gitlab_client
++
++if TYPE_CHECKING:
++    from collections.abc import Callable
++    from pathlib import Path
++
++    import pytest
++
++    from nixbot.orchestrator import Orchestrator
++    from nixbot.repos import RepoRecord
++
++QUEUE = "gh-readonly-queue/main/pr-151-fb841fb3"
++
++
++def record(forge: str = "github") -> RepoRecord:
++    return cast(
++        "RepoRecord",
++        SimpleNamespace(
++            id_=1,
++            forge=forge,
++            owner="acme",
++            name="widget",
++            url="https://x",
++            default_branch="main",
++        ),
++    )
++
++
++def test_gcroot_project_layout() -> None:
++    assert gcroot_project("github/acme/widget", "main", "main") == (
++        "github/acme/widget"
++    )
++    assert gcroot_project("github/acme/widget", None, "main") == "github/acme/widget"
++    # Branch slashes are quoted into one path component.
++    assert gcroot_project("github/acme/widget", QUEUE, "main") == (
++        f"github/acme/widget/{BRANCHES_DIR}/gh-readonly-queue%2Fmain%2Fpr-151-fb841fb3"
++    )
++
++
++def test_branch_gcroot_dirs_decodes_branches(tmp_path: Path) -> None:
++    assert branch_gcroot_dirs(tmp_path, "github/acme/widget") == {}
++    project = "github/acme/widget"
++    queue_dir = tmp_path / gcroot_project(project, QUEUE, "main")
++    queue_dir.mkdir(parents=True)
++    (tmp_path / project / "checks.x.foo").symlink_to("/nix/store/abc")
++    assert branch_gcroot_dirs(tmp_path, project) == {QUEUE: queue_dir}
++
++
++def _orchestrator(tmp_path: Path, registered: list[tuple[str, str]]) -> Orchestrator:
++    async def register(_dir: Path, project: str, attr: str, _out: str) -> None:
++        registered.append((project, attr))
++
++    branches = BranchConfigDict(
++        {
++            "merge-queue": BranchConfig(
++                match_glob="gh-readonly-queue/*",
++                register_gcroots=True,
++                update_outputs=False,
++            )
++        }
++    )
++    return cast(
++        "Orchestrator",
++        SimpleNamespace(
++            config=SimpleNamespace(
++                branches=branches, gcroots_dir=tmp_path, outputs_path=None
++            ),
++            register_gcroot=register,
++        ),
++    )
++
++
++def _event(branch: str, **kwargs: Any) -> ChangeEvent:
++    repo = RepoInfo(
++        id=1,
++        key="github/acme/widget",
++        name="acme/widget",
++        owner="acme",
++        repo="widget",
++        forge="github",
++        clone_url="",
++        default_branch="main",
++    )
++    return ChangeEvent(repo=repo, branch=branch, commit_sha="c0ffee", **kwargs)
++
++
++async def test_queue_roots_do_not_replace_default_branch_roots(
++    tmp_path: Path,
++) -> None:
++    registered: list[tuple[str, str]] = []
++    o = _orchestrator(tmp_path, registered)
++    await post_process_skipped(o, _event("main"), [("a", "/nix/store/main")])
++    await post_process_skipped(o, _event(QUEUE), [("a", "/nix/store/queue")])
++    await post_process_skipped(o, _event("v1", tag="v1"), [("a", "/nix/store/tag")])
++    assert registered == [
++        ("github/acme/widget", "a"),
++        (gcroot_project("github/acme/widget", QUEUE, "main"), "a"),
++    ]
++
++
++async def test_sweep_removes_only_branches_the_forge_deleted(tmp_path: Path) -> None:
++    project = "github/acme/widget"
++    answers: dict[str, bool | Exception | None] = {
++        "gone": False,
++        "alive": True,
++        "unknown": None,
++        "error": RuntimeError("forge down"),
++    }
++    dirs = {}
++    for branch in answers:
++        dirs[branch] = tmp_path / gcroot_project(project, branch, "main")
++        dirs[branch].mkdir(parents=True)
++        (dirs[branch] / "a").symlink_to("/nix/store/abc")
++    main_root = tmp_path / project / "a"
++    main_root.symlink_to("/nix/store/main")
++
++    async def exists(_project: RepoRecord, branch: str) -> bool | None:
++        answer = answers[branch]
++        if isinstance(answer, Exception):
++            raise answer
++        return answer
++
++    assert await sweep_branch_gcroots(tmp_path, [record()], exists) == 1
++    assert not dirs["gone"].exists()
++    assert all(dirs[b].exists() for b in ("alive", "unknown", "error"))
++    assert main_root.is_symlink()
++
++
++def _status_by_path(statuses: dict[str, int], seen: list[str]) -> httpx.MockTransport:
++    def handler(request: httpx.Request) -> httpx.Response:
++        path = request.url.raw_path.decode()
++        seen.append(path)
++        return httpx.Response(statuses.get(path, 404), json={})
++
++    return httpx.MockTransport(handler)
++
++
++async def test_github_branch_exists(
++    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    base = "/repos/acme/widget/branches/"
++    seen: list[str] = []
++    client = GitHubAppClient(
++        1,
++        tmp_path / "key.pem",
++        http=httpx.AsyncClient(
++            transport=_status_by_path({f"{base}alive": 200, f"{base}flaky": 502}, seen)
++        ),
++        api_url="https://api.github.test",
++    )
++    client.repo_installations["acme/widget"] = 7
++
++    async def token(_installation: int, _repos: object = None) -> str:
++        return "t"
++
++    monkeypatch.setattr(client, "installation_token", token)
++    assert await github_branch_exists(client, record(), "alive") is True
++    assert await github_branch_exists(client, record(), QUEUE) is False
++    assert await github_branch_exists(client, record(), "flaky") is None
++    assert seen[1] == f"{base}gh-readonly-queue%2Fmain%2Fpr-151-fb841fb3"
++
++
++async def test_github_branch_exists_without_installation(
++    tmp_path: Path, monkeypatch: pytest.MonkeyPatch
++) -> None:
++    client = GitHubAppClient(
++        1,
++        tmp_path / "key.pem",
++        http=httpx.AsyncClient(
++            transport=httpx.MockTransport(lambda _r: httpx.Response(404))
++        ),
++    )
++
++    async def no_installation(_name: str) -> int | None:
++        return None
++
++    monkeypatch.setattr(client, "installation_for_repo", no_installation)
++    assert await github_branch_exists(client, record(), QUEUE) is None
++
++
++def _alive_only(suffix: str) -> Callable[[httpx.Request], httpx.Response]:
++    def handler(request: httpx.Request) -> httpx.Response:
++        path = request.url.raw_path.decode()
++        return httpx.Response(200 if path.endswith(suffix) else 404, json={})
++
++    return handler
++
++
++async def test_gitea_branch_exists() -> None:
++    gitea = gitea_client(_alive_only("/api/v1/repos/acme/widget/branches/alive"))
++    assert await gitea_branch_exists(gitea, record("gitea"), "alive") is True
++    assert await gitea_branch_exists(gitea, record("gitea"), "gone") is False
++
++
++async def test_gitlab_branch_exists() -> None:
++    gitlab = gitlab_client(_alive_only("/acme%2Fwidget/repository/branches/alive"))
++    assert await gitlab_branch_exists(gitlab, record("gitlab"), "alive") is True
++    assert await gitlab_branch_exists(gitlab, record("gitlab"), "gone") is False

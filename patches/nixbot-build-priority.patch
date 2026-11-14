@@ -1,0 +1,336 @@
+diff --git a/nixbot/build_run.py b/nixbot/build_run.py
+index 835c45e..8805fad 100644
+--- a/nixbot/build_run.py
++++ b/nixbot/build_run.py
+@@ -38,6 +38,7 @@ from .nix_eval import EvalError, EvalResult, EvalSettings
+ from .post_build import build_props, run_post_build_steps
+ from .repo_config import BranchConfig
+ from .store_token import store_token_file
++from .webhooks import is_merge_queue_branch
+ from .workload_identity import identity_from_event
+ 
+ if TYPE_CHECKING:
+@@ -638,6 +639,21 @@ class _ReadOnlyFailedBuildCache:
+         pass
+ 
+ 
++def build_priority(event: ChangeEvent) -> int:
++    """Merge-queue and default-branch builds gate merges, so they take
++    free build slots before PR and other branch builds."""
++    if (
++        event.pr_number is None
++        and event.tag is None
++        and (
++            event.branch == event.repo.default_branch
++            or is_merge_queue_branch(event.branch)
++        )
++    ):
++        return 1
++    return 0
++
++
+ class _OrchestratorExecutor:
+     """Scheduler executor adapter: runs the build, then post-build
+     steps, gcroots, outputs, and writes the attribute completion as one
+@@ -751,6 +767,7 @@ class _OrchestratorExecutor:
+                         self.event, "build", self.build_record.id_
+                     ),
+                     store=self.o.config.store_for(self.event.repo.name),
++                    priority=build_priority(self.event),
+                 )
+                 if outcome == BuildOutcome.success:
+                     outcome = await self._after_success(job, writer)
+diff --git a/nixbot/executor.py b/nixbot/executor.py
+index b965bb3..c76aefc 100644
+--- a/nixbot/executor.py
++++ b/nixbot/executor.py
+@@ -2,7 +2,8 @@
+ 
+ Runs `nix build` per derivation with:
+ 
+-- a global concurrency cap, dequeued fairly round-robin across builds
++- a global concurrency cap, dequeued by build priority (merge-queue and
++  default-branch builds first), then fairly round-robin across builds
+   (FIFO within one build) so huge matrices cannot head-of-line block
+   other projects,
+ - per-attribute timeout (default 3h) plus nix's --max-silent-time
+@@ -33,7 +34,7 @@ import os
+ import re
+ import shutil
+ import time
+-from collections import OrderedDict, deque
++from collections import deque
+ from dataclasses import dataclass, field
+ from enum import StrEnum
+ from typing import TYPE_CHECKING, Any
+@@ -150,8 +151,9 @@ class RetryReason(StrEnum):
+ 
+ 
+ class FairScheduler:
+-    """Global slot pool with round-robin dequeue across keys (builds)
+-    and FIFO order within a key."""
++    """Global slot pool. Waiting builds are served highest priority
++    first, round-robin across builds of one priority, and FIFO within a
++    build."""
+ 
+     def __init__(self, capacity: int) -> None:
+         if capacity < 1:
+@@ -159,18 +161,20 @@ class FairScheduler:
+             raise ValueError(msg)
+         self.capacity = capacity
+         self._active = 0
+-        # key -> FIFO of waiter futures; OrderedDict gives stable rotation.
+-        self._waiters: OrderedDict[object, deque[asyncio.Future[None]]] = OrderedDict()
+-        self._rotation: deque[object] = deque()
++        # key -> FIFO of waiter futures. Every key in a rotation has one.
++        self._waiters: dict[object, deque[asyncio.Future[None]]] = {}
++        self._priorities: dict[object, int] = {}
++        self._rotations: dict[int, deque[object]] = {}
+ 
+-    async def acquire(self, key: object) -> None:
++    async def acquire(self, key: object, priority: int = 0) -> None:
+         if self._active < self.capacity and not self._waiters:
+             self._active += 1
+             return
+         future: asyncio.Future[None] = asyncio.get_running_loop().create_future()
+         if key not in self._waiters:
+             self._waiters[key] = deque()
+-            self._rotation.append(key)
++            self._priorities[key] = priority
++            self._rotations.setdefault(priority, deque()).append(key)
+         self._waiters[key].append(future)
+         try:
+             await future
+@@ -179,8 +183,7 @@ class FairScheduler:
+             if queue is not None and future in queue:
+                 queue.remove(future)
+                 if not queue:
+-                    del self._waiters[key]
+-                    self._rotation.remove(key)
++                    self._drop(key)
+             if future.cancelled() or not future.done():
+                 raise
+             # Granted concurrently with cancellation: give the slot back.
+@@ -191,20 +194,24 @@ class FairScheduler:
+         self._active -= 1
+         self._dispatch()
+ 
++    def _drop(self, key: object) -> None:
++        del self._waiters[key]
++        priority = self._priorities.pop(key)
++        rotation = self._rotations[priority]
++        rotation.remove(key)
++        if not rotation:
++            del self._rotations[priority]
++
+     def _dispatch(self) -> None:
+-        while self._active < self.capacity and self._rotation:
+-            key = self._rotation[0]
+-            queue = self._waiters.get(key)
+-            if not queue:
+-                self._rotation.popleft()
+-                self._waiters.pop(key, None)
+-                continue
++        while self._active < self.capacity and self._rotations:
++            rotation = self._rotations[max(self._rotations)]
++            key = rotation[0]
++            queue = self._waiters[key]
+             future = queue.popleft()
+             # Rotate: next grant goes to the next build.
+-            self._rotation.rotate(-1)
++            rotation.rotate(-1)
+             if not queue:
+-                del self._waiters[key]
+-                self._rotation.remove(key)
++                self._drop(key)
+             if not future.done():
+                 self._active += 1
+                 future.set_result(None)
+@@ -865,6 +872,7 @@ class NixBuildExecutor:
+         on_built: Callable[[str], None] | None = None,
+         identity: EffectIdentity | None = None,
+         store: BuildStoreConfig | None = None,
++        priority: int = 0,
+     ) -> BuildOutcome:
+         """Run `nix build` for one attribute, with one automatic retry
+         on transient errors and up to disk_full_retries after running out
+@@ -882,7 +890,7 @@ class NixBuildExecutor:
+             return BuildOutcome.success
+         # A superseded build must not sit "building" until an unrelated
+         # build frees a slot: race the acquisition against the cancel.
+-        acquire_task = asyncio.create_task(self.queue.acquire(build_key))
++        acquire_task = asyncio.create_task(self.queue.acquire(build_key, priority))
+         cancel_task = asyncio.create_task(cancel_event.wait())
+         try:
+             await asyncio.wait(
+diff --git a/nixbot/models.py b/nixbot/models.py
+index 5d61735..cbafb33 100644
+--- a/nixbot/models.py
++++ b/nixbot/models.py
+@@ -43,9 +43,15 @@ class NixEvalJobSuccess(BaseModel):
+     cache_status: CacheStatus | None = Field(
+         default=None, validation_alias="cacheStatus"
+     )
+-    needed_builds: list[str] = Field(default_factory=list, validation_alias="neededBuilds")
+-    needed_substitutes: list[str] = Field(default_factory=list, validation_alias="neededSubstitutes")
+-    input_drvs: dict[str, list[str]] = Field(default_factory=dict, validation_alias="inputDrvs")
++    needed_builds: list[str] = Field(
++        default_factory=list, validation_alias="neededBuilds"
++    )
++    needed_substitutes: list[str] = Field(
++        default_factory=list, validation_alias="neededSubstitutes"
++    )
++    input_drvs: dict[str, list[str]] = Field(
++        default_factory=dict, validation_alias="inputDrvs"
++    )
+     drv_path: str = Field(validation_alias="drvPath")
+     name: str
+     # builtins.warn / builtins.trace output emitted while evaluating
+diff --git a/nixbot/orchestrator.py b/nixbot/orchestrator.py
+index 3a76eff..d8c4f97 100644
+--- a/nixbot/orchestrator.py
++++ b/nixbot/orchestrator.py
+@@ -119,6 +119,7 @@ class AttributeExecutor(Protocol):
+         on_built: Callable[[str], None] | None = None,
+         identity: EffectIdentity | None = None,
+         store: BuildStoreConfig | None = None,
++        priority: int = 0,
+     ) -> BuildOutcome: ...
+ 
+ 
+diff --git a/nixbot/tests/test_build_priority.py b/nixbot/tests/test_build_priority.py
+new file mode 100644
+index 0000000..6589dc7
+--- /dev/null
++++ b/nixbot/tests/test_build_priority.py
+@@ -0,0 +1,35 @@
++"""Which builds take free build slots first."""
++
++from __future__ import annotations
++
++from typing import Any
++
++from nixbot.build_run import build_priority
++from nixbot.events import ChangeEvent, RepoInfo
++
++REPO = RepoInfo(
++    id=1,
++    key="github/acme/widget",
++    name="acme/widget",
++    owner="acme",
++    repo="widget",
++    forge="github",
++    clone_url="",
++    default_branch="main",
++)
++
++
++def event(branch: str, **kwargs: Any) -> ChangeEvent:
++    return ChangeEvent(repo=REPO, branch=branch, commit_sha="c0ffee", **kwargs)
++
++
++def test_merge_queue_and_default_branch_go_first() -> None:
++    assert build_priority(event("main")) == 1
++    assert build_priority(event("gh-readonly-queue/main/pr-151-fb841fb3")) == 1
++
++
++def test_pull_requests_tags_and_other_branches_wait() -> None:
++    # PR builds carry the base branch.
++    assert build_priority(event("main", pr_number=151)) == 0
++    assert build_priority(event("main", tag="main")) == 0
++    assert build_priority(event("feature")) == 0
+diff --git a/nixbot/tests/test_executor.py b/nixbot/tests/test_executor.py
+index 192c91d..4d9fe5f 100644
+--- a/nixbot/tests/test_executor.py
++++ b/nixbot/tests/test_executor.py
+@@ -74,6 +74,44 @@ async def test_fair_round_robin_across_builds() -> None:
+     assert order == ["a1", "b1", "a2", "b2", "a3"]
+ 
+ 
++async def test_fair_scheduler_serves_higher_priority_first() -> None:
++    queue = FairScheduler(1)
++    order: list[str] = []
++    await queue.acquire("seed")
++
++    async def worker(name: str, key: str, priority: int) -> None:
++        await queue.acquire(key, priority)
++        order.append(name)
++        queue.release()
++
++    # PR builds queue first; the merge-queue builds still go ahead of them
++    # and alternate with each other.
++    tasks = [
++        asyncio.create_task(worker("pr1", "PR", 0)),
++        asyncio.create_task(worker("pr2", "PR", 0)),
++        asyncio.create_task(worker("q1", "Q", 1)),
++        asyncio.create_task(worker("m1", "M", 1)),
++        asyncio.create_task(worker("q2", "Q", 1)),
++    ]
++    await asyncio.sleep(0)
++    queue.release()
++    await asyncio.gather(*tasks)
++    assert order == ["q1", "m1", "q2", "pr1", "pr2"]
++
++
++async def test_fair_scheduler_cancelled_priority_waiter() -> None:
++    queue = FairScheduler(1)
++    await queue.acquire("A")
++    waiter = asyncio.create_task(queue.acquire("Q", 1))
++    low = asyncio.create_task(queue.acquire("B"))
++    await asyncio.sleep(0)
++    waiter.cancel()
++    with pytest.raises(asyncio.CancelledError):
++        await waiter
++    queue.release()
++    await asyncio.wait_for(low, timeout=1)
++
++
+ async def test_fair_scheduler_capacity() -> None:
+     queue = FairScheduler(2)
+     active = 0
+diff --git a/nixbot/tests/test_orchestrator.py b/nixbot/tests/test_orchestrator.py
+index 725a443..019d0c0 100644
+--- a/nixbot/tests/test_orchestrator.py
++++ b/nixbot/tests/test_orchestrator.py
+@@ -115,6 +115,7 @@ class FakeExecutor:
+     built: list[str] = field(default_factory=list)
+     # The build store each attribute was handed, for per-repo routing.
+     stores: list[BuildStoreConfig | None] = field(default_factory=list)
++    priorities: list[int] = field(default_factory=list)
+     # When set, builds wait on this gate (for in-flight tests).
+     gate: asyncio.Event | None = None
+     started: asyncio.Event = field(default_factory=asyncio.Event)
+@@ -130,8 +131,10 @@ class FakeExecutor:
+         on_built: Callable[[str], None] | None = None,
+         identity: EffectIdentity | None = None,
+         store: BuildStoreConfig | None = None,
++        priority: int = 0,
+     ) -> BuildOutcome:
+         self.stores.append(store)
++        self.priorities.append(priority)
+         if on_start is not None and not await on_start():
+             return BuildOutcome.cancelled
+         self.built.append(job.attr)
+@@ -316,6 +319,22 @@ def patch_effects(
+     return fake
+ 
+ 
++async def test_default_branch_builds_take_slots_first(
++    make_env: EnvFactory, upstream: Path
++) -> None:
++    executor = FakeExecutor()
++    orchestrator, _, project = await make_env(
++        FakeEvalRunner([mk_job("a")]), executor, name="prioritized"
++    )
++    event = ChangeEvent(
++        repo=project,
++        branch="main",
++        commit_sha=git(upstream, "rev-parse", "HEAD"),
++    )
++    await orchestrator.handle_change_event(event)
++    assert executor.priorities == [1]
++
++
+ @pytest.mark.asyncio
+ async def test_per_repo_build_store_reaches_the_executor(
+     make_env: EnvFactory, upstream: Path

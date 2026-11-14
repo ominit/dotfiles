@@ -224,11 +224,11 @@
       options = "--delete-older-than 21d";
     };
 
-    # when less than 10GB
-    # free until 30GB free
+    # when less than 30GB
+    # free until 70GB free
     nix.extraOptions = ''
-      min-free = ${toString (10 * 1024 * 1024 * 1024)}
-      max-free = ${toString (30 * 1024 * 1024 * 1024)}
+      min-free = ${toString (30 * 1024 * 1024 * 1024)}
+      max-free = ${toString (70 * 1024 * 1024 * 1024)}
     '';
 
     system.stateVersion = "25.05";
