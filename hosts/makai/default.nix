@@ -85,8 +85,6 @@
 
     nix.settings = {
       trusted-users = ["root" "ominit"];
-      max-jobs = 3;
-      cores = 2;
       keep-outputs = true;
     };
     nix.channel.enable = false;

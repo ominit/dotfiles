@@ -33,7 +33,6 @@
       };
 
       buildSystems = ["x86_64-linux" "aarch64-linux"];
-      buildConcurrency = 2;
       buildMaxSilentTime = 60 * 60;
       packages.nixbot = let
         python3Packages = pkgs.python3.pkgs;
