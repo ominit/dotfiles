@@ -2,7 +2,7 @@ diff --git a/sdk/api/handlers/claude/code_handlers.go b/sdk/api/handlers/claude/
 index 00670a7..2ec76b1 100644
 --- a/sdk/api/handlers/claude/code_handlers.go
 +++ b/sdk/api/handlers/claude/code_handlers.go
-@@ -620,6 +620,9 @@ func (h *ClaudeCodeAPIHandler) WriteErrorResponse(c *gin.Context, msg *interface
+@@ -671,6 +671,9 @@ func (h *ClaudeCodeAPIHandler) WriteErrorResponse(c *gin.Context, msg *interface
  			}
  		}
  	}
@@ -10,7 +10,7 @@ index 00670a7..2ec76b1 100644
 +		handlers.ExtendRateLimitResetHeaders(c.Writer.Header())
 +	}
  
- 	body, err := json.Marshal(h.toClaudeError(msg))
+ 	body, err := json.Marshal(h.toClaudeErrorWithRetryAfter(msg, retryAfter))
  	if err != nil {
 diff --git a/sdk/api/handlers/claude/code_handlers_error_test.go b/sdk/api/handlers/claude/code_handlers_error_test.go
 index 3ff08c3..25ae02b 100644
@@ -71,7 +71,7 @@ new file mode 100644
 index 0000000..ecd3081
 --- /dev/null
 +++ b/sdk/api/handlers/ratelimit_reset_grace.go
-@@ -0,0 +1,106 @@
+@@ -0,0 +1,105 @@
 +package handlers
 +
 +import (
@@ -81,10 +81,9 @@ index 0000000..ecd3081
 +	"strings"
 +	"time"
 +
++	"github.com/MoeForge/moego/ojson"
 +	"github.com/router-for-me/CLIProxyAPI/v8/internal/interfaces"
 +	coreauth "github.com/router-for-me/CLIProxyAPI/v8/sdk/cliproxy/auth"
-+	"github.com/tidwall/gjson"
-+	"github.com/tidwall/sjson"
 +)
 +
 +// rateLimitResetGrace is added to every reset time a 429 reports to clients,
@@ -130,16 +129,16 @@ index 0000000..ecd3081
 +// ExtendRateLimitResetBody pushes the resets_at and resets_in_seconds fields
 +// of a 429 usage-limit error body back by rateLimitResetGrace.
 +func ExtendRateLimitResetBody(body []byte) []byte {
-+	if !gjson.ValidBytes(body) {
++	if !ojson.ValidBytes(body) {
 +		return body
 +	}
 +	grace := int64(rateLimitResetGrace / time.Second)
 +	for _, path := range []string{"error.resets_at", "resets_at", "error.resets_in_seconds", "resets_in_seconds"} {
-+		value := gjson.GetBytes(body, path)
-+		if value.Type != gjson.Number || value.Int() <= 0 {
++		value := ojson.GetBytes(body, path)
++		if value.Type != ojson.Number || value.Int() <= 0 {
 +			continue
 +		}
-+		if updated, errSet := sjson.SetBytes(body, path, value.Int()+grace); errSet == nil {
++		if updated, errSet := ojson.SetBytes(body, path, value.Int()+grace); errSet == nil {
 +			body = updated
 +		}
 +	}
