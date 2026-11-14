@@ -33,6 +33,7 @@ in {
     services.cua-driver = {
       enable = true;
       package = inputs.cua.packages.${system}.cua-driver.overrideAttrs (old: {
+        buildInputs = (old.buildInputs or []) ++ [pkgs.zstd];
         patches =
           (old.patches or [])
           ++ [
