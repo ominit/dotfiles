@@ -1,5 +1,5 @@
 diff --git a/nixbot/executor.py b/nixbot/executor.py
-index ebfd81d..fe84e54 100644
+index a971418..baa9633 100644
 --- a/nixbot/executor.py
 +++ b/nixbot/executor.py
 @@ -7,7 +7,8 @@ Runs `nix build` per derivation with:
@@ -60,7 +60,7 @@ index ebfd81d..fe84e54 100644
  
  
  def build_installables(job: NixEvalJobSuccess) -> list[str]:
-@@ -781,6 +806,18 @@ def is_transient_error(output_tail: str) -> bool:
+@@ -785,6 +810,18 @@ def is_transient_error(output_tail: str) -> bool:
      return any(marker in output_tail for marker in TRANSIENT_ERROR_MARKERS)
  
  
@@ -79,8 +79,8 @@ index ebfd81d..fe84e54 100644
  async def _pump_output(
      stream: asyncio.StreamReader,
      output_tail: deque[bytes],
-@@ -815,7 +852,8 @@ class NixBuildExecutor:
-         identity: EffectIdentity | None = None,
+@@ -820,7 +857,8 @@ class NixBuildExecutor:
+         store: BuildStoreConfig | None = None,
      ) -> BuildOutcome:
          """Run `nix build` for one attribute, with one automatic retry
 -        on transient errors (suppressed when cancellation is requested).
@@ -89,13 +89,13 @@ index ebfd81d..fe84e54 100644
  
          on_start fires once a slot is acquired, right before nix runs;
          a False return (row already terminal) skips the build. on_built
-@@ -856,24 +894,81 @@ class NixBuildExecutor:
+@@ -862,24 +900,84 @@ class NixBuildExecutor:
          try:
              if on_start is not None and not await on_start():
                  return BuildOutcome.cancelled
 -            outcome, transient = await self._run_once(
 +            return await self._run_with_retries(
-                 job, log_writer, cwd, cancel_event, on_built, identity
+                 job, log_writer, cwd, cancel_event, on_built, identity, store
              )
 -            if outcome == BuildOutcome.failure and transient:
 +        finally:
@@ -109,9 +109,10 @@ index ebfd81d..fe84e54 100644
 +        cancel_event: asyncio.Event,
 +        on_built: Callable[[str], None] | None,
 +        identity: EffectIdentity | None,
++        store: BuildStoreConfig | None,
 +    ) -> BuildOutcome:
 +        outcome, reason = await self._run_once(
-+            job, log_writer, cwd, cancel_event, on_built, identity
++            job, log_writer, cwd, cancel_event, on_built, identity, store
 +        )
 +        retries = {RetryReason.transient: 0, RetryReason.disk_full: 0}
 +        limits = {
@@ -134,7 +135,7 @@ index ebfd81d..fe84e54 100644
 +                    f"\n\nnixbot: build ran out of disk space, retrying once "
 +                    f"there is room ({retries[reason]}/{limits[reason]})\n\n".encode()
 +                )
-+                await self._wait_for_free_space(cancel_event)
++                await self._wait_for_free_space(cancel_event, store)
                  if cancel_event.is_set():
 -                    # Cancel arrived while the retry was pending: the
 -                    # retry must not fire and the attribute ends
@@ -145,17 +146,19 @@ index ebfd81d..fe84e54 100644
                      b"\n\nnixbot: transient error detected, retrying once\n\n"
                  )
 -                outcome, _ = await self._run_once(
--                    job, log_writer, cwd, cancel_event, on_built, identity
+-                    job, log_writer, cwd, cancel_event, on_built, identity, store
 +            outcome, reason = await self._run_once(
-+                job, log_writer, cwd, cancel_event, on_built, identity
++                job, log_writer, cwd, cancel_event, on_built, identity, store
 +            )
 +        return outcome
 +
-+    async def _wait_for_free_space(self, cancel_event: asyncio.Event) -> None:
++    async def _wait_for_free_space(
++        self, cancel_event: asyncio.Event, store: BuildStoreConfig | None
++    ) -> None:
 +        """Wait until the store filesystem has room, giving up after
 +        disk_full_wait seconds: a retry with too little space still
 +        starts nix's auto-GC."""
-+        if self.settings.store is not None:
++        if store is not None:
 +            # Remote build store: local free space says nothing.
 +            return
 +        deadline = time.monotonic() + self.settings.disk_full_wait
@@ -181,19 +184,19 @@ index ebfd81d..fe84e54 100644
  
      @contextlib.asynccontextmanager
      async def _store_env(
-@@ -898,9 +993,9 @@ class NixBuildExecutor:
-         cancel_event: asyncio.Event,
+@@ -905,9 +1003,9 @@ class NixBuildExecutor:
          on_built: Callable[[str], None] | None = None,
          identity: EffectIdentity | None = None,
+         store: BuildStoreConfig | None = None,
 -    ) -> tuple[BuildOutcome, bool]:
 +    ) -> tuple[BuildOutcome, RetryReason]:
          if cancel_event.is_set():
 -            return BuildOutcome.cancelled, False
 +            return BuildOutcome.cancelled, RetryReason.none
          out_link = cwd / f"result-{safe_attr_filename(job.attr)}"
-         cmd = build_nix_command(job, self.settings, out_link)
-         async with self._store_env(identity) as env:
-@@ -917,7 +1012,7 @@ class NixBuildExecutor:
+         cmd = build_nix_command(job, self.settings, out_link, store)
+         async with self._store_env(identity, store) as env:
+@@ -924,7 +1022,7 @@ class NixBuildExecutor:
          cwd: Path,
          cancel_event: asyncio.Event,
          on_built: Callable[[str], None] | None,
@@ -202,7 +205,7 @@ index ebfd81d..fe84e54 100644
          group = await ProcessGroup.start(
              cmd,
              cwd=cwd,
-@@ -957,19 +1052,19 @@ class NixBuildExecutor:
+@@ -964,19 +1062,19 @@ class NixBuildExecutor:
                      capture, log_writer, job.drv_path, failed=True
                  )
                  # Timeouts are genuine failures (cached when enabled).
@@ -227,7 +230,7 @@ index ebfd81d..fe84e54 100644
              # Terminate live viewers even on the cancel/timeout paths;
              # idempotent with the close in _finalize_container.
 diff --git a/nixbot/tests/test_executor.py b/nixbot/tests/test_executor.py
-index bf8aaaa..1717c01 100644
+index b447041..db7e5d8 100644
 --- a/nixbot/tests/test_executor.py
 +++ b/nixbot/tests/test_executor.py
 @@ -27,6 +27,7 @@ from nixbot.executor import (
@@ -246,7 +249,7 @@ index bf8aaaa..1717c01 100644
  )
  from nixbot.logstore import LogContainerReader
  
-@@ -268,6 +270,20 @@ def test_is_transient_error() -> None:
+@@ -306,6 +308,20 @@ def test_is_transient_error() -> None:
      assert not is_transient_error("error: builder failed with exit code 1")
  
  
@@ -267,7 +270,7 @@ index bf8aaaa..1717c01 100644
  # --- NixBuildExecutor with fake nix -----------------------------------------
  
  
-@@ -288,6 +304,14 @@ case "$(cat "$control" 2>/dev/null)" in
+@@ -326,6 +342,14 @@ case "$(cat "$control" 2>/dev/null)" in
      echo "error: unable to download 'https://cache': Connection reset by peer"
      exit 1 ;;
    transient) echo ok; exit 0 ;;
@@ -282,7 +285,7 @@ index bf8aaaa..1717c01 100644
    hang) sleep 60 ;;
    hangpid) echo $$ > {tmp_path}/pid; sleep 60 ;;
    racepid) echo $$ > {tmp_path}/pid; echo ok ;;
-@@ -339,6 +363,101 @@ async def test_executor_transient_retry_succeeds(
+@@ -377,6 +401,101 @@ async def test_executor_transient_retry_succeeds(
      assert b"retrying once" in log
  
  
