@@ -85,6 +85,14 @@
       restartUnits = ["nixbot.service"];
     };
 
+    modules.persistence.directories.nixbot = {
+      source = "/data/services/nixbot";
+      target = "/var/lib/nixbot";
+      user = "nixbot";
+      group = "nixbot";
+      mode = "0700";
+    };
+
     modules.persistence.directories.postgresql = {
       source = "/data/services/postgresql";
       target = "/var/lib/postgresql";
