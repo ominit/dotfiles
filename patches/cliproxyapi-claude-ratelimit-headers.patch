@@ -1,6 +1,6 @@
 --- a/internal/runtime/executor/claude_executor_request.go
 +++ b/internal/runtime/executor/claude_executor_request.go
-@@ -787,6 +787,26 @@
+@@ -862,6 +862,26 @@
  type claudeRateLimitError struct {
  	statusErr
  	credentialScoped bool
@@ -27,7 +27,7 @@
  }
  
  func (e claudeRateLimitError) IsCredentialScoped() bool {
-@@ -819,13 +839,13 @@
+@@ -894,13 +914,13 @@
  	err := statusErr{code: statusCode, msg: string(body), retryAfter: retryAfter}
  	if statusCode == http.StatusTooManyRequests {
  		if !modelLevelCooling && helps.ClaudeHeadersIndicateUnifiedRateLimitRejection(headers) {
@@ -43,109 +43,9 @@
  	}
  	return err
  }
---- a/sdk/cliproxy/auth/selector.go
-+++ b/sdk/cliproxy/auth/selector.go
-@@ -85,6 +85,9 @@
- 	resetIn  time.Duration
- 	provider string
- 	cause    error
-+	// replayHeaders holds the last observed upstream quota headers of the
-+	// cooling credential, replayed so clients can show the real reset time.
-+	replayHeaders http.Header
- }
- 
- // NewModelCooldownError creates an error representing model-level cooldown.
-@@ -352,6 +355,9 @@
- 
- func (e *modelCooldownError) Headers() http.Header {
- 	headers := make(http.Header)
-+	for key, values := range e.replayHeaders {
-+		headers[key] = append([]string(nil), values...)
-+	}
- 	headers.Set("Content-Type", "application/json")
- 	resetSeconds := int(math.Ceil(e.resetIn.Seconds()))
- 	if resetSeconds < 0 {
---- a/sdk/cliproxy/auth/quota_signals.go
-+++ b/sdk/cliproxy/auth/quota_signals.go
-@@ -225,3 +225,57 @@
- 	target.Signals = source.Clone().Signals
- 	return target
- }
-+
-+// withClaudeCooldownQuotaHeaders attaches the last observed
-+// anthropic-ratelimit-unified-* signals of the cooling Claude credential that
-+// recovers first, so a cooldown 429 carries the same reset headers as the
-+// upstream 429 that started it.
-+func (m *Manager) withClaudeCooldownQuotaHeaders(err error, providers []string, model string) error {
-+	cooldown, ok := err.(*modelCooldownError)
-+	if !ok || cooldown == nil || m == nil || len(cooldown.replayHeaders) > 0 {
-+		return err
-+	}
-+	claudeRequested := false
-+	for _, provider := range providers {
-+		if canonicalSchedulingProvider(provider) == "claude" {
-+			claudeRequested = true
-+			break
-+		}
-+	}
-+	if !claudeRequested {
-+		return err
-+	}
-+	now := time.Now()
-+	var headers http.Header
-+	var bestNext time.Time
-+	m.mu.RLock()
-+	for _, auth := range m.auths {
-+		if auth == nil || executorKeyFromAuth(auth) != "claude" || len(auth.Quota.Signals) == 0 {
-+			continue
-+		}
-+		blocked, reason, next := isAuthBlockedForModel(auth, model, now)
-+		if !blocked || reason != blockReasonCooldown || (headers != nil && !next.Before(bestNext)) {
-+			continue
-+		}
-+		var candidate http.Header
-+		for name, value := range auth.Quota.Signals {
-+			if strings.HasPrefix(strings.ToLower(name), "anthropic-ratelimit-unified-") {
-+				if candidate == nil {
-+					candidate = make(http.Header)
-+				}
-+				candidate.Set(name, value)
-+			}
-+		}
-+		if candidate != nil {
-+			headers = candidate
-+			bestNext = next
-+		}
-+	}
-+	m.mu.RUnlock()
-+	if headers == nil {
-+		return err
-+	}
-+	replayed := *cooldown
-+	replayed.replayHeaders = headers
-+	return &replayed
-+}
---- a/sdk/cliproxy/auth/conductor_execution.go
-+++ b/sdk/cliproxy/auth/conductor_execution.go
-@@ -214,6 +214,7 @@
- 		lastErr = preferredExecutionAttemptError(lastErr, preferredUpstreamErr)
- 		lastErr = unwrapExecutionBoundaryError(lastErr)
- 		lastErr = m.normalizeSessionAffinityNeverTerminalError(lastErr, normalized, retryModel, opts)
-+		lastErr = m.withClaudeCooldownQuotaHeaders(lastErr, normalized, retryModel)
- 		if hasAntigravityProvider(normalized) && shouldAttemptAntigravityCreditsFallback(m, lastErr, normalized) {
- 			if resp, ok, errCredits := m.tryAntigravityCreditsExecute(ctx, req, opts); errCredits != nil {
- 				return cliproxyexecutor.Response{}, errCredits
-@@ -358,6 +359,7 @@
- 		}
- 		lastErr = unwrapExecutionBoundaryError(lastErr)
- 		lastErr = m.normalizeSessionAffinityNeverTerminalError(lastErr, normalized, retryModel, opts)
-+		lastErr = m.withClaudeCooldownQuotaHeaders(lastErr, normalized, retryModel)
- 		if hasAntigravityProvider(normalized) && shouldAttemptAntigravityCreditsFallback(m, lastErr, normalized) {
- 			if result, ok, errCredits := m.tryAntigravityCreditsExecuteStream(ctx, req, opts); errCredits != nil {
- 				return nil, errCredits
 --- a/sdk/api/handlers/claude/code_handlers.go
 +++ b/sdk/api/handlers/claude/code_handlers.go
-@@ -597,6 +597,18 @@
+@@ -643,6 +643,18 @@
  			c.Writer.Header().Add("Retry-After", value)
  		}
  	}
