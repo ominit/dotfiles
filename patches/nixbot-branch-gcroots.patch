@@ -1,15 +1,16 @@
 diff --git a/nixbot/branch_gcroots.py b/nixbot/branch_gcroots.py
 new file mode 100644
-index 0000000..77dad47
+index 0000000..5372e58
 --- /dev/null
 +++ b/nixbot/branch_gcroots.py
-@@ -0,0 +1,126 @@
-+"""Removes the gc-roots of non-default branches the forge has deleted.
+@@ -0,0 +1,129 @@
++"""Removes the gc-roots of branches the forge has deleted.
 +
 +Merge-queue branches live seconds to minutes. Their roots only need to
 +outlive the default-branch push that reuses the queue build, which
 +registers roots of its own. Roots are removed only when the forge
-+answers 404 for the branch, so a forge outage keeps them.
++answers 404 for the branch, so a forge outage keeps them. The default
++branch's roots are never removed, and tag roots are not swept.
 +"""
 +
 +from __future__ import annotations
@@ -113,6 +114,8 @@ index 0000000..77dad47
 +    for project in projects:
 +        key = repo_info(project).key
 +        for branch, root_dir in branch_gcroot_dirs(gcroots_dir, key).items():
++            if branch == project.default_branch:
++                continue
 +            try:
 +                exists = await branch_exists(project, branch)
 +            except Exception:
@@ -131,7 +134,7 @@ index 0000000..77dad47
 +            )
 +    return removed
 diff --git a/nixbot/build_reuse.py b/nixbot/build_reuse.py
-index a1d8ca3..be33bf3 100644
+index a1d8ca3..1f9593c 100644
 --- a/nixbot/build_reuse.py
 +++ b/nixbot/build_reuse.py
 @@ -21,7 +21,7 @@ from .db_gen import builds as builds_q
@@ -143,19 +146,15 @@ index a1d8ca3..be33bf3 100644
  from .gitrepo import GitError, run_git
  
  if TYPE_CHECKING:
-@@ -213,6 +213,11 @@ async def post_process_skipped(
+@@ -213,6 +213,7 @@ async def post_process_skipped(
      repo = event.repo
      if event.pr_number is not None:
          return  # push events only, matching current behavior
-+    # Tags keep the project-level roots: the branch sweep would see
-+    # them as deleted branches.
-+    root_project = gcroot_project(
-+        repo.key, None if event.tag else event.branch, repo.default_branch
-+    )
++    root_project = gcroot_project(repo.key, event.branch, event.tag)
      for attr, out_path in skipped:
          if not out_path:
              continue
-@@ -220,7 +225,9 @@ async def post_process_skipped(
+@@ -220,7 +221,9 @@ async def post_process_skipped(
          # must not share gc-roots or outputs files.
          if branches.do_register_gcroot(repo.default_branch, event.branch):
              try:
@@ -167,17 +166,25 @@ index a1d8ca3..be33bf3 100644
                  # A recorded output may be gone (remote-built, GC'd). Not
                  # worth failing the reuse or the remaining attrs over.
 diff --git a/nixbot/gcroots.py b/nixbot/gcroots.py
-index 7e4395c..dc74d98 100644
+index 7e4395c..a0ad620 100644
 --- a/nixbot/gcroots.py
 +++ b/nixbot/gcroots.py
-@@ -5,6 +5,10 @@ garbage collection under <gcroots_dir>/<project>/<attr> (in
- production /nix/var/nix/gcroots/per-user/nixbot). Skipped-as-
- already-built attributes are registered too. Re-registration is
- skipped when the root already points at the same store path.
+@@ -1,10 +1,14 @@
+ """GC-root registration, ported from nix_gcroot.py.
+ 
+ The latest successful result of each attribute is protected from
+-garbage collection under <gcroots_dir>/<project>/<attr> (in
+-production /nix/var/nix/gcroots/per-user/nixbot). Skipped-as-
+-already-built attributes are registered too. Re-registration is
+-skipped when the root already points at the same store path.
++garbage collection under <gcroots_dir>/<project>/%branches/<branch>/<attr>
++(in production /nix/var/nix/gcroots/per-user/nixbot), or
++%tags/<tag>/<attr> for tag pushes. Skipped-as-already-built attributes
++are registered too. Re-registration is skipped when the root already
++points at the same store path.
 +
-+Other branches with registerGCRoots (a merge queue, say) keep their
-+roots under <gcroots_dir>/<project>/%branches/<branch>/<attr>, so they
-+never replace the default branch's root for the same attribute.
++Every branch keeps its own roots, so a merge queue never replaces the
++default branch's root for the same attribute.
  """
  
  from __future__ import annotations
@@ -190,24 +197,26 @@ index 7e4395c..dc74d98 100644
  
  if TYPE_CHECKING:
      from pathlib import Path
-@@ -45,6 +49,31 @@ def gcroot_path(gcroots_dir: Path, project: str, attr: str) -> Path:
+@@ -45,6 +49,33 @@ def gcroot_path(gcroots_dir: Path, project: str, attr: str) -> Path:
      return gcroots_dir / project / safe_attr_filename(attr)
  
  
-+# safe_attr_filename never yields "%b", so no attribute root can take
-+# this name.
++# safe_attr_filename never yields "%b" or "%t", so no attribute root can
++# take these names.
 +BRANCHES_DIR = "%branches"
++TAGS_DIR = "%tags"
 +
 +
-+def gcroot_project(project: str, branch: str | None, default_branch: str) -> str:
-+    """The project path that `branch` registers its roots under."""
-+    if branch is None or branch == default_branch:
-+        return project
++def gcroot_project(project: str, branch: str, tag: str | None = None) -> str:
++    """The project path that a push of `branch` or `tag` registers its
++    roots under."""
++    if tag is not None:
++        return f"{project}/{TAGS_DIR}/{safe_attr_filename(tag)}"
 +    return f"{project}/{BRANCHES_DIR}/{safe_attr_filename(branch)}"
 +
 +
 +def branch_gcroot_dirs(gcroots_dir: Path, project: str) -> dict[str, Path]:
-+    """Root directories of the project's non-default branches, by branch."""
++    """Root directories of the project's branches, by branch."""
 +    try:
 +        entries = list((gcroots_dir / project / BRANCHES_DIR).iterdir())
 +    except FileNotFoundError:
@@ -251,10 +260,10 @@ index f95c6d9..b1912e2 100644
      async def scheduled_effects_loop(self) -> None:
 diff --git a/nixbot/tests/test_branch_gcroots.py b/nixbot/tests/test_branch_gcroots.py
 new file mode 100644
-index 0000000..e9218b9
+index 0000000..d5b4cc6
 --- /dev/null
 +++ b/nixbot/tests/test_branch_gcroots.py
-@@ -0,0 +1,219 @@
+@@ -0,0 +1,240 @@
 +"""Per-branch gc-roots and the sweep of deleted branches."""
 +
 +from __future__ import annotations
@@ -274,7 +283,7 @@ index 0000000..e9218b9
 +from nixbot.config import BranchConfig, BranchConfigDict
 +from nixbot.events import ChangeEvent, RepoInfo
 +from nixbot.forge import GitHubAppClient
-+from nixbot.gcroots import BRANCHES_DIR, branch_gcroot_dirs, gcroot_project
++from nixbot.gcroots import BRANCHES_DIR, TAGS_DIR, branch_gcroot_dirs, gcroot_project
 +
 +from .support import gitea_client, gitlab_client
 +
@@ -305,23 +314,32 @@ index 0000000..e9218b9
 +
 +
 +def test_gcroot_project_layout() -> None:
-+    assert gcroot_project("github/acme/widget", "main", "main") == (
-+        "github/acme/widget"
-+    )
-+    assert gcroot_project("github/acme/widget", None, "main") == "github/acme/widget"
++    project = "github/acme/widget"
++    assert gcroot_project(project, "main") == f"{project}/{BRANCHES_DIR}/main"
 +    # Branch slashes are quoted into one path component.
-+    assert gcroot_project("github/acme/widget", QUEUE, "main") == (
-+        f"github/acme/widget/{BRANCHES_DIR}/gh-readonly-queue%2Fmain%2Fpr-151-fb841fb3"
++    assert gcroot_project(project, QUEUE) == (
++        f"{project}/{BRANCHES_DIR}/gh-readonly-queue%2Fmain%2Fpr-151-fb841fb3"
 +    )
++    # Tag pushes carry the tag in `branch` too.
++    assert gcroot_project(project, "v1", "v1") == f"{project}/{TAGS_DIR}/v1"
 +
 +
 +def test_branch_gcroot_dirs_decodes_branches(tmp_path: Path) -> None:
-+    assert branch_gcroot_dirs(tmp_path, "github/acme/widget") == {}
 +    project = "github/acme/widget"
-+    queue_dir = tmp_path / gcroot_project(project, QUEUE, "main")
-+    queue_dir.mkdir(parents=True)
++    assert branch_gcroot_dirs(tmp_path, project) == {}
++    queue_dir = tmp_path / gcroot_project(project, QUEUE)
++    main_dir = tmp_path / gcroot_project(project, "main")
++    for root_dir in (
++        queue_dir,
++        main_dir,
++        tmp_path / gcroot_project(project, "v1", "v1"),
++    ):
++        root_dir.mkdir(parents=True)
 +    (tmp_path / project / "checks.x.foo").symlink_to("/nix/store/abc")
-+    assert branch_gcroot_dirs(tmp_path, project) == {QUEUE: queue_dir}
++    assert branch_gcroot_dirs(tmp_path, project) == {
++        QUEUE: queue_dir,
++        "main": main_dir,
++    }
 +
 +
 +def _orchestrator(tmp_path: Path, registered: list[tuple[str, str]]) -> Orchestrator:
@@ -334,7 +352,12 @@ index 0000000..e9218b9
 +                match_glob="gh-readonly-queue/*",
 +                register_gcroots=True,
 +                update_outputs=False,
-+            )
++            ),
++            "releases": BranchConfig(
++                match_glob="release-*",
++                register_gcroots=True,
++                update_outputs=False,
++            ),
 +        }
 +    )
 +    return cast(
@@ -362,23 +385,30 @@ index 0000000..e9218b9
 +    return ChangeEvent(repo=repo, branch=branch, commit_sha="c0ffee", **kwargs)
 +
 +
-+async def test_queue_roots_do_not_replace_default_branch_roots(
-+    tmp_path: Path,
-+) -> None:
++async def test_each_branch_and_tag_keeps_its_own_roots(tmp_path: Path) -> None:
 +    registered: list[tuple[str, str]] = []
 +    o = _orchestrator(tmp_path, registered)
 +    await post_process_skipped(o, _event("main"), [("a", "/nix/store/main")])
 +    await post_process_skipped(o, _event(QUEUE), [("a", "/nix/store/queue")])
++    # No branch config matches "v1", so it registers nothing.
 +    await post_process_skipped(o, _event("v1", tag="v1"), [("a", "/nix/store/tag")])
++    await post_process_skipped(
++        o, _event("release-1", tag="release-1"), [("a", "/nix/store/release")]
++    )
++    project = "github/acme/widget"
 +    assert registered == [
-+        ("github/acme/widget", "a"),
-+        (gcroot_project("github/acme/widget", QUEUE, "main"), "a"),
++        (gcroot_project(project, "main"), "a"),
++        (gcroot_project(project, QUEUE), "a"),
++        (gcroot_project(project, "release-1", "release-1"), "a"),
 +    ]
 +
 +
 +async def test_sweep_removes_only_branches_the_forge_deleted(tmp_path: Path) -> None:
 +    project = "github/acme/widget"
 +    answers: dict[str, bool | Exception | None] = {
++        # A forge that loses track of the default branch must not cost
++        # it its roots.
++        "main": False,
 +        "gone": False,
 +        "alive": True,
 +        "unknown": None,
@@ -386,11 +416,11 @@ index 0000000..e9218b9
 +    }
 +    dirs = {}
 +    for branch in answers:
-+        dirs[branch] = tmp_path / gcroot_project(project, branch, "main")
++        dirs[branch] = tmp_path / gcroot_project(project, branch)
 +        dirs[branch].mkdir(parents=True)
 +        (dirs[branch] / "a").symlink_to("/nix/store/abc")
-+    main_root = tmp_path / project / "a"
-+    main_root.symlink_to("/nix/store/main")
++    tag_dir = tmp_path / gcroot_project(project, "v1", "v1")
++    tag_dir.mkdir(parents=True)
 +
 +    async def exists(_project: RepoRecord, branch: str) -> bool | None:
 +        answer = answers[branch]
@@ -400,8 +430,8 @@ index 0000000..e9218b9
 +
 +    assert await sweep_branch_gcroots(tmp_path, [record()], exists) == 1
 +    assert not dirs["gone"].exists()
-+    assert all(dirs[b].exists() for b in ("alive", "unknown", "error"))
-+    assert main_root.is_symlink()
++    assert all(dirs[b].exists() for b in ("main", "alive", "unknown", "error"))
++    assert tag_dir.exists()
 +
 +
 +def _status_by_path(statuses: dict[str, int], seen: list[str]) -> httpx.MockTransport:
@@ -474,3 +504,25 @@ index 0000000..e9218b9
 +    gitlab = gitlab_client(_alive_only("/acme%2Fwidget/repository/branches/alive"))
 +    assert await gitlab_branch_exists(gitlab, record("gitlab"), "alive") is True
 +    assert await gitlab_branch_exists(gitlab, record("gitlab"), "gone") is False
+diff --git a/nixbot/tests/test_orchestrator.py b/nixbot/tests/test_orchestrator.py
+index 725a443..0e2e678 100644
+--- a/nixbot/tests/test_orchestrator.py
++++ b/nixbot/tests/test_orchestrator.py
+@@ -28,7 +28,7 @@ from nixbot.db_gen import builds as builds_q
+ from nixbot.effects import EffectMeta, EffectsContext
+ from nixbot.events import BuildResult, ChangeEvent, EvalReport, RepoInfo
+ from nixbot.executor import attribute_log_path, effect_run_log_path
+-from nixbot.gcroots import GcrootRegistrationError
++from nixbot.gcroots import GcrootRegistrationError, gcroot_project
+ from nixbot.gitrepo import FetchCredentials, RepoManager
+ from nixbot.memory import EvalWorkerConfig
+ from nixbot.models import CacheStatus
+@@ -2792,7 +2792,7 @@ async def test_post_process_paths_are_forge_scoped(
+         )
+     )
+     assert build is not None
+-    assert gcroot_projects == [project.key]
++    assert gcroot_projects == [gcroot_project(project.key, "main")]
+     assert output_calls
+     assert "github" in output_calls[0]
+ 

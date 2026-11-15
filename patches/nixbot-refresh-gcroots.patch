@@ -1,0 +1,135 @@
+diff --git a/nixbot/branch_gcroots.py b/nixbot/branch_gcroots.py
+index 5372e58..87ac2c1 100644
+--- a/nixbot/branch_gcroots.py
++++ b/nixbot/branch_gcroots.py
+@@ -5,6 +5,9 @@ outlive the default-branch push that reuses the queue build, which
+ registers roots of its own. Roots are removed only when the forge
+ answers 404 for the branch, so a forge outage keeps them. The default
+ branch's roots are never removed, and tag roots are not swept.
++
++Each sweep refreshes the roots it keeps, so the age-based gc-roots
++cleanup only expires those of projects that are no longer enabled.
+ """
+ 
+ from __future__ import annotations
+@@ -15,7 +18,7 @@ import shutil
+ from typing import TYPE_CHECKING
+ from urllib.parse import quote
+ 
+-from .gcroots import branch_gcroot_dirs
++from .gcroots import branch_gcroot_dirs, refresh_gcroots
+ from .repos import repo_info
+ 
+ if TYPE_CHECKING:
+@@ -103,27 +106,34 @@ async def sweep_branch_gcroots(
+     projects: Iterable[RepoRecord],
+     branch_exists: BranchExists,
+ ) -> int:
+-    """Delete root directories of deleted branches. Returns how many."""
++    """Delete root directories of deleted branches and refresh the
++    rest. Returns how many were deleted."""
+     removed = 0
+     for project in projects:
+         key = repo_info(project).key
+         for branch, root_dir in branch_gcroot_dirs(gcroots_dir, key).items():
+-            if branch == project.default_branch:
+-                continue
+-            try:
+-                exists = await branch_exists(project, branch)
+-            except Exception:
+-                logger.exception(
+-                    "branch lookup failed",
++            if branch != project.default_branch and await _is_deleted(
++                branch_exists, project, branch
++            ):
++                await asyncio.to_thread(shutil.rmtree, root_dir, ignore_errors=True)
++                removed += 1
++                logger.info(
++                    "removed gcroots of deleted branch",
+                     extra={"project": key, "branch": branch},
+                 )
+-                continue
+-            if exists is not False:
+-                continue
+-            await asyncio.to_thread(shutil.rmtree, root_dir, ignore_errors=True)
+-            removed += 1
+-            logger.info(
+-                "removed gcroots of deleted branch",
+-                extra={"project": key, "branch": branch},
+-            )
++            else:
++                await asyncio.to_thread(refresh_gcroots, root_dir)
+     return removed
++
++
++async def _is_deleted(
++    branch_exists: BranchExists, project: RepoRecord, branch: str
++) -> bool:
++    try:
++        return await branch_exists(project, branch) is False
++    except Exception:
++        logger.exception(
++            "branch lookup failed",
++            extra={"project": repo_info(project).key, "branch": branch},
++        )
++        return False
+diff --git a/nixbot/gcroots.py b/nixbot/gcroots.py
+index dd89600..1729fff 100644
+--- a/nixbot/gcroots.py
++++ b/nixbot/gcroots.py
+@@ -137,3 +137,10 @@ def _touch(path: Path) -> None:
+         os.utime(path, follow_symlinks=False)
+     except OSError:
+         logger.warning("failed to refresh gcroot mtime", extra={"path": str(path)})
++
++
++def refresh_gcroots(root_dir: Path) -> None:
++    """Reset the age of every root in `root_dir`."""
++    for entry in root_dir.iterdir():
++        if entry.is_symlink():
++            _touch(entry)
+diff --git a/nixbot/tests/test_branch_gcroots.py b/nixbot/tests/test_branch_gcroots.py
+index 559b3c8..5c25809 100644
+--- a/nixbot/tests/test_branch_gcroots.py
++++ b/nixbot/tests/test_branch_gcroots.py
+@@ -2,6 +2,7 @@
+ 
+ from __future__ import annotations
+ 
++import os
+ from types import SimpleNamespace
+ from typing import TYPE_CHECKING, Any, cast
+ 
+@@ -210,6 +211,32 @@ async def test_sweep_removes_only_branches_the_forge_deleted(tmp_path: Path) ->
+     assert tag_dir.exists()
+ 
+ 
++async def test_sweep_refreshes_kept_roots_of_enabled_projects(tmp_path: Path) -> None:
++    def old_root(project: str, branch: str, tag: str | None = None) -> Path:
++        root_dir = tmp_path / gcroot_project(project, branch, tag)
++        root_dir.mkdir(parents=True)
++        root = root_dir / "a"
++        root.symlink_to("/nix/store/abc")
++        os.utime(root, (0, 0), follow_symlinks=False)
++        return root
++
++    enabled = "github/acme/widget"
++    main_root = old_root(enabled, "main")
++    queue_root = old_root(enabled, QUEUE)
++    tag_root = old_root(enabled, "v1", "v1")
++    # Not in the enabled projects: left to age out.
++    disabled_root = old_root("github/acme/retired", "main")
++
++    async def exists(_project: RepoRecord, _branch: str) -> bool | None:
++        return True
++
++    assert await sweep_branch_gcroots(tmp_path, [record()], exists) == 0
++    assert main_root.lstat().st_mtime > 0
++    assert queue_root.lstat().st_mtime > 0
++    assert tag_root.lstat().st_mtime == 0
++    assert disabled_root.lstat().st_mtime == 0
++
++
+ def _status_by_path(statuses: dict[str, int], seen: list[str]) -> httpx.MockTransport:
+     def handler(request: httpx.Request) -> httpx.Response:
+         path = request.url.raw_path.decode()

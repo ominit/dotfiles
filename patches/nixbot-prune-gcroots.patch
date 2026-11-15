@@ -1,0 +1,286 @@
+diff --git a/nixbot/build_reuse.py b/nixbot/build_reuse.py
+index 1f9593c..1fd0b2d 100644
+--- a/nixbot/build_reuse.py
++++ b/nixbot/build_reuse.py
+@@ -21,10 +21,11 @@ from .db_gen import builds as builds_q
+ from .db_gen import maintenance as q
+ from .effects_run import post_effects_summary
+ from .events import BuildResult, EvalReport
+-from .gcroots import GcrootRegistrationError, gcroot_project
++from .gcroots import GcrootRegistrationError, gcroot_project, remove_stale_gcroots
+ from .gitrepo import GitError, run_git
+ 
+ if TYPE_CHECKING:
++    from collections.abc import Collection
+     from pathlib import Path
+ 
+     from .db import BuildRecord
+@@ -204,6 +205,31 @@ async def _post_process_existing(
+         if out:
+             pairs.append((row.attr, out))
+     await post_process_skipped(o, event, pairs)
++    attrs = await builds_q.attribute_statuses(o.pool, build_id=build.id_)
++    await prune_gcroots(o, event, [row.attr for row in attrs])
++
++
++async def prune_gcroots(
++    o: Orchestrator, event: ChangeEvent, attrs: Collection[str]
++) -> None:
++    """Drop the push's roots of attributes its complete evaluation no
++    longer has (renamed or removed from the flake)."""
++    repo = event.repo
++    if event.pr_number is not None or not attrs:
++        # No attributes at all more likely means a broken flake than
++        # one with nothing left to build.
++        return
++    if not o.config.branches.do_register_gcroot(repo.default_branch, event.branch):
++        return
++    project = gcroot_project(repo.key, event.branch, event.tag)
++    removed = await asyncio.to_thread(
++        remove_stale_gcroots, o.config.gcroots_dir, project, attrs
++    )
++    if removed:
++        logger.info(
++            "removed gcroots of attributes no longer evaluated",
++            extra={"project": project, "attrs": removed},
++        )
+ 
+ 
+ async def post_process_skipped(
+diff --git a/nixbot/build_run.py b/nixbot/build_run.py
+index c4db79a..6759cc3 100644
+--- a/nixbot/build_run.py
++++ b/nixbot/build_run.py
+@@ -606,6 +606,17 @@ async def build_attributes(  # noqa: PLR0913
+         await db.set_build_status(
+             o.pool, build.id_, BuildStatus.FAILED, error=post_process_error
+         )
++    attr_statuses = {
++        r.attr: r.status for r in await q.attribute_statuses(o.pool, build_id=build.id_)
++    }
++    # Reaching here means the evaluation finished, so every attribute
++    # has a row. A cancelled build may have been superseded by a newer
++    # push whose new attributes this one doesn't know.
++    if status != BuildStatus.CANCELLED:
++        try:
++            await o.prune_gcroots(event, list(attr_statuses))
++        except Exception:
++            logger.exception("pruning gcroots failed", extra={"build_id": build.id_})
+     await o.reporter.build_finished(
+         event,
+         build,
+@@ -613,10 +624,7 @@ async def build_attributes(  # noqa: PLR0913
+             status,
+             generation,
+             schedule_result.results,
+-            attr_statuses={
+-                r.attr: r.status
+-                for r in await q.attribute_statuses(o.pool, build_id=build.id_)
+-            },
++            attr_statuses=attr_statuses,
+             attr_prefix=BranchConfig.load(worktree_path).attribute,
+         ),
+     )
+diff --git a/nixbot/gcroots.py b/nixbot/gcroots.py
+index a0ad620..dd89600 100644
+--- a/nixbot/gcroots.py
++++ b/nixbot/gcroots.py
+@@ -20,6 +20,7 @@ from typing import TYPE_CHECKING
+ from urllib.parse import quote, unquote
+ 
+ if TYPE_CHECKING:
++    from collections.abc import Collection
+     from pathlib import Path
+ 
+ logger = logging.getLogger(__name__)
+@@ -76,6 +77,24 @@ def branch_gcroot_dirs(gcroots_dir: Path, project: str) -> dict[str, Path]:
+     }
+ 
+ 
++def remove_stale_gcroots(
++    gcroots_dir: Path, project: str, attrs: Collection[str]
++) -> list[str]:
++    """Remove the project's roots of attributes outside `attrs`.
++    Returns the attributes whose roots were removed."""
++    keep = {safe_attr_filename(attr) for attr in attrs}
++    try:
++        entries = list((gcroots_dir / project).iterdir())
++    except FileNotFoundError:
++        return []
++    removed = []
++    for entry in entries:
++        if entry.is_symlink() and entry.name not in keep:
++            entry.unlink(missing_ok=True)
++            removed.append(unquote(entry.name))
++    return sorted(removed)
++
++
+ def gcroot_already_points_to(gc_root: Path, out_path: str) -> bool:
+     try:
+         return str(gc_root.readlink()) == out_path
+diff --git a/nixbot/orchestrator.py b/nixbot/orchestrator.py
+index d8c4f97..2155263 100644
+--- a/nixbot/orchestrator.py
++++ b/nixbot/orchestrator.py
+@@ -60,7 +60,7 @@ from .web.logs import LogRegistry
+ from .work_queue import WorkQueue
+ 
+ if TYPE_CHECKING:
+-    from collections.abc import AsyncIterator, Awaitable, Callable
++    from collections.abc import AsyncIterator, Awaitable, Callable, Collection
+     from contextlib import AbstractAsyncContextManager
+     from pathlib import Path
+ 
+@@ -618,3 +618,7 @@ class Orchestrator:
+         """Gcroots/outputs updates for built or skipped-as-local
+         attributes (push events only)."""
+         await build_reuse.post_process_skipped(self, event, skipped)
++
++    async def prune_gcroots(self, event: ChangeEvent, attrs: Collection[str]) -> None:
++        """Remove the push's roots of attributes no longer evaluated."""
++        await build_reuse.prune_gcroots(self, event, attrs)
+diff --git a/nixbot/tests/support.py b/nixbot/tests/support.py
+index 0b1e72c..2e35d1e 100644
+--- a/nixbot/tests/support.py
++++ b/nixbot/tests/support.py
+@@ -43,6 +43,7 @@ from nixbot.models import CacheStatus, NixEvalJobSuccess
+ def make_config(dsn: str, state_dir: Path, **kwargs: Any) -> Config:
+     """A minimal valid Config for service-level tests."""
+     kwargs.setdefault("work_retry_backoff", 0)
++    kwargs.setdefault("gcroots_dir", state_dir / "gcroots")
+     return Config(
+         db_url=dsn,
+         build_systems=["x86_64-linux"],
+diff --git a/nixbot/tests/test_branch_gcroots.py b/nixbot/tests/test_branch_gcroots.py
+index d5b4cc6..559b3c8 100644
+--- a/nixbot/tests/test_branch_gcroots.py
++++ b/nixbot/tests/test_branch_gcroots.py
+@@ -13,11 +13,18 @@ from nixbot.branch_gcroots import (
+     gitlab_branch_exists,
+     sweep_branch_gcroots,
+ )
+-from nixbot.build_reuse import post_process_skipped
++from nixbot.build_reuse import post_process_skipped, prune_gcroots
+ from nixbot.config import BranchConfig, BranchConfigDict
+ from nixbot.events import ChangeEvent, RepoInfo
+ from nixbot.forge import GitHubAppClient
+-from nixbot.gcroots import BRANCHES_DIR, TAGS_DIR, branch_gcroot_dirs, gcroot_project
++from nixbot.gcroots import (
++    BRANCHES_DIR,
++    TAGS_DIR,
++    branch_gcroot_dirs,
++    gcroot_project,
++    remove_stale_gcroots,
++    safe_attr_filename,
++)
+ 
+ from .support import gitea_client, gitlab_client
+ 
+@@ -137,6 +144,41 @@ async def test_each_branch_and_tag_keeps_its_own_roots(tmp_path: Path) -> None:
+     ]
+ 
+ 
++def test_remove_stale_gcroots(tmp_path: Path) -> None:
++    project = gcroot_project("github/acme/widget", "main")
++    assert remove_stale_gcroots(tmp_path, project, ["a"]) == []
++    root_dir = tmp_path / project
++    root_dir.mkdir(parents=True)
++    for attr in ("a", "old", "checks.x/odd"):
++        (root_dir / safe_attr_filename(attr)).symlink_to("/nix/store/abc")
++    (root_dir / "subdir").mkdir()
++    assert remove_stale_gcroots(tmp_path, project, ["a"]) == ["checks.x/odd", "old"]
++    assert sorted(p.name for p in root_dir.iterdir()) == ["a", "subdir"]
++
++
++async def test_prune_gcroots_only_for_pushes_that_register_roots(
++    tmp_path: Path,
++) -> None:
++    o = _orchestrator(tmp_path, [])
++
++    def seed(branch: str) -> Path:
++        root_dir = tmp_path / gcroot_project("github/acme/widget", branch)
++        root_dir.mkdir(parents=True)
++        for attr in ("a", "b"):
++            (root_dir / attr).symlink_to("/nix/store/abc")
++        return root_dir
++
++    main_dir, feature_dir = seed("main"), seed("feature")
++    await prune_gcroots(o, _event("main", pr_number=1), ["a"])
++    await prune_gcroots(o, _event("main"), [])
++    # No branch config gives "feature" roots, so they aren't nixbot's.
++    await prune_gcroots(o, _event("feature"), ["a"])
++    assert sorted(p.name for p in main_dir.iterdir()) == ["a", "b"]
++    assert sorted(p.name for p in feature_dir.iterdir()) == ["a", "b"]
++    await prune_gcroots(o, _event("main"), ["a"])
++    assert [p.name for p in main_dir.iterdir()] == ["a"]
++
++
+ async def test_sweep_removes_only_branches_the_forge_deleted(tmp_path: Path) -> None:
+     project = "github/acme/widget"
+     answers: dict[str, bool | Exception | None] = {
+diff --git a/nixbot/tests/test_orchestrator.py b/nixbot/tests/test_orchestrator.py
+index 5f68c88..5ed4c63 100644
+--- a/nixbot/tests/test_orchestrator.py
++++ b/nixbot/tests/test_orchestrator.py
+@@ -236,6 +236,7 @@ def make_orchestrator(
+         build_systems=["x86_64-linux"],
+         url="https://ci.test",
+         state_dir=tmp_path / "state",
++        gcroots_dir=tmp_path / "gcroots",
+     )
+     reporter = RecordingReporter()
+     registered: list[tuple[Path, str, str, str]] = []
+@@ -2900,6 +2901,53 @@ async def test_post_process_paths_are_forge_scoped(
+     assert "github" in output_calls[0]
+ 
+ 
++def _seed_roots(orchestrator: Orchestrator, project: RepoInfo) -> Path:
++    root_dir = orchestrator.config.gcroots_dir / gcroot_project(project.key, "main")
++    root_dir.mkdir(parents=True)
++    for attr in ("a", "removed"):
++        (root_dir / attr).symlink_to("/nix/store/abc")
++    return root_dir
++
++
++async def test_main_build_removes_roots_of_removed_attributes(
++    make_env: EnvFactory, upstream: Path
++) -> None:
++    add_commit(upstream, "prune")
++    orchestrator, _, project = await make_env(
++        FakeEvalRunner([mk_job("a")]), FakeExecutor(), name="prune"
++    )
++    root_dir = _seed_roots(orchestrator, project)
++    build = await orchestrator.handle_change_event(
++        ChangeEvent(
++            repo=project, branch="main", commit_sha=git(upstream, "rev-parse", "HEAD")
++        )
++    )
++    assert build is not None
++    assert [p.name for p in root_dir.iterdir()] == ["a"]
++
++
++async def test_main_push_reusing_a_build_removes_roots_of_removed_attributes(
++    make_env: EnvFactory, upstream: Path
++) -> None:
++    add_commit(upstream, "prune-reuse")
++    sha = git(upstream, "rev-parse", "HEAD")
++    orchestrator, _, project = await make_env(
++        FakeEvalRunner([mk_job("a")]), FakeExecutor(), name="prune-reuse"
++    )
++    root_dir = _seed_roots(orchestrator, project)
++    pr_build = await orchestrator.handle_change_event(
++        ChangeEvent(repo=project, branch="main", commit_sha=sha, pr_number=7)
++    )
++    assert pr_build is not None
++    assert sorted(p.name for p in root_dir.iterdir()) == ["a", "removed"]
++    main_build = await orchestrator.handle_change_event(
++        ChangeEvent(repo=project, branch="main", commit_sha=sha)
++    )
++    assert main_build is not None
++    assert main_build.id_ == pr_build.id_
++    assert [p.name for p in root_dir.iterdir()] == ["a"]
++
++
+ async def test_effects_phase_error_keeps_succeeded_build(
+     pool: asyncpg.Pool,
+     make_env: EnvFactory,

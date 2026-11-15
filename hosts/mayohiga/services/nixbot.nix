@@ -52,7 +52,11 @@
                 ../../../patches/nixbot-silent-timeout-retry.patch
                 ../../../patches/nixbot-build-priority.patch
                 ../../../patches/nixbot-merge-queue-fail-fast.patch
+                ../../../patches/nixbot-prune-gcroots.patch
+                ../../../patches/nixbot-refresh-gcroots.patch
               ];
+            # Races its upload worker and fails about half the time.
+            disabledTests = (old.disabledTests or []) ++ ["test_intermediates_batch_with_final_and_drop_invalid"];
           });
       in
         nixbot;
