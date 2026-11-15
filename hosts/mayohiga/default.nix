@@ -44,6 +44,8 @@
 
     fileSystems."/data".neededForBoot = true;
 
+    environment.etc."machine-id".text = "2a3db1b75e4041a291d75a24742f7af0\n";
+
     modules.persistence.directories.journal = {
       source = "/data/system/journal";
       target = "/var/log/journal";
