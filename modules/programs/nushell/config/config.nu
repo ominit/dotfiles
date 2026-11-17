@@ -28,7 +28,9 @@ let carapace_completer = {|spans: list<string>|
     | if ($in | default [] | where value =~ '^-.*ERR$' | is-empty) { $in } else { null }
 }
 
-let external_completer = {|spans|
+let external_completer = {|place|
+    let spans = $place.command
+
     let expanded_alias = scope aliases
     | where name == $spans.0
     | get -o 0.expansion
