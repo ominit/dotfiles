@@ -60,6 +60,13 @@
       zellij.enable = true;
     };
 
+    modules.autodeploy = {
+      enable = true;
+      mode = "boot";
+      desktopNotifications = true;
+      requireACPower = true;
+    };
+
     programs.nix-ld = {
       enable = true;
       libraries = with pkgs; [

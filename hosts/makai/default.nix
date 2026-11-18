@@ -75,6 +75,8 @@
 
     environment.systemPackages = [pkgs.ghostty.terminfo];
 
+    modules.autodeploy.enable = true;
+
     networking.firewall.enable = true;
 
     # don't allow mutation of users outside of the config

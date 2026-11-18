@@ -35,6 +35,8 @@
 
     environment.systemPackages = [pkgs.ghostty.terminfo];
 
+    modules.autodeploy.enable = true;
+
     boot.loader.systemd-boot.enable = true;
     boot.loader.efi.canTouchEfiVariables = true;
     boot.kernelPackages = pkgs.linuxPackages_cachyos-server;

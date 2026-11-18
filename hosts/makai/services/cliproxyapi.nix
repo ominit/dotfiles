@@ -38,6 +38,18 @@ in {
       };
     };
 
+    modules.autodeploy.gates.cliproxyapi = {
+      units = ["cliproxyapi.service"];
+      path = [pkgs.systemd pkgs.gnugrep];
+      script = ''
+        requests=$(journalctl -u cliproxyapi.service --since -5min -q -o cat | grep -cE 'POST +"/v1/|selector\.go' || true)
+        if [ "$requests" -gt 0 ]; then
+          echo "$requests LLM requests in the last 5 minutes"
+          exit 1
+        fi
+      '';
+    };
+
     modules.persistence.directories.cliproxyapi = {
       source = "/data/services/cliproxyapi";
       target = "/var/lib/cliproxyapi";

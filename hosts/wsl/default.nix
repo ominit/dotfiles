@@ -26,6 +26,11 @@
       zellij.enable = true;
     };
 
+    modules.autodeploy = {
+      enable = true;
+      mode = "boot";
+    };
+
     environment.variables = {
       EDITOR = "hx";
     };

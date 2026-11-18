@@ -1,7 +1,9 @@
 {
+  config,
   inputs,
   system,
   lib,
+  pkgs,
   ...
 }: {
   imports = [inputs.t3code.nixosModules.default];
@@ -24,6 +26,19 @@
         WAYLAND_DISPLAY = "wayland-session";
         SWAYSOCK = "/run/user/1000/sway-ipc.sock";
       };
+    };
+
+    modules.autodeploy.gates.t3code = {
+      units = ["t3code.service"];
+      path = [pkgs.sqlite];
+      script = ''
+        runs=$(sqlite3 -readonly "${config.services.t3code.dataDir}/userdata/statev2.sqlite" \
+          "select count(*) from orchestration_v2_projection_runs where status in ('queued', 'preparing', 'starting', 'running', 'waiting')")
+        if [ "$runs" -gt 0 ]; then
+          echo "$runs running"
+          exit 1
+        fi
+      '';
     };
 
     systemd.services.t3code.path = lib.mkAfter [
