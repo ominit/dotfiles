@@ -35,6 +35,13 @@
       modules = defaultModules ++ [./makai];
     };
 
+    "tianxuan-1" = mkNixosSystem {
+      inherit withSystem;
+      hostname = "tianxuan-1";
+      system = "x86_64-linux";
+      modules = defaultModules ++ [./tianxuan-1];
+    };
+
     mayohiga = mkNixosSystem {
       inherit withSystem;
       hostname = "mayohiga";

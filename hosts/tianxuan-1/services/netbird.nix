@@ -1,0 +1,36 @@
+{...}: {
+  config = {
+    services.netbird = {
+      enable = true;
+    };
+
+    modules.persistence.directories.netbird = {
+      source = "/data/services/netbird";
+      target = "/var/lib/netbird";
+      user = "netbird";
+      group = "netbird";
+      resetPermissions = true;
+    };
+
+    systemd.services.netbird.serviceConfig = {
+      User = "netbird";
+      Group = "netbird";
+      SupplementaryGroups = ["resolvconf"];
+      AmbientCapabilities = [
+        "CAP_NET_ADMIN"
+        "CAP_NET_RAW"
+        "CAP_NET_BIND_SERVICE"
+        "CAP_BPF"
+      ];
+    };
+
+    users.users.netbird = {
+      isSystemUser = true;
+      group = "netbird";
+    };
+
+    users.groups.netbird = {};
+
+    networking.firewall.interfaces.wt0.allowedUDPPorts = [53];
+  };
+}

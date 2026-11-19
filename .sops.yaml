@@ -2,6 +2,7 @@ keys:
   - &master age1xku792wm72ls4tnu0n3u9qagj52z8pvcw8ukzql75keeyag3vgwsf47mwc
   - &makai age1uxgt2hy2t7dne3g2xtex4m239jff77wqkrn4sw3uryvuml4pmp6s2xuspr
   - &mayohiga age10txvkkc24ww4xturdv6xlj772f53dec5egqv2alvluvdkprgautq3wz8s3
+  - &tianxuan-1 age1kwwudhdgqj8d3laa23alepqf77974z4f4ujtkpglnq6wt6qjn44q7jpc7m
 creation_rules:
   - path_regex: secrets/makai.yaml$
     key_groups:
@@ -13,3 +14,8 @@ creation_rules:
       - age:
           - *master
           - *mayohiga
+  - path_regex: secrets/tianxuan-1.yaml$
+    key_groups:
+      - age:
+          - *master
+          - *tianxuan-1
