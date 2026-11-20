@@ -1,0 +1,108 @@
+diff --git a/nixbot/db.py b/nixbot/db.py
+index 5687996..facdbda 100644
+--- a/nixbot/db.py
++++ b/nixbot/db.py
+@@ -24,6 +24,7 @@ from typing import TYPE_CHECKING
+ from .db_gen import builds as q
+ from .models import CacheStatus, NixEvalJobError, NixEvalJobSuccess
+ from .sql_util import expect
++from .webhooks import is_merge_queue_branch
+ 
+ if TYPE_CHECKING:
+     import asyncpg
+@@ -86,6 +87,19 @@ async def get_or_create_build(  # noqa: PLR0913
+                         pr_number=pr_number,
+                         pr_author=pr_author,
+                     )
++            elif (
++                pr_number is None
++                and branch != row.branch
++                and is_merge_queue_branch(row.branch)
++                and not is_merge_queue_branch(branch)
++            ):
++                # The push that lands a merge-queue entry carries the
++                # queue build's tree. Take over the branch like a merge
++                # push does for a PR build, else the default branch
++                # never shows the builds it reused.
++                row = await q.detach_build_from_pr(
++                    conn, id_=row.id_, pr_number=None, branch=branch
++                )
+             elif pr_author is not None and row.pr_author is None:
+                 # Same PR: fill in the author when a previous event
+                 # for this PR lacked it.
+diff --git a/nixbot/db_gen/builds.py b/nixbot/db_gen/builds.py
+index 3fb84fa..d9ad679 100644
+--- a/nixbot/db_gen/builds.py
++++ b/nixbot/db_gen/builds.py
+@@ -119,7 +119,8 @@ AND status <> 'cancelled' ORDER BY id DESC LIMIT 1
+ DETACH_BUILD_FROM_PR: typing.Final[str] = """-- name: DetachBuildFromPr :one
+ UPDATE builds SET pr_number = NULL, pr_author = NULL,
+     merged_pr_number = CASE WHEN $2::bigint IS NULL
+-             THEN builds.pr_number ELSE NULL END,
++             THEN COALESCE(builds.pr_number, builds.merged_pr_number)
++             ELSE NULL END,
+     branch = CASE WHEN $2::bigint IS NULL
+              THEN $3 ELSE branch END
+ WHERE id = $1 RETURNING id, project_id, number, tree_hash, commit_sha, branch, pr_number, pr_author, status, status_generation, effects_started, error, created_at, started_at, finished_at, eval_warnings, eval_completed, effects_commit_sha, effects_branch, effects_pr_number, eval_duration_ms, actor, merged_pr_number
+diff --git a/nixbot/queries/builds.sql b/nixbot/queries/builds.sql
+index 3fbe079..9983ee1 100644
+--- a/nixbot/queries/builds.sql
++++ b/nixbot/queries/builds.sql
+@@ -16,7 +16,8 @@ AND status <> 'cancelled' ORDER BY id DESC LIMIT 1;
+ -- keeps no authz, and let a plain branch push take over the branch.
+ UPDATE builds SET pr_number = NULL, pr_author = NULL,
+     merged_pr_number = CASE WHEN sqlc.narg(pr_number)::bigint IS NULL
+-             THEN builds.pr_number ELSE NULL END,
++             THEN COALESCE(builds.pr_number, builds.merged_pr_number)
++             ELSE NULL END,
+     branch = CASE WHEN sqlc.narg(pr_number)::bigint IS NULL
+              THEN sqlc.arg(branch) ELSE branch END
+ WHERE id = $1 RETURNING *;
+diff --git a/nixbot/tests/test_db.py b/nixbot/tests/test_db.py
+index fbfedd6..27ed999 100644
+--- a/nixbot/tests/test_db.py
++++ b/nixbot/tests/test_db.py
+@@ -420,6 +420,43 @@ async def test_branch_push_takes_over_reused_pr_build(pool: asyncpg.Pool) -> Non
+     assert dict(row) == {"pr_number": None, "pr_author": None, "branch": "main"}
+ 
+ 
++async def test_branch_push_takes_over_merge_queue_build(pool: asyncpg.Pool) -> None:
++    project_id = await insert_project(pool, "mq-shed")
++    pr, _ = await db.get_or_create_build(
++        pool,
++        project_id,
++        "tree-q",
++        "sha",
++        "feature",
++        pr_number=5,
++        pr_author="github:alice",
++    )
++    queue, _ = await db.get_or_create_build(
++        pool, project_id, "tree-q", "sha", "gh-readonly-queue/main/pr-5-0123abcd"
++    )
++    main, created = await db.get_or_create_build(
++        pool, project_id, "tree-q", "sha", "main"
++    )
++    assert not created
++    assert pr.id_ == queue.id_ == main.id_
++    assert main.branch == "main"
++    assert main.merged_pr_number == 5
++    requeued, _ = await db.get_or_create_build(
++        pool, project_id, "tree-q", "sha", "gh-readonly-queue/main/pr-6-4567cdef"
++    )
++    assert requeued.branch == "main"
++
++
++async def test_branch_push_keeps_other_branch_build(pool: asyncpg.Pool) -> None:
++    project_id = await insert_project(pool, "branch-keep")
++    first, _ = await db.get_or_create_build(
++        pool, project_id, "tree-k", "sha", "release"
++    )
++    second, _ = await db.get_or_create_build(pool, project_id, "tree-k", "sha", "main")
++    assert second.id_ == first.id_
++    assert second.branch == "release"
++
++
+ async def test_pr_does_not_capture_branch_push_build(pool: asyncpg.Pool) -> None:
+     # A default-branch push created the build. A PR for a different
+     # branch sharing the tree hash must not gain pr_author authz

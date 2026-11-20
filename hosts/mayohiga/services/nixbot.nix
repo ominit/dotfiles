@@ -52,6 +52,7 @@
                 ../../../patches/nixbot-silent-timeout-retry.patch
                 ../../../patches/nixbot-build-priority.patch
                 ../../../patches/nixbot-merge-queue-fail-fast.patch
+                ../../../patches/nixbot-merge-queue-takeover.patch
                 ../../../patches/nixbot-prune-gcroots.patch
                 ../../../patches/nixbot-refresh-gcroots.patch
               ];
