@@ -17,12 +17,15 @@ in {
           ++ [
             ../../../patches/cliproxyapi-claude-ratelimit-headers.patch
             ../../../patches/cliproxyapi-ratelimit-reset-grace.patch
+            ../../../patches/cliproxyapi-fill-first-weekly-reset.patch
           ];
       });
       settings = {
         server = {
           host = "127.0.0.1";
           port = 10014;
+          trusted-proxies = ["127.0.0.1" "::1"];
+          shutdown-timeout = 60;
         };
         oauth = {
           auth-dir = "/var/lib/cliproxyapi/auth";
@@ -30,12 +33,29 @@ in {
         management = {
           allow-remote = true;
         };
-        upstream.claude.header-defaults = {
-          user-agent = "claude-cli/2.1.321 (external, cli)";
-          package-version = "0.128.0";
-          runtime-version = "v26.12.1";
+        routing = {
+          strategy = "fill-first";
+          session-affinity = true;
+          session-affinity-subagents = true;
+          session-affinity-ttl = "24h";
+          session-affinity-rebind-on = "quota";
+          retry.request-retry = 0;
+          cooldown = {
+            save-cooldown-status = true;
+            transient-error-cooldown-seconds = -1;
+          };
         };
+        requests.tls-handshake-timeout-seconds = 15;
+        upstream.claude.header-defaults.native-entrypoints = ["t3-code"];
       };
+    };
+
+    modules.pangolin.resources.warm-southeastern-shrew = {
+      name = "cliproxyapi";
+      domain = "cliproxyapi.42nd.net";
+      inherit (config.services.cliproxyapi.settings.server) port;
+      healthPath = "/healthz";
+      bypassPaths = ["/v1/*" "/v1beta/*" "/backend-api/codex/*"];
     };
 
     modules.autodeploy.gates.cliproxyapi = {

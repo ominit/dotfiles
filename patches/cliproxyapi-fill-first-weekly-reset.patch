@@ -1,0 +1,305 @@
+diff --git a/sdk/cliproxy/auth/scheduler.go b/sdk/cliproxy/auth/scheduler.go
+index 5e10145..5ede5f9 100644
+--- a/sdk/cliproxy/auth/scheduler.go
++++ b/sdk/cliproxy/auth/scheduler.go
+@@ -1520,7 +1520,7 @@ func (m *modelScheduler) pickReadyAtPriorityLocked(preferWebsocket bool, priorit
+ 	var picked *scheduledAuth
+ 	switch strategy {
+ 	case schedulerStrategyFillFirst:
+-		picked = view.pickFirst(predicate)
++		picked = view.pickEarliestWeeklyReset(predicate, time.Now())
+ 	case schedulerStrategyWeightedRoundRobin:
+ 		picked = view.pickWeighted(predicate)
+ 	default:
+diff --git a/sdk/cliproxy/auth/selector.go b/sdk/cliproxy/auth/selector.go
+index db7f74f..9c28973 100644
+--- a/sdk/cliproxy/auth/selector.go
++++ b/sdk/cliproxy/auth/selector.go
+@@ -89,7 +89,8 @@ func weightedSelectorStateModel(ctx context.Context, availabilityModel string) s
+ 	return availabilityModel
+ }
+ 
+-// FillFirstSelector selects the first available credential (deterministic ordering).
++// FillFirstSelector selects the available credential whose observed weekly
++// window resets first, falling back to deterministic ID ordering.
+ // This "burns" one account before moving to the next, which can help stagger
+ // rolling-window subscription caps (e.g. chat message limits).
+ type FillFirstSelector struct{}
+@@ -1239,7 +1240,8 @@ func (s *FillFirstSelector) Pick(ctx context.Context, provider, model string, op
+ 		return nil, err
+ 	}
+ 	available = preferCodexWebsocketAuths(ctx, provider, available)
+-	return available[0], nil
++	index := earliestWeeklyReset(len(available), func(i int) *Auth { return available[i] }, nil, now)
++	return available[index], nil
+ }
+ 
+ // IsAuthAvailableForModel reports whether auth is eligible for selection on model at now.
+diff --git a/sdk/cliproxy/auth/weekly_reset_order.go b/sdk/cliproxy/auth/weekly_reset_order.go
+new file mode 100644
+index 0000000..d96483f
+--- /dev/null
++++ b/sdk/cliproxy/auth/weekly_reset_order.go
+@@ -0,0 +1,90 @@
++package auth
++
++import (
++	"strconv"
++	"strings"
++	"time"
++)
++
++// weeklyResetSignal is the canonical quota signal carrying the Unix time at
++// which a Claude subscription's shared seven-day window resets.
++const weeklyResetSignal = "Anthropic-Ratelimit-Unified-7d-Reset"
++
++// weeklyResetAt returns the weekly window reset from the most recent quota
++// snapshot observed for auth. A reset that has already passed is unknown,
++// because the window has rolled over and its next reset has not been seen.
++func weeklyResetAt(auth *Auth, now time.Time) (time.Time, bool) {
++	if auth == nil {
++		return time.Time{}, false
++	}
++	var latest QuotaState
++	found := false
++	consider := func(quota QuotaState) {
++		if _, ok := quota.Signals[weeklyResetSignal]; !ok {
++			return
++		}
++		if !found || quota.ObservedAt.After(latest.ObservedAt) {
++			latest = quota
++			found = true
++		}
++	}
++	consider(auth.Quota)
++	for _, state := range auth.ModelStates {
++		if state != nil {
++			consider(state.Quota)
++		}
++	}
++	if !found {
++		return time.Time{}, false
++	}
++	unix, err := strconv.ParseInt(strings.TrimSpace(latest.Signals[weeklyResetSignal]), 10, 64)
++	if err != nil || unix <= 0 {
++		return time.Time{}, false
++	}
++	resetAt := time.Unix(unix, 0)
++	if !resetAt.After(now) {
++		return time.Time{}, false
++	}
++	return resetAt, true
++}
++
++// earliestWeeklyReset returns the index of the candidate whose weekly window
++// resets first, so fill-first spends quota that would otherwise expire unused.
++// Candidates without a known future reset follow those with one, and ties keep
++// the input order. It returns -1 when no candidate matches.
++func earliestWeeklyReset(count int, authAt func(int) *Auth, match func(int) bool, now time.Time) int {
++	best := -1
++	var bestReset time.Time
++	bestKnown := false
++	for i := 0; i < count; i++ {
++		if match != nil && !match(i) {
++			continue
++		}
++		resetAt, known := weeklyResetAt(authAt(i), now)
++		switch {
++		case best < 0:
++		case known && (!bestKnown || resetAt.Before(bestReset)):
++		default:
++			continue
++		}
++		best, bestReset, bestKnown = i, resetAt, known
++	}
++	return best
++}
++
++// pickEarliestWeeklyReset returns the ready entry satisfying predicate whose
++// weekly window resets first, without advancing cursors.
++func (v *readyView) pickEarliestWeeklyReset(predicate func(*scheduledAuth) bool, now time.Time) *scheduledAuth {
++	index := earliestWeeklyReset(len(v.flat), func(i int) *Auth {
++		if v.flat[i] == nil {
++			return nil
++		}
++		return v.flat[i].auth
++	}, func(i int) bool {
++		return predicate == nil || predicate(v.flat[i])
++	}, now)
++	if index < 0 {
++		return nil
++	}
++	return v.flat[index]
++}
+diff --git a/sdk/cliproxy/auth/weekly_reset_order_test.go b/sdk/cliproxy/auth/weekly_reset_order_test.go
+new file mode 100644
+index 0000000..19c2436
+--- /dev/null
++++ b/sdk/cliproxy/auth/weekly_reset_order_test.go
+@@ -0,0 +1,166 @@
++package auth
++
++import (
++	"context"
++	"strconv"
++	"testing"
++	"time"
++
++	cliproxyexecutor "github.com/router-for-me/CLIProxyAPI/v8/sdk/cliproxy/executor"
++)
++
++func weeklyResetQuota(resetAt, observedAt time.Time) QuotaState {
++	return QuotaState{
++		ObservedAt: observedAt,
++		Signals:    map[string]string{weeklyResetSignal: strconv.FormatInt(resetAt.Unix(), 10)},
++	}
++}
++
++func TestFillFirstSelectorPick_PrefersEarliestWeeklyReset(t *testing.T) {
++	t.Parallel()
++
++	now := time.Now()
++	selector := &FillFirstSelector{}
++	auths := []*Auth{
++		{ID: "a", Quota: weeklyResetQuota(now.Add(72*time.Hour), now)},
++		{ID: "b", Quota: weeklyResetQuota(now.Add(24*time.Hour), now)},
++		{ID: "c"},
++	}
++
++	got, err := selector.Pick(context.Background(), "claude", "", cliproxyexecutor.Options{}, auths)
++	if err != nil {
++		t.Fatalf("Pick() error = %v", err)
++	}
++	if got == nil || got.ID != "b" {
++		t.Fatalf("Pick() auth = %#v, want b", got)
++	}
++}
++
++func TestFillFirstSelectorPick_UnknownWeeklyResetFollowsKnown(t *testing.T) {
++	t.Parallel()
++
++	now := time.Now()
++	selector := &FillFirstSelector{}
++	auths := []*Auth{
++		{ID: "a"},
++		{ID: "b", Quota: weeklyResetQuota(now.Add(-time.Hour), now.Add(-8*24*time.Hour))},
++		{ID: "c", Quota: weeklyResetQuota(now.Add(96*time.Hour), now)},
++	}
++
++	got, err := selector.Pick(context.Background(), "claude", "", cliproxyexecutor.Options{}, auths)
++	if err != nil {
++		t.Fatalf("Pick() error = %v", err)
++	}
++	if got == nil || got.ID != "c" {
++		t.Fatalf("Pick() auth = %#v, want c", got)
++	}
++}
++
++func TestFillFirstSelectorPick_WeeklyResetTieKeepsIDOrder(t *testing.T) {
++	t.Parallel()
++
++	now := time.Now()
++	resetAt := now.Add(48 * time.Hour)
++	selector := &FillFirstSelector{}
++	auths := []*Auth{
++		{ID: "b", Quota: weeklyResetQuota(resetAt, now)},
++		{ID: "a", Quota: weeklyResetQuota(resetAt, now)},
++	}
++
++	got, err := selector.Pick(context.Background(), "claude", "", cliproxyexecutor.Options{}, auths)
++	if err != nil {
++		t.Fatalf("Pick() error = %v", err)
++	}
++	if got == nil || got.ID != "a" {
++		t.Fatalf("Pick() auth = %#v, want a", got)
++	}
++}
++
++func TestFillFirstSelectorPick_HigherPriorityBeatsEarlierWeeklyReset(t *testing.T) {
++	t.Parallel()
++
++	now := time.Now()
++	selector := &FillFirstSelector{}
++	auths := []*Auth{
++		{ID: "a", Attributes: map[string]string{"priority": "10"}, Quota: weeklyResetQuota(now.Add(96*time.Hour), now)},
++		{ID: "b", Quota: weeklyResetQuota(now.Add(time.Hour), now)},
++	}
++
++	got, err := selector.Pick(context.Background(), "claude", "", cliproxyexecutor.Options{}, auths)
++	if err != nil {
++		t.Fatalf("Pick() error = %v", err)
++	}
++	if got == nil || got.ID != "a" {
++		t.Fatalf("Pick() auth = %#v, want a", got)
++	}
++}
++
++func TestWeeklyResetAt_UsesMostRecentObservation(t *testing.T) {
++	t.Parallel()
++
++	now := time.Now()
++	recent := now.Add(5 * 24 * time.Hour)
++	auth := &Auth{
++		ID:    "a",
++		Quota: weeklyResetQuota(now.Add(time.Hour), now.Add(-time.Hour)),
++		ModelStates: map[string]*ModelState{
++			"claude-opus-5-5": {Quota: weeklyResetQuota(recent, now)},
++		},
++	}
++
++	got, ok := weeklyResetAt(auth, now)
++	if !ok {
++		t.Fatalf("weeklyResetAt() ok = false, want true")
++	}
++	if !got.Equal(time.Unix(recent.Unix(), 0)) {
++		t.Fatalf("weeklyResetAt() = %v, want %v", got, recent)
++	}
++}
++
++func TestSchedulerPick_FillFirstPrefersEarliestWeeklyReset(t *testing.T) {
++	t.Parallel()
++
++	now := time.Now()
++	scheduler := newSchedulerForTest(
++		&FillFirstSelector{},
++		&Auth{ID: "a", Provider: "claude", Quota: weeklyResetQuota(now.Add(72*time.Hour), now)},
++		&Auth{ID: "b", Provider: "claude", Quota: weeklyResetQuota(now.Add(24*time.Hour), now)},
++	)
++
++	got, errPick := scheduler.pickSingle(context.Background(), "claude", "", cliproxyexecutor.Options{}, nil)
++	if errPick != nil {
++		t.Fatalf("pickSingle() error = %v", errPick)
++	}
++	if got == nil || got.ID != "b" {
++		t.Fatalf("pickSingle() auth = %#v, want b", got)
++	}
++}
++
++func TestSchedulerPick_FillFirstFollowsUpdatedWeeklyReset(t *testing.T) {
++	t.Parallel()
++
++	now := time.Now()
++	scheduler := newSchedulerForTest(
++		&FillFirstSelector{},
++		&Auth{ID: "a", Provider: "claude", Quota: weeklyResetQuota(now.Add(24*time.Hour), now)},
++		&Auth{ID: "b", Provider: "claude", Quota: weeklyResetQuota(now.Add(72*time.Hour), now)},
++	)
++
++	got, errPick := scheduler.pickSingle(context.Background(), "claude", "", cliproxyexecutor.Options{}, nil)
++	if errPick != nil {
++		t.Fatalf("pickSingle() error = %v", errPick)
++	}
++	if got == nil || got.ID != "a" {
++		t.Fatalf("pickSingle() before update auth = %#v, want a", got)
++	}
++
++	scheduler.upsertAuth(&Auth{ID: "a", Provider: "claude", Generation: 1, Quota: weeklyResetQuota(now.Add(7*24*time.Hour), now.Add(time.Minute))})
++
++	got, errPick = scheduler.pickSingle(context.Background(), "claude", "", cliproxyexecutor.Options{}, nil)
++	if errPick != nil {
++		t.Fatalf("pickSingle() error = %v", errPick)
++	}
++	if got == nil || got.ID != "b" {
++		t.Fatalf("pickSingle() after update auth = %#v, want b", got)
++	}
++}

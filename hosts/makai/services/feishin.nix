@@ -15,5 +15,23 @@
       };
       autoStart = true;
     };
+
+    modules.pangolin.resources.right-porcellio-scaber = {
+      name = "feishin";
+      domain = "feishin.42nd.net";
+      port = 10002;
+      healthInterval = 30;
+      extraTargets = [
+        {
+          method = "http";
+          hostname = "localhost";
+          port = 10001;
+          enabled = true;
+          path = "/rest";
+          path-match = "prefix";
+          priority = 110;
+        }
+      ];
+    };
   };
 }

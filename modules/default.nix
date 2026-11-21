@@ -5,5 +5,5 @@
   programs = filesIn ./programs;
   persistence = filesIn ./persistence;
 in {
-  imports = [./agents ./autodeploy ./ncro.nix] ++ programs ++ persistence;
+  imports = [./agents ./autodeploy ./ncro.nix ./pangolin] ++ programs ++ persistence;
 }

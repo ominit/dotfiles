@@ -1,4 +1,5 @@
 {
+  config,
   inputs,
   lib,
   ...
@@ -9,6 +10,13 @@
     services.yiju = {
       enable = true;
       port = 10015;
+    };
+
+    modules.pangolin.resources.burdensome-asian-badger = {
+      name = "yiju";
+      domain = "yiju.42nd.net";
+      inherit (config.services.yiju) port;
+      healthPath = "/healthz";
     };
 
     systemd.services.yiju = {

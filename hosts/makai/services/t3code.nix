@@ -28,6 +28,14 @@
       };
     };
 
+    modules.pangolin.resources.talkative-lesser-egyptian-jerboa = {
+      name = "makai.t3code";
+      domain = "makai.t3code.42nd.net";
+      inherit (config.services.t3code) port;
+      sso = false;
+      healthPath = "/healthz";
+    };
+
     modules.autodeploy.gates.t3code = {
       units = ["t3code.service"];
       path = [pkgs.sqlite];

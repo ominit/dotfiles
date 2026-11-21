@@ -63,6 +63,14 @@
         nixbot;
     };
 
+    modules.pangolin.resources.sturdy-philippine-porcupine = {
+      name = "nixbot";
+      domain = "nixbot.42nd.net";
+      inherit (config.services.nixbot) port;
+      sso = false;
+      healthPath = "/health";
+    };
+
     # The root directory rule upstream does not repair descendants left
     # with an old nixbot UID after system-user allocation changes.
     systemd.tmpfiles.rules = [

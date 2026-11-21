@@ -41,6 +41,14 @@ in {
       };
     };
 
+    modules.pangolin.resources.crooked-short-beaked-echidna = {
+      name = "lms";
+      domain = "lms.42nd.net";
+      port = 10001;
+      healthInterval = 30;
+      bypassPaths = ["/rest/*"];
+    };
+
     modules.persistence.directories.lms = {
       source = "/data/services/lms";
       target = "/var/lib/lms";

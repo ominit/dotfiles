@@ -10,5 +10,13 @@
         };
       };
     };
+
+    modules.pangolin.resources.far-flung-texas-leafcutter-ant = {
+      name = "harmonia";
+      domain = "harmonia.42nd.net";
+      port = 10002;
+      sso = false;
+      healthPath = "/health";
+    };
   };
 }
